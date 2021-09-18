@@ -55,7 +55,7 @@ function Footer() {
                             <a className="addthis_button_facebook_like" layout="button_count" href="http://www.carloansales.com.au/"></a>
                             <a className="addthis_button_tweet" href="http://www.carloansales.com.au/"></a>
                         </div>
-                        <script type="text/javascript" src="asset/js/addthis_widget.js#pubid=xa-510c734f134e7e53"></script>
+                        <script type="text/javascript" src="https://s7.addthis.com/js/300/addthis_widget.js#pubid=xa-510c734f134e7e53"></script>
 
                         {/* <!--<div className="addthis_toolbox addthis_default_style addthis_32x32_style">
 

@@ -2736,6 +2736,7 @@ select
     text-align:center;
 }
 
+
 .blog-back
 {
     background: none;
@@ -2762,4 +2763,67 @@ select
     margin-bottom: 0px;
     border-bottom: 1px gray dashed;
     border-top: 0px;
+}
+
+#hide-load
+{
+    animation: hideAnimation 0s ease-in 0.2s;
+	animation-fill-mode: forwards;
+}
+@keyframes hideAnimation
+{
+    to
+    {
+        visibility: hidden;
+        width: 0;
+        height:0;
+        margin:0;
+        padding:0;
+        /* background-color: red; */
+    }
+}
+
+#hidden-content
+{
+    animation-name: hideAnimatio;
+    animation-duration: 0s;
+    animation-timing-function: linear;
+    animation-delay: 0.2s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+    /* transition: display 2s  ; */
+}
+@keyframes hideAnimatio
+{
+    from{
+        visibility: hidden;
+        opacity:0;
+        display: none;
+    }
+    to
+    {
+        visibility: visible;
+        opacity:1;
+        height:auto;
+        /* width: 0;
+        height:0;
+        margin:0;
+        padding:0; */
+        /* background-color: red; */
+    }
+}
+
+#hidden-content
+{
+    display: none;
+}
+
+#hide-load
+{
+    display: none;
+}
+
+.p10
+{
+    padding:10px;
 }

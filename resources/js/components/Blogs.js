@@ -2,6 +2,22 @@ import React from 'react';
 import Head from './Head';
 import Footer from './Footer';
 
+function myfun()
+{
+    document.getElementById("hide-load").style.display = "block";
+    document.getElementById("show").style.display = "none";
+    document.getElementById("hidden-content").style = "display:block;opacity:0;height:0;"
+    // document.getElementById("hidden-content").style = "@keyframes hidden{to{display:block}}"
+    
+    // setTimeout(function(){ document.getElementById("hidden-content"),style.display="block"; }, 3000);
+}
+
+
+// setTimeout(function(){
+//     $('#hidden-content').addClass("hc");
+//     //Here add what you need
+//   }, 2000);
+
 function Blog() {
     return (
         <div>
@@ -11,6 +27,7 @@ function Blog() {
                     <h1 className="mt30">Blogs</h1>
                     <table id="blogdata" width="100%">
                         <tbody><tr className="blog-back">
+
                             <td className="blog-pad-bot"><br></br>
                                 <b className="f24">What is Gap Insurance?</b>
                             </td>
@@ -200,19 +217,64 @@ function Blog() {
                                     <hr className="bloghr" /><br></br>
                                 </td>
                             </tr>
-                            <tr className="blog-back"><td className="blog-pad-bot"><b className="f24">Can I Refiance My Loan?</b></td></tr><tr className="blog-back"><td>2014-05-29 02:37:AM</td></tr><tr className="blog-back"><td><div id="contentblogdata_18">
-                            </div><h2>&amp;#rl&amp;#nl	Can I Refinance My Loan?</h2>&amp;#rl&amp;#nl<p>&amp;#rl&amp;#nl	The simple answer is yes.</p>&amp;#rl&amp;#nl<p>&amp;#rl&amp;#nl	At carloansales.com.au we are often contacted by clients who are very happy with their car purchase but would like to restructure their Car</p><div id="data_18">
-                                </div></td></tr><tr className="blog-back"><td><a href="javascript:void(0)" className="btn" id="viewblog_18" onclick="viewdetails(18);">View More</a></td></tr><tr className="blog-back"><td className="blog-pad-top-bot"><hr className="blog-mar-bor" /></td></tr><tr className="blog-back"><td className="blog-pad-bot"><b className="f24">What to do when trading or selling your car</b></td></tr><tr className="blog-back"><td>2014-05-19 11:39:AM</td></tr><tr className="blog-back"><td><div id="contentblogdata_16">
-                                </div><p>&amp;#rl&amp;#nl	If you are one of the many of motorists who are currently buying new cars, you may have already faced this dilemma: How do you dispose of your old car? It wasn’t so long ago that the answer was simple: you just traded in the old car</p><div id="data_16">
-                                    </div></td></tr><tr className="blog-back"><td><a href="javascript:void(0)" className="btn" id="viewblog_16" onclick="viewdetails(16);">View More</a></td></tr><tr className="blog-back"><td className="blog-pad-top-bot"><hr className="blog-mar-bor" /></td></tr><tr className="blog-back"><td className="blog-pad-bot"><b className="f24">Car Loan Calculators Help Budgeting</b></td></tr><tr className="blog-back"><td>2014-05-06 12:36:PM</td></tr><tr className="blog-back"><td><div id="contentblogdata_15">
-                                    </div><p>&amp;#rl&amp;#nl	Car Loan Calculators like the one on the Carloansales home page are the quickest and easiest methods for working out your financial budget before purchasing your new or used car.</p>&amp;#rl&amp;#nl<p>&amp;#rl&amp;#nl	Use the Car Loan Calculator to help </p><div id="data_15">
-                                        </div></td></tr><tr className="blog-back"><td><a href="javascript:void(0)" className="btn" id="viewblog_15" onclick="viewdetails(15);">View More</a></td></tr><tr className="blog-back"><td className="blog-pad-top-bot"><hr className="blog-mar-bor" /></td></tr><tr className="blog-back"><td className="blog-pad-bot"><b className="f24">Car Finance on the Increase</b></td></tr><tr className="blog-back"><td>2014-05-01 04:11:AM</td></tr><tr className="blog-back"><td><div id="contentblogdata_14">
-                                        </div><p>&amp;#rl&amp;#nl	More and more people are choosing car finance as an affordable way to spread the cost of a new or used car. This has led to a huge increase in the range of options available to consumers. With banks, stand alone finance providers and car </p><div id="data_14">
-                                            </div></td></tr><tr className="blog-back"><td><a href="javascript:void(0)" className="btn" id="viewblog_14" onclick="viewdetails(14);">View More</a></td></tr><tr className="blog-back"><td className="blog-pad-top-bot"><hr className="blog-mar-bor" /></td></tr><tr className="blog-back"><td className="blog-pad-bot"><b className="f24">Take Care when asking for Car Loan Advice</b></td></tr><tr className="blog-back"><td>2014-04-29 04:42:AM</td></tr><tr className="blog-back"><td><div id="contentblogdata_13">
-                                            </div><p>&amp;#rl&amp;#nl	Keep an open mind when asking your Friends and Relatives for Car Advice</p>&amp;#rl&amp;#nl<p>&amp;#rl&amp;#nl	Sometimes asking your friends and relatives for advice is a good and beneficial.&nbsp; This is particularly true if the friend or relative in q</p><div id="data_13">
-                                                </div></td></tr><tr className="blog-back"><td><a href="javascript:void(0)" className="btn" id="viewblog_13" onclick="viewdetails(13);">View More</a></td></tr><tr className="blog-back"><td className="blog-pad-top-bot"><hr className="blog-mar-bor" /></td></tr>
+                            <div className="morebg p10" id="show">
+                                <a onClick={myfun} className="more" >Show More Results</a>
+                            </div>
 
-                        </tbody></table>
+                            <div className="morebg p10" id="hide-load" >
+                                <a className="more" id="5">Loading....</a>
+                            </div>
+                            <div id="hidden-content" className="hc">
+                                <tr className="blog-back">
+                                    <td className="blog-pad-bot"><b className="f24">Can I Refiance My Loan?</b></td></tr><tr className="blog-back">
+                                    <td>2014-05-29 02: 37: AM</td></tr><tr className="blog-back">
+                                    <td><div id="contentblogdata_18">
+                                    </div>
+                                        <h2>&amp; #rl&amp; #nl	Can I Refinance My Loan?</h2>&amp; #rl&amp; #nl<p>&amp; #rl&amp; #nl	The simple answer is yes.</p>&amp; #rl&amp; #nl<p>&amp; #rl&amp; #nl	At carloansales.com.au we are often contacted by clients who are very happy with their car purchase but would like to restructure their Car</p><div id="data_18">
+                                        </div>
+                                    </td></tr><tr className="blog-back">
+                                    <td><a href="javascript:void(0)" className="btn" id="viewblog_18" onclick="viewdetails(18);">View More</a></td></tr><tr className="blog-back">
+                                    <td className="blog-pad-top-bot"><hr className="blog-mar-bor" /></td></tr><tr className="blog-back">
+                                    <td className="blog-pad-bot"><b className="f24">What to do when trading or selling your car</b></td></tr><tr className="blog-back">
+                                    <td>2014-05-19 11: 39: AM</td></tr><tr className="blog-back">
+                                    <td><div id="contentblogdata_16">
+                                    </div>
+                                        <p>&amp; #rl&amp; #nl	If you are one of the many of motorists who are currently buying new cars, you may have already faced this dilemma: How do you dispose of your old car?It wasn’t so long ago that the answer was simple: you just traded in the old car</p><div id="data_16">
+                                        </div>
+                                    </td></tr><tr className="blog-back">
+                                    <td><a href="javascript:void(0)" className="btn" id="viewblog_16" onclick="viewdetails(16);">View More</a></td></tr><tr className="blog-back">
+                                    <td className="blog-pad-top-bot"><hr className="blog-mar-bor" /></td></tr><tr className="blog-back">
+                                    <td className="blog-pad-bot"><b className="f24">Car Loan Calculators Help Budgeting</b></td></tr><tr className="blog-back">
+                                    <td>2014-05-06 12: 36: PM</td></tr><tr className="blog-back">
+                                    <td><div id="contentblogdata_15">
+                                    </div>
+                                        <p>&amp; #rl&amp; #nl	Car Loan Calculators like the one on the Carloansales home page are the quickest and easiest methods for working out your financial budget before purchasing your new or used car.</p>&amp; #rl&amp; #nl<p>&amp; #rl&amp; #nl	Use the Car Loan Calculator to help </p><div id="data_15">
+                                        </div>
+                                    </td></tr><tr className="blog-back">
+                                    <td><a href="javascript:void(0)" className="btn" id="viewblog_15" onclick="viewdetails(15);">View More</a></td></tr><tr className="blog-back">
+                                    <td className="blog-pad-top-bot"><hr className="blog-mar-bor" /></td></tr><tr className="blog-back">
+                                    <td className="blog-pad-bot"><b className="f24">Car Finance on the Increase</b></td></tr><tr className="blog-back">
+                                    <td>2014-05-01 04: 11: AM</td></tr><tr className="blog-back">
+                                    <td><div id="contentblogdata_14">
+                                    </div>
+                                        <p>&amp; #rl&amp; #nl	More and more people are choosing car finance as an affordable way to spread the cost of a new or used car.This has led to a huge increase in the range of options available to consumers.With banks, stand alone finance providers and car </p><div id="data_14">
+                                        </div>
+                                    </td></tr><tr className="blog-back">
+                                    <td><a href="javascript:void(0)" className="btn" id="viewblog_14" onclick="viewdetails(14);">View More</a></td></tr><tr className="blog-back">
+                                    <td className="blog-pad-top-bot"><hr className="blog-mar-bor" /></td></tr><tr className="blog-back">
+                                    <td className="blog-pad-bot"><b className="f24">Take Care when asking for Car Loan Advice</b></td></tr><tr className="blog-back">
+                                    <td>2014-04-29 04: 42: AM</td></tr><tr className="blog-back">
+                                    <td><div id="contentblogdata_13">
+                                    </div>
+                                        <p>&amp; #rl&amp; #nl	Keep an open mind when asking your Friends and Relatives for Car Advice</p>&amp; #rl&amp; #nl<p>&amp; #rl&amp; #nl	Sometimes asking your friends and relatives for advice is a good and beneficial.&nbsp; This is particularly true if the friend or relative in q</p><div id="data_13">
+                                        </div>
+                                    </td></tr><tr className="blog-back">
+                                    <td><a href="javascript:void(0)" className="btn" id="viewblog_13" onclick="viewdetails(13);">View More</a></td></tr><tr className="blog-back">
+                                    <td className="blog-pad-top-bot"><hr className="blog-mar-bor" /></td>
+                                </tr>
+                            </div>
+                        </tbody>
+                    </table>
 
 
                 </div>

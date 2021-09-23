@@ -1,4 +1,6 @@
 import React from 'react';
+// import "./fountations.css";
+import "./style.css";
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Head from './Head';
@@ -24,6 +26,7 @@ import Small from './Small';
 import Truck from './Truck';
 import Marine from './Marine';
 import BadCredit from './BadCredit';
+import Cities from './Cities';
 function User() {
     return (
         <div>
@@ -55,6 +58,7 @@ function User() {
                     <Route exact path="/truck-finance" component={Truck} />
                     <Route exact path="/marine-loans-boat-finance" component={Marine} />
                     <Route exact path="/bad-credit-car-loan" component={BadCredit} />
+                    <Route exact path="/carloan-city-view" component={Cities} />
                     {/* <Route path="about" component="About"/> */}
                 </Switch>
             </Router>

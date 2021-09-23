@@ -18,6 +18,11 @@ use Illuminate\Support\Facades\Route;
 // });
 
 // Route::get('/about', [App\Http\Controllers\Navigation::class, 'about'])->name('about');
+
+Route::get('/p/create', [App\Http\Controllers\PostController::class, 'create']);
+// // Image storing
+Route::post('/p', [App\Http\Controllers\PostController::class, 'store']);
+
 Route::view('/{path?}','welcome');
 // Route::get('/{path?}', [
 //     'uses' => 'Navigation@routes',

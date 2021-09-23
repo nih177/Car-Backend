@@ -1,6 +1,5 @@
 import React from "react";
-import "./fountations.css";
-import "./style.css";
+
 function Head() {
     return (
         <div id="full-header">
@@ -8,7 +7,7 @@ function Head() {
                 <div className="header clear">
                     <div id="top-logo">
                         <div id="div1">
-                            <a id="logo" href="http://www.carloansales.com.au"></a>
+                            <a id="logo" href="http://www.carloansales.com.au"><img src="/images/logo-new.svg" width="204px" height="51px"></img></a>
                         </div>
                         <div id="div2">
                             <span className="phone">Call Us: 1300 797 833</span>

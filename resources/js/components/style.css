@@ -508,11 +508,14 @@ body
     -moz-border-radius-topleft:20px;
     border-top-left-radius:20px;
     float:left;
+    /* background-color: #FFCE00 ; */
+
 }
 
 #menu ul
 {
     list-style:none;
+    /* background-color: #FFCE00 ; */
 }
 
 #menu ul li
@@ -839,22 +842,7 @@ form
 }
 
 /* menu start */
-.header #menu
-{
-    background:#3c3c3c;
-    height:40px;
-    width:980px;
-    -moz-border-radius-topright:20px;
-    border-top-right-radius:20px;
-    -moz-border-radius-topleft:20px;
-    border-top-left-radius:20px;
-    float:left;
-}
 
-#menu ul
-{
-    list-style:none;
-}
 
 #menu ul li
 {
@@ -865,15 +853,7 @@ form
     text-transform:uppercase;
 }
 
-#menu ul li a
-{
-    color:#fff;
-}
 
-#menu ul li a:hover
-{
-    color:#999;
-}
 
 .header ul.nav-bar
 {
@@ -951,7 +931,7 @@ form
 {
     margin-top:35px;
     margin-bottom:15px;
-    background-image:url(/images/logo.png);
+    /* background-image:url(/images/logo-new-1.svg); */
     width:204px;
     height:51px;
     display:block;
@@ -1592,7 +1572,7 @@ input.box1-field
 
 .contact button
 {
-    background-image:url(/images/buttons/quick_submit.png);
+    /* background-image:url(/images/buttons/quick_submit.png); */
     border:none;
     color:#FFF;
     font-size:12px;
@@ -2550,14 +2530,14 @@ ul.no-deco {
     border-top: 0px;
 }
 
-.btn{
+.view-more{
     background-color:#12335A;
     color:#ffffff;
     padding:5px;
     font-size:12px;
 }
 
-.btn:hover{
+.view-more:hover{
     background-color:#12335A;
     color:#ffffff;
     padding:5px;
@@ -2826,4 +2806,118 @@ select
 .p10
 {
     padding:10px;
+}
+
+
+/* ---------------------Styling to Yellow------------------------------ */
+
+.header #menu
+{
+    background-color:#000;
+}
+
+#menu ul
+{
+    list-style:none;
+    background-color:#000;
+}
+
+#footer-wrapper
+{
+    background:#000;
+    /* #FECF05 */
+}
+
+#footer-wrapper h2
+{
+    color:rgb(254, 207, 5);
+}
+
+#footer-bottom
+{
+    background: rgb(15, 15, 15);
+}
+
+.copyright
+{
+    color:#dadada;
+}
+
+#header-wrapper
+{
+    
+    border-top:10px #000 solid;
+    background-color: #F6F6F6;
+}
+
+.banner-top
+{
+    background:#FECF05;
+    color:#000;
+}
+
+.banner-top span
+{
+    color:#000;
+}
+
+.loan-calculatorbg
+{
+   /* background-color:#FECF05 ; */
+}
+
+@media only screen and(max-width:1280px)
+{
+    .flyout-toggle
+    {
+        margin-right:-36px!important;
+    }
+}
+
+#menu ul li a
+{
+    color:#fff;
+}
+
+#menu ul li a:hover
+{
+    color:#FECF05;
+}
+
+.flyout
+{
+    background: #000!important;
+}
+
+#menu ul li ul li a:hover
+{
+    color:#FECF05;
+}
+
+.blue
+{
+    color:#FECF05;
+}
+
+.box2-repayment
+{
+    background:#FECF05;
+    color:#000;
+}
+.contact button
+{
+    /* There is a backgroung-image which we commented   */
+    background-color:#ffd728 ;
+    color:rgb(192, 18, 18);
+    /* color:#000; */
+    /* Changing the font size */
+    font-size : 14px;
+    /* border-radius: 10px; */
+}
+
+/* -------------------Changing Heading Color----------------- */
+
+h1,.body-text h2, .get-a-quote h2, .phone
+{
+    color:#000000;
 }

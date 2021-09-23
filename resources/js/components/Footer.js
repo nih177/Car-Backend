@@ -5,7 +5,8 @@ function Footer() {
         <div id="full-footer">
             <div className="homebottom-text">
                 <div className="bottom-text">
-                    <h3>This offer is valid to business use customers borrowing more than $60,000 on
+                <a className="btn btn-primary mb-3" href="/p/create">Post Image</a>
+                    <h3 >This offer is valid to business use customers borrowing more than $60,000 on
                         New or Demonstrator model cars up to 2	years old.
                     </h3>
                 </div>
@@ -81,8 +82,8 @@ function Footer() {
 
                         <h2>Cities</h2>
                         <div className="citylist footer-city">
-
-                            <a href="http://www.carloansales.com.au/carloancity_view.php?page_id=19">Car Loans Adelaide</a><br></br><br></br>
+                        {/* http://www.carloansales.com.au/carloancity_view.php?page_id=19 */}
+                            <a href="/carloan-city-view?id=19">Car Loans Adelaide</a><br></br><br></br>
                             <a href="http://www.carloansales.com.au/carloancity_view.php?page_id=20">Car Loans Albury</a><br></br><br></br>
                             <a href="http://www.carloansales.com.au/carloancity_view.php?page_id=21">Car Loans Ballarat</a><br></br><br></br>
                             <a href="http://www.carloansales.com.au/carloancity_view.php?page_id=22">Car Loans Bendigo</a><br></br><br></br>

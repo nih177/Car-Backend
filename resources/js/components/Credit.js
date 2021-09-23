@@ -113,8 +113,8 @@ function Credit() {
                                         <span className="total-amount">$</span><input type="text" className="val-29" value="29.95" readonly="" />
                                     </td>
                                 </tr>
-                                {/* <tr>
-                             <!--  <tr>
+                                 {/* <tr> */}
+                             {/*<!--  <tr>
                     <td>
                         <select name="selvalue">
                             <option value="1">NSW</option>
@@ -127,8 +127,8 @@ function Credit() {
                             <option value="8">NT</option>
                         </select>
                     </td>
-                </tr>!--> 
-                                </tr>*/}
+                </tr>!--> */}
+                                {/* </tr> */}
                                 <tr>
                                     <td colspan="4">
                                         <div className="tickbox" style={{height: "30px;"}}>

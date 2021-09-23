@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
-    <link rel="stylesheet" href="asset/css/jquery-ui.css" />
-
+    
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous"> -->
+    <!-- <link rel="stylesheet" href="asset/css/jquery-ui.css" /> -->
+    
+    
+    <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="asset/css/foundation.css" />
-
-    <link rel="stylesheet" href="asset/css/style.css" />
-    <link href="asset/css/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/resources/js/components/style.css"/>
+    <!-- <link rel="stylesheet" href="asset/css/style.css" /> -->
+    <!-- <link rel="stylesheet" href="/asset/css/style.css" /> -->
+    <!-- <link href="asset/css/style.css" rel="stylesheet" type="text/css"> -->
 
     <script type="text/javascript" src="asset/js/jquery.min.js"></script>
-
+    
     <script type="text/javascript" src="asset/js/jquery-ui.min.js"></script>
-
+    
     <script type="text/javascript" src="asset/js/modernizr.foundation.js"></script>
 
     <script type="text/javascript" src="asset/js/jquery.foundation.orbit.js"></script>
@@ -22,19 +26,19 @@
     <script type="text/javascript" src="asset/js/jquery.foundation.navigation.js"></script>
 
     <script type="text/javascript" src="asset/js/app.js"></script>
-
+    
     <script type="text/javascript" src="asset/js/jquery.validate.min.js"></script>
-
+    
     <script type="text/javascript" src="asset/js/quote_form.js"></script>
-
-
+    
+    
     <script type="text/javascript" src="asset/js/script.js"></script>
-
-
-
+    
+    
+    
     <!-- Title -->
-
-
+    
+    
     <title>Car Loans and Car Finance in Melbourne, Adelaide, Brisbane, Sydney, Perth, Gold Coast Australia</title>
 
 

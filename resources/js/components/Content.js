@@ -68,42 +68,6 @@ function Content() {
                                 <input type="hidden" id="wrate" name="wratetxt"></input>
                                 <input type="image" id="submit-loan-calculator" name="preapp" src="/images/index/getaquote-grey.png"></input>
                             </div>
-                            {/* <!--<div className="loan-calculatorbg">
-				<form method="post" action="" >
-					<h1>LOAN <span className="blue">CALCULATOR</span></h1>
-					<div className="box2-wrapper">
-						<ul>
-							<li>
-								<span className="slider-label">Amount</span>
-								<span className="slider-value">$ 0</span>
-								<div id="amount-slider"></div>
-							</li>
-							<li>
-								<span className="slider-label">Residual: 0 %</span>
-								<span id="residual-slider-amount" className="slider-value">($ 0)</span>
-								<div id="residual-slider"></div>
-							</li>
-							<li>
-								<span className="slider-label">Interest</span>
-								<span className="slider-value">0 %</span>
-								<div id="interest-slider"></div>
-							</li>
-							<li>
-								<span className="slider-label">Term of lease</span>
-								<span className="slider-value">1 Year(s)</span>
-								<div id="term-of-lease-slider"></div>
-							</li>
-						</ul>
-						<div className="box2-repayment">Monthly Repayment: $<span id="monthly-repayment">0.00</span></div>
-						<input type="hidden" id="amount1" name="amttxt">
-						<input type="hidden" id="resi" name="resitxt">
-						<input type="hidden" id="intrst" name="intrsttxt">
-						<input type="hidden" id="tim" name="timtxt">
-						<input type="hidden" id="wrate" name="wratetxt">
-						<input type="image" id="submit-loan-calculator" name="preapp" src="/images/index/getaquote-grey.png">
-					</div>
-				</form>
-			</div>--> */}
 
                         </div>
                     </div>

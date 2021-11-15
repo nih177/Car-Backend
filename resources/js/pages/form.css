@@ -1,0 +1,431 @@
+/* --------Global CSS------ */
+body{
+    background: none!important;
+}
+.sub-heading-text
+{
+    font-size: 16px;
+    font-weight: 500;
+    font-family: 'Abril Fatface', cursive;
+}
+
+.normal-text
+{
+    font-size: 16px;
+    font-family: "Playfair Dispaly";
+}
+
+.small-button-text
+{
+    font-size:16px;
+    font-family: 'Abril Fatface', cursive;
+    color:white;
+}
+
+.big-button-text
+{
+    font-size:20px;
+    font-family: 'Abril Fatface', cursive;
+    color:white;
+}
+
+.go-back
+{
+    font-family: "Playfair Dispaly";
+    font-size: 14px;
+}
+
+.form-container
+{
+    background-color: #e9e9e9;
+    margin-top: 50px!important;
+    margin-bottom: 50px!important;
+}
+
+.form-container-no-bg
+{
+    background-color: none;
+    margin-top: 50px!important;
+    margin-bottom: 50px!important;
+}
+
+input[type="tel"] ,input[type="email"] ,input[type="number"] ,input[type="date"] ,input[type="time"] ,textarea ,input[type="password"],input[type="text"]
+{
+    /* font-family: var(--primary-font-family);
+    font-size: var(--default-font-size);
+    color: var(--black); */
+    border: 1px solid grey;
+    outline: none;
+    padding: 10px 12px;
+    border-radius: 4px;
+}
+
+.select
+{
+    border: 1px solid grey;
+    outline: none;
+    padding: 10px 12px;
+    border-radius: 4px; 
+}
+
+.select-middle
+{
+    border: 1px solid grey;
+    outline: none;
+    padding: 4px 12px 5px 8px;
+    border-radius: 4px;
+}
+
+button
+{
+    /* background-color: var(--bright-blue);
+    font-family: var(--primary-font-family);
+    font-size: var(--default-font-size); */
+    border-radius: 4px!important;
+    padding: 8px 0px;
+    color: #ffffff;
+    border: none;
+    outline: none;
+    background-color: #c3c2c8;
+}
+
+/* button:active
+{
+    background-color:#4D4ACF;
+} */
+
+button:focus
+{
+    background-color:#4D4ACF;
+}
+
+.bg-dark
+{
+    background-color: black;
+}
+
+.bg-blue
+{
+    background-color: #4D4ACF;
+}
+
+.per-text
+{
+    margin-right: 20px;
+}
+
+.allow-text
+{
+    text-align: justify;
+    vertical-align: middle;
+    padding:auto;
+    align-items: center;
+    /* margin-left: -10px; */
+}
+
+input[type="checkbox"] {
+	/* -webkit-appearance: none; */
+	border: 2px solid grey;
+	padding: 7px;
+	border-radius: 6px;
+	display: inline-block;
+    position: relative;
+    vertical-align:middle;
+    margin-left: 6px;
+    height:18px;
+   
+}
+
+/* -------Width-------- */
+
+.w2
+{
+    width:2.3333%!important;
+}
+
+.w50
+{
+    width:50%!important;
+}
+
+.w62
+{
+    width:62%!important;
+}
+
+.w60
+{
+    width:60%!important;
+}
+
+.w75
+{
+    width:75%;
+}
+
+.w30
+{
+    width:30%;
+}
+
+.w100
+{
+    width:100%;
+}
+
+.w99
+{
+    width:99%;
+}
+
+.w19
+{
+    width:19.666667%!important;
+}
+
+.w25
+{
+    width:25.666667%!important;
+}
+
+.w10
+{
+    width:10.666667%!important;
+}
+
+.w34
+{
+    width:34.666667%!important;
+}
+
+.w48
+{
+    width:48%!important;
+    max-width:48%!important;
+}
+
+/* -------Height-------- */
+
+.h100
+{
+    height:100vh;
+}
+.h52
+{
+    height:52px!important;
+}
+
+.h15
+{
+    height:15px;
+}
+
+/* -------Margin-------- */
+
+.mt15
+{
+    margin-top: 15px!important;
+}
+
+.-mt3
+{
+    margin-top: -3px;
+}
+
+.mt25
+{
+    margin-top: 25px!important;
+}
+
+.mt10
+{
+    margin-top: 10px!important;
+}
+
+.mt20
+{
+    margin-top: 20px!important;
+}
+
+.mt150
+{
+    margin-top: 150px;
+}
+
+.mt100
+{
+    margin-top: 100px;
+}
+
+.mt4
+{
+    margin-top: 4px;
+}
+
+.-ml3
+{
+    margin-left: -3px;
+}
+
+.-ml10
+{
+    margin-left: -10px;
+}
+
+.ml100
+{
+    margin-left:100px!important;
+}
+
+.ml62
+{
+    margin-left:62px!important;
+}
+
+.mb20
+{
+    margin-bottom: 20px;
+}
+
+.mr30
+{
+    margin-right:30px;
+}
+
+/* -------Padding-------- */
+
+.pt10
+{
+    padding-top: 10px;
+}
+
+.pl85
+{
+    padding-left: 85px;
+}
+
+.pl0
+{
+    padding-left: 0px!important;
+}
+
+.pr0
+{
+    padding-right: 0px!important;
+}
+
+.pl35
+{
+    padding-left: 35%!important;
+}
+
+.pl25
+{
+    padding-left: 25%!important;
+}
+
+.pl22
+{
+    padding-left: 22%!important;
+}
+
+.pl29p5
+{
+    padding-left: 29.5%!important;
+}
+
+.pl40p5
+{
+    padding-left: 40.5%!important;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+}
+
+.dn
+{
+    display: none;
+}
+
+.o0
+{
+    opacity: 0;
+}
+
+.out
+{
+    outline: red;
+}
+
+/* -------Colors-------- */
+
+.color-white
+{
+    color: white !important;
+}
+
+.color-red
+{
+    color: red !important;
+}
+
+.color-black
+{
+    color:black !important;
+}
+
+.car-loan-calculator-title
+{
+    letter-spacing: 0px;
+}
+/* -----------------Changing the errors-------------------- */
+
+.row {
+    margin-right: 0px!important;
+    margin-left: 0px!important;
+}
+
+.mxw11
+{
+    max-width: 11.666667%!important;
+}
+
+#car-loan-cal .ui-slider-horizontal {
+    border: 1px solid #bdcede;
+    height: 0;
+    margin: 6px 0px;
+}
+
+#car-loan-cal .ui-state-default {
+    background-image: url(/images/car-icon.png);
+    left: 5%;
+    top: -25px;
+    width: 33px!important;
+    height: 24px!important;
+}
+
+#car-loan-cal .ui-slider {
+    position: relative;
+    text-align: left;
+    left: 0px;
+    top: 17px;
+}
+
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+    background-color:none!important;
+}
+
+.loan-calculatorbg {
+    background-image:none!important;
+    border:1px solid #C4C4C4!important;
+    border-radius:1px;
+    padding-top: 15px;
+}
+
+.btn:hover
+{
+    color:white!important;
+}

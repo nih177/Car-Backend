@@ -1253,7 +1253,7 @@ input.box1-field
 
 .box2-repayment
 {
-    background:#163f6f;
+    /* background:#163f6f; */
     padding:12px 5px 13px;
     text-align:center;
     color:#FFF;
@@ -2419,7 +2419,7 @@ select.hidden {display: none;}
     display: none;
     position: absolute;
     height: 400px;
-    bottom: 30px;
+    bottom: 20px;
     overflow-y: scroll;
     background-color: #ffffff;
     z-index: 2;
@@ -2901,7 +2901,7 @@ select
 
 .box2-repayment
 {
-    background:#FECF05;
+    /* background:#FECF05; */
     color:#000;
 }
 .contact button
@@ -2920,4 +2920,27 @@ select
 h1,.body-text h2, .get-a-quote h2, .phone
 {
     color:#000000;
+}
+
+
+
+.hide 
+{
+    display: block;
+}
+
+.privacy-box
+{
+    display: block;
+}
+
+.privacy-box:hover
+{
+    display: flex;
+}
+
+.flex-col
+{
+    display: flex;
+    flex-direction: row;
 }

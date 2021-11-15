@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 // import "./fountations.css";
 import "./style.css";
 import ReactDOM from 'react-dom';
@@ -13,7 +13,7 @@ import Site from './Site';
 import FAQ from './FQA';
 import Credit from './Credit';
 import Blog from './Blogs';
-import LowDoc from  './Low-Doc';
+import LowDoc from './Low-Doc';
 import Personal from './Personal';
 import CarLease from './CarLease';
 import Chattel from './Chattel';
@@ -27,16 +27,51 @@ import Truck from './Truck';
 import Marine from './Marine';
 import BadCredit from './BadCredit';
 import Cities from './Cities';
+import NewDesign from './new';
+import Form from '../pages/form';
+import Form2 from '../pages/form2';
+import MainPage from '../pages/main-page';
+import Form3 from '../pages/form3';
+import FinalPage from '../pages/final-page';
+
+
+
 function User() {
+    // Always remember to keep const inside User() function
+    // --------Main page--------
+    const [amount, setAmount] = useState('90');
+    const [residual, setResidual] = useState('');
+    const [repayment, setRepayment] = useState('')
+    // --------Page-2--------
+    const [loanAmount, setLoanAmount] = useState();
+    const [term, setTerm] = useState();
+    // --------Page-2--------
+    const [vehicleMake, setVehicleMake] = useState('Vehicle Make 1');
+    const [vehicleModel, setVehicleModel] = useState('Vehicle Model 1');
+    const [buildYear, setBuildYear] = useState('');
+    const [isVehicle, setIsVehicle] = useState('');
+    const [supplier, setSupplier] = useState('');
+    // --------Page-3--------
+    const [fullName, setFullName] = useState('');
+    const [mobile, setMobile] = useState('');
+    const [occupation, setOccupation] = useState('');
+    const [telephone, setTelephone] = useState('');
+    const [email, setEmail] = useState('');
+    const [postcode, setPostcode] = useState('');
+    const [income, setIncome] = useState('');
+    const [perDuration, setPerDuration] = useState('week');
+    // --------Final Page--------
+    const [repay, setRepay] = useState('');
+
     return (
         <div>
             {/* We can't render any components in router page */}
             <Router>
                 <Switch>
                     {/* <a href="/home">Go to in9inyug</a> */}
-                    
-                    <Route exact path="/"  component={Home}></Route>
-                    <Route exact path="/head"  component={Head}></Route>
+
+                    <Route exact path="/" component={Home}></Route>
+                    <Route exact path="/head" component={Head}></Route>
                     <Route exact path="/about" component={About} />
                     <Route exact path="/contact-us" component={Contact} />
                     <Route exact path="/career" component={Career} />
@@ -59,10 +94,89 @@ function User() {
                     <Route exact path="/marine-loans-boat-finance" component={Marine} />
                     <Route exact path="/bad-credit-car-loan" component={BadCredit} />
                     <Route exact path="/carloan-city-view" component={Cities} />
-                    {/* <Route path="about" component="About"/> */}
+                    <Route exact path="/new" component={NewDesign} />
+                    <Route exact path="/main-page" >
+                        <MainPage
+                            amount={amount}
+                            residual={residual}
+                            repayment={repayment}
+                            setAmount = {setAmount}
+                            setResidual = {setResidual}
+                            setRepayment = {setRepayment}
+                        />
+                    </Route>
+                    <Route exact path="/form" >
+                        <Form
+                            loanAmount={loanAmount}
+                            term={term}
+                            setTerm={setTerm}
+                            setLoanAmount={setLoanAmount}
+                        />
+                    </Route>
+                    <Route exact path="/form2" >
+                        <Form2
+                            vehicleMake={vehicleMake}
+                            setVehicleMake={setVehicleMake}
+                            vehicleModel={vehicleModel}
+                            setVehicleModel={setVehicleModel}
+                            buildYear={buildYear}
+                            setBuildYear={setBuildYear}
+                            isVehicle={isVehicle}
+                            setIsVehicle={setIsVehicle}
+                            supplier={supplier}
+                            setSupplier={setSupplier}
+                            loanAmount={loanAmount}
+                        />
+                    </Route>
+                    <Route exact path="/form3" >
+                        <Form3
+                            // Form 1
+                            loanAmount={loanAmount}
+                            term={term}
+                            setTerm={setTerm}
+                            setLoanAmount={setLoanAmount}
+                            // Form 2
+                            vehicleMake={vehicleMake}
+                            setVehicleMake={setVehicleMake}
+                            vehicleModel={vehicleModel}
+                            setVehicleModel={setVehicleModel}
+                            buildYear={buildYear}
+                            setBuildYear={setBuildYear}
+                            isVehicle={isVehicle}
+                            setIsVehicle={setIsVehicle}
+                            supplier={supplier}
+                            setSupplier={setSupplier}
+                            // Form 3
+                            fullName={fullName}
+                            mobile={mobile}
+                            occupation={occupation}
+                            telephone={telephone}
+                            email={email}
+                            postcode={postcode}
+                            income={income}
+                            perDuration={perDuration}
+                            setFullName={setFullName}
+                            setMobile={setMobile}
+                            setOccupation={setOccupation}
+                            setTelephone={setTelephone}
+                            setEmail={setEmail}
+                            setPostcode={setPostcode}
+                            setIncome={setIncome}
+                            setPerDuration={setPerDuration}
+                        />
+                    </Route>
+                    <Route exact path="/final-page" >
+                        <FinalPage
+                            loanAmount={loanAmount}
+                            term={term}
+                            setTerm={setTerm}
+                            setLoanAmount={setLoanAmount}
+                            repay={repay}
+                            setRepay={setRepay}
+                        />
+                    </Route>
                 </Switch>
             </Router>
-            
         </div>
     );
 }

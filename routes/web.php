@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/p/create', [App\Http\Controllers\PostController::class, 'create']);
 // // Image storing
 Route::post('/p', [App\Http\Controllers\PostController::class, 'store']);
+Route::post('/validate', [App\Http\Controllers\Navigation::class, 'valid']);
 
 Route::view('/{path?}','welcome');
 // Route::get('/{path?}', [

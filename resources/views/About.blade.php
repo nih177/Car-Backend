@@ -6,7 +6,7 @@
 
 <div class="container">
     <form action="/p" enctype="multipart/form-data" method="POST">
-    @csrf
+    <!-- @csrf -->
         <div class="row">
             <h1>Add Image</h1>
         </div>
@@ -19,7 +19,7 @@
             @enderror
         </div>
         <div class="mt-3">
-            <button class="btn btn-primary">Add New Post</button>
+            <button class="btn btn-primary">Add Image</button>
         </div>
     
     </form>

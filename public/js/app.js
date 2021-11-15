@@ -1,6 +1,2070 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./node_modules/@babel/runtime/regenerator/index.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/@babel/runtime/regenerator/index.js ***!
+  \**********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__(/*! regenerator-runtime */ "./node_modules/regenerator-runtime/runtime.js");
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/index.js":
+/*!*************************************!*\
+  !*** ./node_modules/axios/index.js ***!
+  \*************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__(/*! ./lib/axios */ "./node_modules/axios/lib/axios.js");
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/adapters/xhr.js":
+/*!************************************************!*\
+  !*** ./node_modules/axios/lib/adapters/xhr.js ***!
+  \************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+var settle = __webpack_require__(/*! ./../core/settle */ "./node_modules/axios/lib/core/settle.js");
+var cookies = __webpack_require__(/*! ./../helpers/cookies */ "./node_modules/axios/lib/helpers/cookies.js");
+var buildURL = __webpack_require__(/*! ./../helpers/buildURL */ "./node_modules/axios/lib/helpers/buildURL.js");
+var buildFullPath = __webpack_require__(/*! ../core/buildFullPath */ "./node_modules/axios/lib/core/buildFullPath.js");
+var parseHeaders = __webpack_require__(/*! ./../helpers/parseHeaders */ "./node_modules/axios/lib/helpers/parseHeaders.js");
+var isURLSameOrigin = __webpack_require__(/*! ./../helpers/isURLSameOrigin */ "./node_modules/axios/lib/helpers/isURLSameOrigin.js");
+var createError = __webpack_require__(/*! ../core/createError */ "./node_modules/axios/lib/core/createError.js");
+
+module.exports = function xhrAdapter(config) {
+  return new Promise(function dispatchXhrRequest(resolve, reject) {
+    var requestData = config.data;
+    var requestHeaders = config.headers;
+    var responseType = config.responseType;
+
+    if (utils.isFormData(requestData)) {
+      delete requestHeaders['Content-Type']; // Let the browser set it
+    }
+
+    var request = new XMLHttpRequest();
+
+    // HTTP basic authentication
+    if (config.auth) {
+      var username = config.auth.username || '';
+      var password = config.auth.password ? unescape(encodeURIComponent(config.auth.password)) : '';
+      requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
+    }
+
+    var fullPath = buildFullPath(config.baseURL, config.url);
+    request.open(config.method.toUpperCase(), buildURL(fullPath, config.params, config.paramsSerializer), true);
+
+    // Set the request timeout in MS
+    request.timeout = config.timeout;
+
+    function onloadend() {
+      if (!request) {
+        return;
+      }
+      // Prepare the response
+      var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
+      var responseData = !responseType || responseType === 'text' ||  responseType === 'json' ?
+        request.responseText : request.response;
+      var response = {
+        data: responseData,
+        status: request.status,
+        statusText: request.statusText,
+        headers: responseHeaders,
+        config: config,
+        request: request
+      };
+
+      settle(resolve, reject, response);
+
+      // Clean up request
+      request = null;
+    }
+
+    if ('onloadend' in request) {
+      // Use onloadend if available
+      request.onloadend = onloadend;
+    } else {
+      // Listen for ready state to emulate onloadend
+      request.onreadystatechange = function handleLoad() {
+        if (!request || request.readyState !== 4) {
+          return;
+        }
+
+        // The request errored out and we didn't get a response, this will be
+        // handled by onerror instead
+        // With one exception: request that using file: protocol, most browsers
+        // will return status as 0 even though it's a successful request
+        if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
+          return;
+        }
+        // readystate handler is calling before onerror or ontimeout handlers,
+        // so we should call onloadend on the next 'tick'
+        setTimeout(onloadend);
+      };
+    }
+
+    // Handle browser request cancellation (as opposed to a manual cancellation)
+    request.onabort = function handleAbort() {
+      if (!request) {
+        return;
+      }
+
+      reject(createError('Request aborted', config, 'ECONNABORTED', request));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Handle low level network errors
+    request.onerror = function handleError() {
+      // Real errors are hidden from us by the browser
+      // onerror should only fire if it's a network error
+      reject(createError('Network Error', config, null, request));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Handle timeout
+    request.ontimeout = function handleTimeout() {
+      var timeoutErrorMessage = 'timeout of ' + config.timeout + 'ms exceeded';
+      if (config.timeoutErrorMessage) {
+        timeoutErrorMessage = config.timeoutErrorMessage;
+      }
+      reject(createError(
+        timeoutErrorMessage,
+        config,
+        config.transitional && config.transitional.clarifyTimeoutError ? 'ETIMEDOUT' : 'ECONNABORTED',
+        request));
+
+      // Clean up request
+      request = null;
+    };
+
+    // Add xsrf header
+    // This is only done if running in a standard browser environment.
+    // Specifically not if we're in a web worker, or react-native.
+    if (utils.isStandardBrowserEnv()) {
+      // Add xsrf header
+      var xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath)) && config.xsrfCookieName ?
+        cookies.read(config.xsrfCookieName) :
+        undefined;
+
+      if (xsrfValue) {
+        requestHeaders[config.xsrfHeaderName] = xsrfValue;
+      }
+    }
+
+    // Add headers to the request
+    if ('setRequestHeader' in request) {
+      utils.forEach(requestHeaders, function setRequestHeader(val, key) {
+        if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
+          // Remove Content-Type if data is undefined
+          delete requestHeaders[key];
+        } else {
+          // Otherwise add header to the request
+          request.setRequestHeader(key, val);
+        }
+      });
+    }
+
+    // Add withCredentials to request if needed
+    if (!utils.isUndefined(config.withCredentials)) {
+      request.withCredentials = !!config.withCredentials;
+    }
+
+    // Add responseType to request if needed
+    if (responseType && responseType !== 'json') {
+      request.responseType = config.responseType;
+    }
+
+    // Handle progress if needed
+    if (typeof config.onDownloadProgress === 'function') {
+      request.addEventListener('progress', config.onDownloadProgress);
+    }
+
+    // Not all browsers support upload events
+    if (typeof config.onUploadProgress === 'function' && request.upload) {
+      request.upload.addEventListener('progress', config.onUploadProgress);
+    }
+
+    if (config.cancelToken) {
+      // Handle cancellation
+      config.cancelToken.promise.then(function onCanceled(cancel) {
+        if (!request) {
+          return;
+        }
+
+        request.abort();
+        reject(cancel);
+        // Clean up request
+        request = null;
+      });
+    }
+
+    if (!requestData) {
+      requestData = null;
+    }
+
+    // Send the request
+    request.send(requestData);
+  });
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/axios.js":
+/*!*****************************************!*\
+  !*** ./node_modules/axios/lib/axios.js ***!
+  \*****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./utils */ "./node_modules/axios/lib/utils.js");
+var bind = __webpack_require__(/*! ./helpers/bind */ "./node_modules/axios/lib/helpers/bind.js");
+var Axios = __webpack_require__(/*! ./core/Axios */ "./node_modules/axios/lib/core/Axios.js");
+var mergeConfig = __webpack_require__(/*! ./core/mergeConfig */ "./node_modules/axios/lib/core/mergeConfig.js");
+var defaults = __webpack_require__(/*! ./defaults */ "./node_modules/axios/lib/defaults.js");
+
+/**
+ * Create an instance of Axios
+ *
+ * @param {Object} defaultConfig The default config for the instance
+ * @return {Axios} A new instance of Axios
+ */
+function createInstance(defaultConfig) {
+  var context = new Axios(defaultConfig);
+  var instance = bind(Axios.prototype.request, context);
+
+  // Copy axios.prototype to instance
+  utils.extend(instance, Axios.prototype, context);
+
+  // Copy context to instance
+  utils.extend(instance, context);
+
+  return instance;
+}
+
+// Create the default instance to be exported
+var axios = createInstance(defaults);
+
+// Expose Axios class to allow class inheritance
+axios.Axios = Axios;
+
+// Factory for creating new instances
+axios.create = function create(instanceConfig) {
+  return createInstance(mergeConfig(axios.defaults, instanceConfig));
+};
+
+// Expose Cancel & CancelToken
+axios.Cancel = __webpack_require__(/*! ./cancel/Cancel */ "./node_modules/axios/lib/cancel/Cancel.js");
+axios.CancelToken = __webpack_require__(/*! ./cancel/CancelToken */ "./node_modules/axios/lib/cancel/CancelToken.js");
+axios.isCancel = __webpack_require__(/*! ./cancel/isCancel */ "./node_modules/axios/lib/cancel/isCancel.js");
+
+// Expose all/spread
+axios.all = function all(promises) {
+  return Promise.all(promises);
+};
+axios.spread = __webpack_require__(/*! ./helpers/spread */ "./node_modules/axios/lib/helpers/spread.js");
+
+// Expose isAxiosError
+axios.isAxiosError = __webpack_require__(/*! ./helpers/isAxiosError */ "./node_modules/axios/lib/helpers/isAxiosError.js");
+
+module.exports = axios;
+
+// Allow use of default import syntax in TypeScript
+module.exports["default"] = axios;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/cancel/Cancel.js":
+/*!*************************************************!*\
+  !*** ./node_modules/axios/lib/cancel/Cancel.js ***!
+  \*************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * A `Cancel` is an object that is thrown when an operation is canceled.
+ *
+ * @class
+ * @param {string=} message The message.
+ */
+function Cancel(message) {
+  this.message = message;
+}
+
+Cancel.prototype.toString = function toString() {
+  return 'Cancel' + (this.message ? ': ' + this.message : '');
+};
+
+Cancel.prototype.__CANCEL__ = true;
+
+module.exports = Cancel;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/cancel/CancelToken.js":
+/*!******************************************************!*\
+  !*** ./node_modules/axios/lib/cancel/CancelToken.js ***!
+  \******************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var Cancel = __webpack_require__(/*! ./Cancel */ "./node_modules/axios/lib/cancel/Cancel.js");
+
+/**
+ * A `CancelToken` is an object that can be used to request cancellation of an operation.
+ *
+ * @class
+ * @param {Function} executor The executor function.
+ */
+function CancelToken(executor) {
+  if (typeof executor !== 'function') {
+    throw new TypeError('executor must be a function.');
+  }
+
+  var resolvePromise;
+  this.promise = new Promise(function promiseExecutor(resolve) {
+    resolvePromise = resolve;
+  });
+
+  var token = this;
+  executor(function cancel(message) {
+    if (token.reason) {
+      // Cancellation has already been requested
+      return;
+    }
+
+    token.reason = new Cancel(message);
+    resolvePromise(token.reason);
+  });
+}
+
+/**
+ * Throws a `Cancel` if cancellation has been requested.
+ */
+CancelToken.prototype.throwIfRequested = function throwIfRequested() {
+  if (this.reason) {
+    throw this.reason;
+  }
+};
+
+/**
+ * Returns an object that contains a new `CancelToken` and a function that, when called,
+ * cancels the `CancelToken`.
+ */
+CancelToken.source = function source() {
+  var cancel;
+  var token = new CancelToken(function executor(c) {
+    cancel = c;
+  });
+  return {
+    token: token,
+    cancel: cancel
+  };
+};
+
+module.exports = CancelToken;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/cancel/isCancel.js":
+/*!***************************************************!*\
+  !*** ./node_modules/axios/lib/cancel/isCancel.js ***!
+  \***************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+module.exports = function isCancel(value) {
+  return !!(value && value.__CANCEL__);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/Axios.js":
+/*!**********************************************!*\
+  !*** ./node_modules/axios/lib/core/Axios.js ***!
+  \**********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+var buildURL = __webpack_require__(/*! ../helpers/buildURL */ "./node_modules/axios/lib/helpers/buildURL.js");
+var InterceptorManager = __webpack_require__(/*! ./InterceptorManager */ "./node_modules/axios/lib/core/InterceptorManager.js");
+var dispatchRequest = __webpack_require__(/*! ./dispatchRequest */ "./node_modules/axios/lib/core/dispatchRequest.js");
+var mergeConfig = __webpack_require__(/*! ./mergeConfig */ "./node_modules/axios/lib/core/mergeConfig.js");
+var validator = __webpack_require__(/*! ../helpers/validator */ "./node_modules/axios/lib/helpers/validator.js");
+
+var validators = validator.validators;
+/**
+ * Create a new instance of Axios
+ *
+ * @param {Object} instanceConfig The default config for the instance
+ */
+function Axios(instanceConfig) {
+  this.defaults = instanceConfig;
+  this.interceptors = {
+    request: new InterceptorManager(),
+    response: new InterceptorManager()
+  };
+}
+
+/**
+ * Dispatch a request
+ *
+ * @param {Object} config The config specific for this request (merged with this.defaults)
+ */
+Axios.prototype.request = function request(config) {
+  /*eslint no-param-reassign:0*/
+  // Allow for axios('example/url'[, config]) a la fetch API
+  if (typeof config === 'string') {
+    config = arguments[1] || {};
+    config.url = arguments[0];
+  } else {
+    config = config || {};
+  }
+
+  config = mergeConfig(this.defaults, config);
+
+  // Set config.method
+  if (config.method) {
+    config.method = config.method.toLowerCase();
+  } else if (this.defaults.method) {
+    config.method = this.defaults.method.toLowerCase();
+  } else {
+    config.method = 'get';
+  }
+
+  var transitional = config.transitional;
+
+  if (transitional !== undefined) {
+    validator.assertOptions(transitional, {
+      silentJSONParsing: validators.transitional(validators.boolean, '1.0.0'),
+      forcedJSONParsing: validators.transitional(validators.boolean, '1.0.0'),
+      clarifyTimeoutError: validators.transitional(validators.boolean, '1.0.0')
+    }, false);
+  }
+
+  // filter out skipped interceptors
+  var requestInterceptorChain = [];
+  var synchronousRequestInterceptors = true;
+  this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
+    if (typeof interceptor.runWhen === 'function' && interceptor.runWhen(config) === false) {
+      return;
+    }
+
+    synchronousRequestInterceptors = synchronousRequestInterceptors && interceptor.synchronous;
+
+    requestInterceptorChain.unshift(interceptor.fulfilled, interceptor.rejected);
+  });
+
+  var responseInterceptorChain = [];
+  this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
+    responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
+  });
+
+  var promise;
+
+  if (!synchronousRequestInterceptors) {
+    var chain = [dispatchRequest, undefined];
+
+    Array.prototype.unshift.apply(chain, requestInterceptorChain);
+    chain = chain.concat(responseInterceptorChain);
+
+    promise = Promise.resolve(config);
+    while (chain.length) {
+      promise = promise.then(chain.shift(), chain.shift());
+    }
+
+    return promise;
+  }
+
+
+  var newConfig = config;
+  while (requestInterceptorChain.length) {
+    var onFulfilled = requestInterceptorChain.shift();
+    var onRejected = requestInterceptorChain.shift();
+    try {
+      newConfig = onFulfilled(newConfig);
+    } catch (error) {
+      onRejected(error);
+      break;
+    }
+  }
+
+  try {
+    promise = dispatchRequest(newConfig);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+
+  while (responseInterceptorChain.length) {
+    promise = promise.then(responseInterceptorChain.shift(), responseInterceptorChain.shift());
+  }
+
+  return promise;
+};
+
+Axios.prototype.getUri = function getUri(config) {
+  config = mergeConfig(this.defaults, config);
+  return buildURL(config.url, config.params, config.paramsSerializer).replace(/^\?/, '');
+};
+
+// Provide aliases for supported request methods
+utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
+  /*eslint func-names:0*/
+  Axios.prototype[method] = function(url, config) {
+    return this.request(mergeConfig(config || {}, {
+      method: method,
+      url: url,
+      data: (config || {}).data
+    }));
+  };
+});
+
+utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+  /*eslint func-names:0*/
+  Axios.prototype[method] = function(url, data, config) {
+    return this.request(mergeConfig(config || {}, {
+      method: method,
+      url: url,
+      data: data
+    }));
+  };
+});
+
+module.exports = Axios;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/InterceptorManager.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/axios/lib/core/InterceptorManager.js ***!
+  \***********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+
+function InterceptorManager() {
+  this.handlers = [];
+}
+
+/**
+ * Add a new interceptor to the stack
+ *
+ * @param {Function} fulfilled The function to handle `then` for a `Promise`
+ * @param {Function} rejected The function to handle `reject` for a `Promise`
+ *
+ * @return {Number} An ID used to remove interceptor later
+ */
+InterceptorManager.prototype.use = function use(fulfilled, rejected, options) {
+  this.handlers.push({
+    fulfilled: fulfilled,
+    rejected: rejected,
+    synchronous: options ? options.synchronous : false,
+    runWhen: options ? options.runWhen : null
+  });
+  return this.handlers.length - 1;
+};
+
+/**
+ * Remove an interceptor from the stack
+ *
+ * @param {Number} id The ID that was returned by `use`
+ */
+InterceptorManager.prototype.eject = function eject(id) {
+  if (this.handlers[id]) {
+    this.handlers[id] = null;
+  }
+};
+
+/**
+ * Iterate over all the registered interceptors
+ *
+ * This method is particularly useful for skipping over any
+ * interceptors that may have become `null` calling `eject`.
+ *
+ * @param {Function} fn The function to call for each interceptor
+ */
+InterceptorManager.prototype.forEach = function forEach(fn) {
+  utils.forEach(this.handlers, function forEachHandler(h) {
+    if (h !== null) {
+      fn(h);
+    }
+  });
+};
+
+module.exports = InterceptorManager;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/buildFullPath.js":
+/*!******************************************************!*\
+  !*** ./node_modules/axios/lib/core/buildFullPath.js ***!
+  \******************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var isAbsoluteURL = __webpack_require__(/*! ../helpers/isAbsoluteURL */ "./node_modules/axios/lib/helpers/isAbsoluteURL.js");
+var combineURLs = __webpack_require__(/*! ../helpers/combineURLs */ "./node_modules/axios/lib/helpers/combineURLs.js");
+
+/**
+ * Creates a new URL by combining the baseURL with the requestedURL,
+ * only when the requestedURL is not already an absolute URL.
+ * If the requestURL is absolute, this function returns the requestedURL untouched.
+ *
+ * @param {string} baseURL The base URL
+ * @param {string} requestedURL Absolute or relative URL to combine
+ * @returns {string} The combined full path
+ */
+module.exports = function buildFullPath(baseURL, requestedURL) {
+  if (baseURL && !isAbsoluteURL(requestedURL)) {
+    return combineURLs(baseURL, requestedURL);
+  }
+  return requestedURL;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/createError.js":
+/*!****************************************************!*\
+  !*** ./node_modules/axios/lib/core/createError.js ***!
+  \****************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var enhanceError = __webpack_require__(/*! ./enhanceError */ "./node_modules/axios/lib/core/enhanceError.js");
+
+/**
+ * Create an Error with the specified message, config, error code, request and response.
+ *
+ * @param {string} message The error message.
+ * @param {Object} config The config.
+ * @param {string} [code] The error code (for example, 'ECONNABORTED').
+ * @param {Object} [request] The request.
+ * @param {Object} [response] The response.
+ * @returns {Error} The created error.
+ */
+module.exports = function createError(message, config, code, request, response) {
+  var error = new Error(message);
+  return enhanceError(error, config, code, request, response);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/dispatchRequest.js":
+/*!********************************************************!*\
+  !*** ./node_modules/axios/lib/core/dispatchRequest.js ***!
+  \********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+var transformData = __webpack_require__(/*! ./transformData */ "./node_modules/axios/lib/core/transformData.js");
+var isCancel = __webpack_require__(/*! ../cancel/isCancel */ "./node_modules/axios/lib/cancel/isCancel.js");
+var defaults = __webpack_require__(/*! ../defaults */ "./node_modules/axios/lib/defaults.js");
+
+/**
+ * Throws a `Cancel` if cancellation has been requested.
+ */
+function throwIfCancellationRequested(config) {
+  if (config.cancelToken) {
+    config.cancelToken.throwIfRequested();
+  }
+}
+
+/**
+ * Dispatch a request to the server using the configured adapter.
+ *
+ * @param {object} config The config that is to be used for the request
+ * @returns {Promise} The Promise to be fulfilled
+ */
+module.exports = function dispatchRequest(config) {
+  throwIfCancellationRequested(config);
+
+  // Ensure headers exist
+  config.headers = config.headers || {};
+
+  // Transform request data
+  config.data = transformData.call(
+    config,
+    config.data,
+    config.headers,
+    config.transformRequest
+  );
+
+  // Flatten headers
+  config.headers = utils.merge(
+    config.headers.common || {},
+    config.headers[config.method] || {},
+    config.headers
+  );
+
+  utils.forEach(
+    ['delete', 'get', 'head', 'post', 'put', 'patch', 'common'],
+    function cleanHeaderConfig(method) {
+      delete config.headers[method];
+    }
+  );
+
+  var adapter = config.adapter || defaults.adapter;
+
+  return adapter(config).then(function onAdapterResolution(response) {
+    throwIfCancellationRequested(config);
+
+    // Transform response data
+    response.data = transformData.call(
+      config,
+      response.data,
+      response.headers,
+      config.transformResponse
+    );
+
+    return response;
+  }, function onAdapterRejection(reason) {
+    if (!isCancel(reason)) {
+      throwIfCancellationRequested(config);
+
+      // Transform response data
+      if (reason && reason.response) {
+        reason.response.data = transformData.call(
+          config,
+          reason.response.data,
+          reason.response.headers,
+          config.transformResponse
+        );
+      }
+    }
+
+    return Promise.reject(reason);
+  });
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/enhanceError.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/axios/lib/core/enhanceError.js ***!
+  \*****************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Update an Error with the specified config, error code, and response.
+ *
+ * @param {Error} error The error to update.
+ * @param {Object} config The config.
+ * @param {string} [code] The error code (for example, 'ECONNABORTED').
+ * @param {Object} [request] The request.
+ * @param {Object} [response] The response.
+ * @returns {Error} The error.
+ */
+module.exports = function enhanceError(error, config, code, request, response) {
+  error.config = config;
+  if (code) {
+    error.code = code;
+  }
+
+  error.request = request;
+  error.response = response;
+  error.isAxiosError = true;
+
+  error.toJSON = function toJSON() {
+    return {
+      // Standard
+      message: this.message,
+      name: this.name,
+      // Microsoft
+      description: this.description,
+      number: this.number,
+      // Mozilla
+      fileName: this.fileName,
+      lineNumber: this.lineNumber,
+      columnNumber: this.columnNumber,
+      stack: this.stack,
+      // Axios
+      config: this.config,
+      code: this.code
+    };
+  };
+  return error;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/mergeConfig.js":
+/*!****************************************************!*\
+  !*** ./node_modules/axios/lib/core/mergeConfig.js ***!
+  \****************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ../utils */ "./node_modules/axios/lib/utils.js");
+
+/**
+ * Config-specific merge-function which creates a new config-object
+ * by merging two configuration objects together.
+ *
+ * @param {Object} config1
+ * @param {Object} config2
+ * @returns {Object} New object resulting from merging config2 to config1
+ */
+module.exports = function mergeConfig(config1, config2) {
+  // eslint-disable-next-line no-param-reassign
+  config2 = config2 || {};
+  var config = {};
+
+  var valueFromConfig2Keys = ['url', 'method', 'data'];
+  var mergeDeepPropertiesKeys = ['headers', 'auth', 'proxy', 'params'];
+  var defaultToConfig2Keys = [
+    'baseURL', 'transformRequest', 'transformResponse', 'paramsSerializer',
+    'timeout', 'timeoutMessage', 'withCredentials', 'adapter', 'responseType', 'xsrfCookieName',
+    'xsrfHeaderName', 'onUploadProgress', 'onDownloadProgress', 'decompress',
+    'maxContentLength', 'maxBodyLength', 'maxRedirects', 'transport', 'httpAgent',
+    'httpsAgent', 'cancelToken', 'socketPath', 'responseEncoding'
+  ];
+  var directMergeKeys = ['validateStatus'];
+
+  function getMergedValue(target, source) {
+    if (utils.isPlainObject(target) && utils.isPlainObject(source)) {
+      return utils.merge(target, source);
+    } else if (utils.isPlainObject(source)) {
+      return utils.merge({}, source);
+    } else if (utils.isArray(source)) {
+      return source.slice();
+    }
+    return source;
+  }
+
+  function mergeDeepProperties(prop) {
+    if (!utils.isUndefined(config2[prop])) {
+      config[prop] = getMergedValue(config1[prop], config2[prop]);
+    } else if (!utils.isUndefined(config1[prop])) {
+      config[prop] = getMergedValue(undefined, config1[prop]);
+    }
+  }
+
+  utils.forEach(valueFromConfig2Keys, function valueFromConfig2(prop) {
+    if (!utils.isUndefined(config2[prop])) {
+      config[prop] = getMergedValue(undefined, config2[prop]);
+    }
+  });
+
+  utils.forEach(mergeDeepPropertiesKeys, mergeDeepProperties);
+
+  utils.forEach(defaultToConfig2Keys, function defaultToConfig2(prop) {
+    if (!utils.isUndefined(config2[prop])) {
+      config[prop] = getMergedValue(undefined, config2[prop]);
+    } else if (!utils.isUndefined(config1[prop])) {
+      config[prop] = getMergedValue(undefined, config1[prop]);
+    }
+  });
+
+  utils.forEach(directMergeKeys, function merge(prop) {
+    if (prop in config2) {
+      config[prop] = getMergedValue(config1[prop], config2[prop]);
+    } else if (prop in config1) {
+      config[prop] = getMergedValue(undefined, config1[prop]);
+    }
+  });
+
+  var axiosKeys = valueFromConfig2Keys
+    .concat(mergeDeepPropertiesKeys)
+    .concat(defaultToConfig2Keys)
+    .concat(directMergeKeys);
+
+  var otherKeys = Object
+    .keys(config1)
+    .concat(Object.keys(config2))
+    .filter(function filterAxiosKeys(key) {
+      return axiosKeys.indexOf(key) === -1;
+    });
+
+  utils.forEach(otherKeys, mergeDeepProperties);
+
+  return config;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/settle.js":
+/*!***********************************************!*\
+  !*** ./node_modules/axios/lib/core/settle.js ***!
+  \***********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var createError = __webpack_require__(/*! ./createError */ "./node_modules/axios/lib/core/createError.js");
+
+/**
+ * Resolve or reject a Promise based on response status.
+ *
+ * @param {Function} resolve A function that resolves the promise.
+ * @param {Function} reject A function that rejects the promise.
+ * @param {object} response The response.
+ */
+module.exports = function settle(resolve, reject, response) {
+  var validateStatus = response.config.validateStatus;
+  if (!response.status || !validateStatus || validateStatus(response.status)) {
+    resolve(response);
+  } else {
+    reject(createError(
+      'Request failed with status code ' + response.status,
+      response.config,
+      null,
+      response.request,
+      response
+    ));
+  }
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/core/transformData.js":
+/*!******************************************************!*\
+  !*** ./node_modules/axios/lib/core/transformData.js ***!
+  \******************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+var defaults = __webpack_require__(/*! ./../defaults */ "./node_modules/axios/lib/defaults.js");
+
+/**
+ * Transform the data for a request or a response
+ *
+ * @param {Object|String} data The data to be transformed
+ * @param {Array} headers The headers for the request or response
+ * @param {Array|Function} fns A single function or Array of functions
+ * @returns {*} The resulting transformed data
+ */
+module.exports = function transformData(data, headers, fns) {
+  var context = this || defaults;
+  /*eslint no-param-reassign:0*/
+  utils.forEach(fns, function transform(fn) {
+    data = fn.call(context, data, headers);
+  });
+
+  return data;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/defaults.js":
+/*!********************************************!*\
+  !*** ./node_modules/axios/lib/defaults.js ***!
+  \********************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+/* provided dependency */ var process = __webpack_require__(/*! process/browser */ "./node_modules/process/browser.js");
+
+
+var utils = __webpack_require__(/*! ./utils */ "./node_modules/axios/lib/utils.js");
+var normalizeHeaderName = __webpack_require__(/*! ./helpers/normalizeHeaderName */ "./node_modules/axios/lib/helpers/normalizeHeaderName.js");
+var enhanceError = __webpack_require__(/*! ./core/enhanceError */ "./node_modules/axios/lib/core/enhanceError.js");
+
+var DEFAULT_CONTENT_TYPE = {
+  'Content-Type': 'application/x-www-form-urlencoded'
+};
+
+function setContentTypeIfUnset(headers, value) {
+  if (!utils.isUndefined(headers) && utils.isUndefined(headers['Content-Type'])) {
+    headers['Content-Type'] = value;
+  }
+}
+
+function getDefaultAdapter() {
+  var adapter;
+  if (typeof XMLHttpRequest !== 'undefined') {
+    // For browsers use XHR adapter
+    adapter = __webpack_require__(/*! ./adapters/xhr */ "./node_modules/axios/lib/adapters/xhr.js");
+  } else if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {
+    // For node use HTTP adapter
+    adapter = __webpack_require__(/*! ./adapters/http */ "./node_modules/axios/lib/adapters/xhr.js");
+  }
+  return adapter;
+}
+
+function stringifySafely(rawValue, parser, encoder) {
+  if (utils.isString(rawValue)) {
+    try {
+      (parser || JSON.parse)(rawValue);
+      return utils.trim(rawValue);
+    } catch (e) {
+      if (e.name !== 'SyntaxError') {
+        throw e;
+      }
+    }
+  }
+
+  return (encoder || JSON.stringify)(rawValue);
+}
+
+var defaults = {
+
+  transitional: {
+    silentJSONParsing: true,
+    forcedJSONParsing: true,
+    clarifyTimeoutError: false
+  },
+
+  adapter: getDefaultAdapter(),
+
+  transformRequest: [function transformRequest(data, headers) {
+    normalizeHeaderName(headers, 'Accept');
+    normalizeHeaderName(headers, 'Content-Type');
+
+    if (utils.isFormData(data) ||
+      utils.isArrayBuffer(data) ||
+      utils.isBuffer(data) ||
+      utils.isStream(data) ||
+      utils.isFile(data) ||
+      utils.isBlob(data)
+    ) {
+      return data;
+    }
+    if (utils.isArrayBufferView(data)) {
+      return data.buffer;
+    }
+    if (utils.isURLSearchParams(data)) {
+      setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
+      return data.toString();
+    }
+    if (utils.isObject(data) || (headers && headers['Content-Type'] === 'application/json')) {
+      setContentTypeIfUnset(headers, 'application/json');
+      return stringifySafely(data);
+    }
+    return data;
+  }],
+
+  transformResponse: [function transformResponse(data) {
+    var transitional = this.transitional;
+    var silentJSONParsing = transitional && transitional.silentJSONParsing;
+    var forcedJSONParsing = transitional && transitional.forcedJSONParsing;
+    var strictJSONParsing = !silentJSONParsing && this.responseType === 'json';
+
+    if (strictJSONParsing || (forcedJSONParsing && utils.isString(data) && data.length)) {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        if (strictJSONParsing) {
+          if (e.name === 'SyntaxError') {
+            throw enhanceError(e, this, 'E_JSON_PARSE');
+          }
+          throw e;
+        }
+      }
+    }
+
+    return data;
+  }],
+
+  /**
+   * A timeout in milliseconds to abort a request. If set to 0 (default) a
+   * timeout is not created.
+   */
+  timeout: 0,
+
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+
+  maxContentLength: -1,
+  maxBodyLength: -1,
+
+  validateStatus: function validateStatus(status) {
+    return status >= 200 && status < 300;
+  }
+};
+
+defaults.headers = {
+  common: {
+    'Accept': 'application/json, text/plain, */*'
+  }
+};
+
+utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
+  defaults.headers[method] = {};
+});
+
+utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+  defaults.headers[method] = utils.merge(DEFAULT_CONTENT_TYPE);
+});
+
+module.exports = defaults;
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/bind.js":
+/*!************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/bind.js ***!
+  \************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+module.exports = function bind(fn, thisArg) {
+  return function wrap() {
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+    return fn.apply(thisArg, args);
+  };
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/buildURL.js":
+/*!****************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/buildURL.js ***!
+  \****************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+
+function encode(val) {
+  return encodeURIComponent(val).
+    replace(/%3A/gi, ':').
+    replace(/%24/g, '$').
+    replace(/%2C/gi, ',').
+    replace(/%20/g, '+').
+    replace(/%5B/gi, '[').
+    replace(/%5D/gi, ']');
+}
+
+/**
+ * Build a URL by appending params to the end
+ *
+ * @param {string} url The base of the url (e.g., http://www.google.com)
+ * @param {object} [params] The params to be appended
+ * @returns {string} The formatted url
+ */
+module.exports = function buildURL(url, params, paramsSerializer) {
+  /*eslint no-param-reassign:0*/
+  if (!params) {
+    return url;
+  }
+
+  var serializedParams;
+  if (paramsSerializer) {
+    serializedParams = paramsSerializer(params);
+  } else if (utils.isURLSearchParams(params)) {
+    serializedParams = params.toString();
+  } else {
+    var parts = [];
+
+    utils.forEach(params, function serialize(val, key) {
+      if (val === null || typeof val === 'undefined') {
+        return;
+      }
+
+      if (utils.isArray(val)) {
+        key = key + '[]';
+      } else {
+        val = [val];
+      }
+
+      utils.forEach(val, function parseValue(v) {
+        if (utils.isDate(v)) {
+          v = v.toISOString();
+        } else if (utils.isObject(v)) {
+          v = JSON.stringify(v);
+        }
+        parts.push(encode(key) + '=' + encode(v));
+      });
+    });
+
+    serializedParams = parts.join('&');
+  }
+
+  if (serializedParams) {
+    var hashmarkIndex = url.indexOf('#');
+    if (hashmarkIndex !== -1) {
+      url = url.slice(0, hashmarkIndex);
+    }
+
+    url += (url.indexOf('?') === -1 ? '?' : '&') + serializedParams;
+  }
+
+  return url;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/combineURLs.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/combineURLs.js ***!
+  \*******************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Creates a new URL by combining the specified URLs
+ *
+ * @param {string} baseURL The base URL
+ * @param {string} relativeURL The relative URL
+ * @returns {string} The combined URL
+ */
+module.exports = function combineURLs(baseURL, relativeURL) {
+  return relativeURL
+    ? baseURL.replace(/\/+$/, '') + '/' + relativeURL.replace(/^\/+/, '')
+    : baseURL;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/cookies.js":
+/*!***************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/cookies.js ***!
+  \***************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+
+module.exports = (
+  utils.isStandardBrowserEnv() ?
+
+  // Standard browser envs support document.cookie
+    (function standardBrowserEnv() {
+      return {
+        write: function write(name, value, expires, path, domain, secure) {
+          var cookie = [];
+          cookie.push(name + '=' + encodeURIComponent(value));
+
+          if (utils.isNumber(expires)) {
+            cookie.push('expires=' + new Date(expires).toGMTString());
+          }
+
+          if (utils.isString(path)) {
+            cookie.push('path=' + path);
+          }
+
+          if (utils.isString(domain)) {
+            cookie.push('domain=' + domain);
+          }
+
+          if (secure === true) {
+            cookie.push('secure');
+          }
+
+          document.cookie = cookie.join('; ');
+        },
+
+        read: function read(name) {
+          var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+          return (match ? decodeURIComponent(match[3]) : null);
+        },
+
+        remove: function remove(name) {
+          this.write(name, '', Date.now() - 86400000);
+        }
+      };
+    })() :
+
+  // Non standard browser env (web workers, react-native) lack needed support.
+    (function nonStandardBrowserEnv() {
+      return {
+        write: function write() {},
+        read: function read() { return null; },
+        remove: function remove() {}
+      };
+    })()
+);
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/isAbsoluteURL.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/isAbsoluteURL.js ***!
+  \*********************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Determines whether the specified URL is absolute
+ *
+ * @param {string} url The URL to test
+ * @returns {boolean} True if the specified URL is absolute, otherwise false
+ */
+module.exports = function isAbsoluteURL(url) {
+  // A URL is considered absolute if it begins with "<scheme>://" or "//" (protocol-relative URL).
+  // RFC 3986 defines scheme name as a sequence of characters beginning with a letter and followed
+  // by any combination of letters, digits, plus, period, or hyphen.
+  return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/isAxiosError.js":
+/*!********************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/isAxiosError.js ***!
+  \********************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Determines whether the payload is an error thrown by Axios
+ *
+ * @param {*} payload The value to test
+ * @returns {boolean} True if the payload is an error thrown by Axios, otherwise false
+ */
+module.exports = function isAxiosError(payload) {
+  return (typeof payload === 'object') && (payload.isAxiosError === true);
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/isURLSameOrigin.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/isURLSameOrigin.js ***!
+  \***********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+
+module.exports = (
+  utils.isStandardBrowserEnv() ?
+
+  // Standard browser envs have full support of the APIs needed to test
+  // whether the request URL is of the same origin as current location.
+    (function standardBrowserEnv() {
+      var msie = /(msie|trident)/i.test(navigator.userAgent);
+      var urlParsingNode = document.createElement('a');
+      var originURL;
+
+      /**
+    * Parse a URL to discover it's components
+    *
+    * @param {String} url The URL to be parsed
+    * @returns {Object}
+    */
+      function resolveURL(url) {
+        var href = url;
+
+        if (msie) {
+        // IE needs attribute set twice to normalize properties
+          urlParsingNode.setAttribute('href', href);
+          href = urlParsingNode.href;
+        }
+
+        urlParsingNode.setAttribute('href', href);
+
+        // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
+        return {
+          href: urlParsingNode.href,
+          protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
+          host: urlParsingNode.host,
+          search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
+          hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
+          hostname: urlParsingNode.hostname,
+          port: urlParsingNode.port,
+          pathname: (urlParsingNode.pathname.charAt(0) === '/') ?
+            urlParsingNode.pathname :
+            '/' + urlParsingNode.pathname
+        };
+      }
+
+      originURL = resolveURL(window.location.href);
+
+      /**
+    * Determine if a URL shares the same origin as the current location
+    *
+    * @param {String} requestURL The URL to test
+    * @returns {boolean} True if URL shares the same origin, otherwise false
+    */
+      return function isURLSameOrigin(requestURL) {
+        var parsed = (utils.isString(requestURL)) ? resolveURL(requestURL) : requestURL;
+        return (parsed.protocol === originURL.protocol &&
+            parsed.host === originURL.host);
+      };
+    })() :
+
+  // Non standard browser envs (web workers, react-native) lack needed support.
+    (function nonStandardBrowserEnv() {
+      return function isURLSameOrigin() {
+        return true;
+      };
+    })()
+);
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/normalizeHeaderName.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/normalizeHeaderName.js ***!
+  \***************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ../utils */ "./node_modules/axios/lib/utils.js");
+
+module.exports = function normalizeHeaderName(headers, normalizedName) {
+  utils.forEach(headers, function processHeader(value, name) {
+    if (name !== normalizedName && name.toUpperCase() === normalizedName.toUpperCase()) {
+      headers[normalizedName] = value;
+      delete headers[name];
+    }
+  });
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/parseHeaders.js":
+/*!********************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/parseHeaders.js ***!
+  \********************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var utils = __webpack_require__(/*! ./../utils */ "./node_modules/axios/lib/utils.js");
+
+// Headers whose duplicates are ignored by node
+// c.f. https://nodejs.org/api/http.html#http_message_headers
+var ignoreDuplicateOf = [
+  'age', 'authorization', 'content-length', 'content-type', 'etag',
+  'expires', 'from', 'host', 'if-modified-since', 'if-unmodified-since',
+  'last-modified', 'location', 'max-forwards', 'proxy-authorization',
+  'referer', 'retry-after', 'user-agent'
+];
+
+/**
+ * Parse headers into an object
+ *
+ * ```
+ * Date: Wed, 27 Aug 2014 08:58:49 GMT
+ * Content-Type: application/json
+ * Connection: keep-alive
+ * Transfer-Encoding: chunked
+ * ```
+ *
+ * @param {String} headers Headers needing to be parsed
+ * @returns {Object} Headers parsed into an object
+ */
+module.exports = function parseHeaders(headers) {
+  var parsed = {};
+  var key;
+  var val;
+  var i;
+
+  if (!headers) { return parsed; }
+
+  utils.forEach(headers.split('\n'), function parser(line) {
+    i = line.indexOf(':');
+    key = utils.trim(line.substr(0, i)).toLowerCase();
+    val = utils.trim(line.substr(i + 1));
+
+    if (key) {
+      if (parsed[key] && ignoreDuplicateOf.indexOf(key) >= 0) {
+        return;
+      }
+      if (key === 'set-cookie') {
+        parsed[key] = (parsed[key] ? parsed[key] : []).concat([val]);
+      } else {
+        parsed[key] = parsed[key] ? parsed[key] + ', ' + val : val;
+      }
+    }
+  });
+
+  return parsed;
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/spread.js":
+/*!**************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/spread.js ***!
+  \**************************************************/
+/***/ ((module) => {
+
+"use strict";
+
+
+/**
+ * Syntactic sugar for invoking a function and expanding an array for arguments.
+ *
+ * Common use case would be to use `Function.prototype.apply`.
+ *
+ *  ```js
+ *  function f(x, y, z) {}
+ *  var args = [1, 2, 3];
+ *  f.apply(null, args);
+ *  ```
+ *
+ * With `spread` this example can be re-written.
+ *
+ *  ```js
+ *  spread(function(x, y, z) {})([1, 2, 3]);
+ *  ```
+ *
+ * @param {Function} callback
+ * @returns {Function}
+ */
+module.exports = function spread(callback) {
+  return function wrap(arr) {
+    return callback.apply(null, arr);
+  };
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/helpers/validator.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/axios/lib/helpers/validator.js ***!
+  \*****************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var pkg = __webpack_require__(/*! ./../../package.json */ "./node_modules/axios/package.json");
+
+var validators = {};
+
+// eslint-disable-next-line func-names
+['object', 'boolean', 'number', 'function', 'string', 'symbol'].forEach(function(type, i) {
+  validators[type] = function validator(thing) {
+    return typeof thing === type || 'a' + (i < 1 ? 'n ' : ' ') + type;
+  };
+});
+
+var deprecatedWarnings = {};
+var currentVerArr = pkg.version.split('.');
+
+/**
+ * Compare package versions
+ * @param {string} version
+ * @param {string?} thanVersion
+ * @returns {boolean}
+ */
+function isOlderVersion(version, thanVersion) {
+  var pkgVersionArr = thanVersion ? thanVersion.split('.') : currentVerArr;
+  var destVer = version.split('.');
+  for (var i = 0; i < 3; i++) {
+    if (pkgVersionArr[i] > destVer[i]) {
+      return true;
+    } else if (pkgVersionArr[i] < destVer[i]) {
+      return false;
+    }
+  }
+  return false;
+}
+
+/**
+ * Transitional option validator
+ * @param {function|boolean?} validator
+ * @param {string?} version
+ * @param {string} message
+ * @returns {function}
+ */
+validators.transitional = function transitional(validator, version, message) {
+  var isDeprecated = version && isOlderVersion(version);
+
+  function formatMessage(opt, desc) {
+    return '[Axios v' + pkg.version + '] Transitional option \'' + opt + '\'' + desc + (message ? '. ' + message : '');
+  }
+
+  // eslint-disable-next-line func-names
+  return function(value, opt, opts) {
+    if (validator === false) {
+      throw new Error(formatMessage(opt, ' has been removed in ' + version));
+    }
+
+    if (isDeprecated && !deprecatedWarnings[opt]) {
+      deprecatedWarnings[opt] = true;
+      // eslint-disable-next-line no-console
+      console.warn(
+        formatMessage(
+          opt,
+          ' has been deprecated since v' + version + ' and will be removed in the near future'
+        )
+      );
+    }
+
+    return validator ? validator(value, opt, opts) : true;
+  };
+};
+
+/**
+ * Assert object's properties type
+ * @param {object} options
+ * @param {object} schema
+ * @param {boolean?} allowUnknown
+ */
+
+function assertOptions(options, schema, allowUnknown) {
+  if (typeof options !== 'object') {
+    throw new TypeError('options must be an object');
+  }
+  var keys = Object.keys(options);
+  var i = keys.length;
+  while (i-- > 0) {
+    var opt = keys[i];
+    var validator = schema[opt];
+    if (validator) {
+      var value = options[opt];
+      var result = value === undefined || validator(value, opt, options);
+      if (result !== true) {
+        throw new TypeError('option ' + opt + ' must be ' + result);
+      }
+      continue;
+    }
+    if (allowUnknown !== true) {
+      throw Error('Unknown option ' + opt);
+    }
+  }
+}
+
+module.exports = {
+  isOlderVersion: isOlderVersion,
+  assertOptions: assertOptions,
+  validators: validators
+};
+
+
+/***/ }),
+
+/***/ "./node_modules/axios/lib/utils.js":
+/*!*****************************************!*\
+  !*** ./node_modules/axios/lib/utils.js ***!
+  \*****************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var bind = __webpack_require__(/*! ./helpers/bind */ "./node_modules/axios/lib/helpers/bind.js");
+
+// utils is a library of generic helper functions non-specific to axios
+
+var toString = Object.prototype.toString;
+
+/**
+ * Determine if a value is an Array
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is an Array, otherwise false
+ */
+function isArray(val) {
+  return toString.call(val) === '[object Array]';
+}
+
+/**
+ * Determine if a value is undefined
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if the value is undefined, otherwise false
+ */
+function isUndefined(val) {
+  return typeof val === 'undefined';
+}
+
+/**
+ * Determine if a value is a Buffer
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Buffer, otherwise false
+ */
+function isBuffer(val) {
+  return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor)
+    && typeof val.constructor.isBuffer === 'function' && val.constructor.isBuffer(val);
+}
+
+/**
+ * Determine if a value is an ArrayBuffer
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is an ArrayBuffer, otherwise false
+ */
+function isArrayBuffer(val) {
+  return toString.call(val) === '[object ArrayBuffer]';
+}
+
+/**
+ * Determine if a value is a FormData
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is an FormData, otherwise false
+ */
+function isFormData(val) {
+  return (typeof FormData !== 'undefined') && (val instanceof FormData);
+}
+
+/**
+ * Determine if a value is a view on an ArrayBuffer
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a view on an ArrayBuffer, otherwise false
+ */
+function isArrayBufferView(val) {
+  var result;
+  if ((typeof ArrayBuffer !== 'undefined') && (ArrayBuffer.isView)) {
+    result = ArrayBuffer.isView(val);
+  } else {
+    result = (val) && (val.buffer) && (val.buffer instanceof ArrayBuffer);
+  }
+  return result;
+}
+
+/**
+ * Determine if a value is a String
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a String, otherwise false
+ */
+function isString(val) {
+  return typeof val === 'string';
+}
+
+/**
+ * Determine if a value is a Number
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Number, otherwise false
+ */
+function isNumber(val) {
+  return typeof val === 'number';
+}
+
+/**
+ * Determine if a value is an Object
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is an Object, otherwise false
+ */
+function isObject(val) {
+  return val !== null && typeof val === 'object';
+}
+
+/**
+ * Determine if a value is a plain Object
+ *
+ * @param {Object} val The value to test
+ * @return {boolean} True if value is a plain Object, otherwise false
+ */
+function isPlainObject(val) {
+  if (toString.call(val) !== '[object Object]') {
+    return false;
+  }
+
+  var prototype = Object.getPrototypeOf(val);
+  return prototype === null || prototype === Object.prototype;
+}
+
+/**
+ * Determine if a value is a Date
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Date, otherwise false
+ */
+function isDate(val) {
+  return toString.call(val) === '[object Date]';
+}
+
+/**
+ * Determine if a value is a File
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a File, otherwise false
+ */
+function isFile(val) {
+  return toString.call(val) === '[object File]';
+}
+
+/**
+ * Determine if a value is a Blob
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Blob, otherwise false
+ */
+function isBlob(val) {
+  return toString.call(val) === '[object Blob]';
+}
+
+/**
+ * Determine if a value is a Function
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Function, otherwise false
+ */
+function isFunction(val) {
+  return toString.call(val) === '[object Function]';
+}
+
+/**
+ * Determine if a value is a Stream
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a Stream, otherwise false
+ */
+function isStream(val) {
+  return isObject(val) && isFunction(val.pipe);
+}
+
+/**
+ * Determine if a value is a URLSearchParams object
+ *
+ * @param {Object} val The value to test
+ * @returns {boolean} True if value is a URLSearchParams object, otherwise false
+ */
+function isURLSearchParams(val) {
+  return typeof URLSearchParams !== 'undefined' && val instanceof URLSearchParams;
+}
+
+/**
+ * Trim excess whitespace off the beginning and end of a string
+ *
+ * @param {String} str The String to trim
+ * @returns {String} The String freed of excess whitespace
+ */
+function trim(str) {
+  return str.trim ? str.trim() : str.replace(/^\s+|\s+$/g, '');
+}
+
+/**
+ * Determine if we're running in a standard browser environment
+ *
+ * This allows axios to run in a web worker, and react-native.
+ * Both environments support XMLHttpRequest, but not fully standard globals.
+ *
+ * web workers:
+ *  typeof window -> undefined
+ *  typeof document -> undefined
+ *
+ * react-native:
+ *  navigator.product -> 'ReactNative'
+ * nativescript
+ *  navigator.product -> 'NativeScript' or 'NS'
+ */
+function isStandardBrowserEnv() {
+  if (typeof navigator !== 'undefined' && (navigator.product === 'ReactNative' ||
+                                           navigator.product === 'NativeScript' ||
+                                           navigator.product === 'NS')) {
+    return false;
+  }
+  return (
+    typeof window !== 'undefined' &&
+    typeof document !== 'undefined'
+  );
+}
+
+/**
+ * Iterate over an Array or an Object invoking a function for each item.
+ *
+ * If `obj` is an Array callback will be called passing
+ * the value, index, and complete array for each item.
+ *
+ * If 'obj' is an Object callback will be called passing
+ * the value, key, and complete object for each property.
+ *
+ * @param {Object|Array} obj The object to iterate
+ * @param {Function} fn The callback to invoke for each item
+ */
+function forEach(obj, fn) {
+  // Don't bother if no value provided
+  if (obj === null || typeof obj === 'undefined') {
+    return;
+  }
+
+  // Force an array if not already something iterable
+  if (typeof obj !== 'object') {
+    /*eslint no-param-reassign:0*/
+    obj = [obj];
+  }
+
+  if (isArray(obj)) {
+    // Iterate over array values
+    for (var i = 0, l = obj.length; i < l; i++) {
+      fn.call(null, obj[i], i, obj);
+    }
+  } else {
+    // Iterate over object keys
+    for (var key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        fn.call(null, obj[key], key, obj);
+      }
+    }
+  }
+}
+
+/**
+ * Accepts varargs expecting each argument to be an object, then
+ * immutably merges the properties of each object and returns result.
+ *
+ * When multiple objects contain the same key the later object in
+ * the arguments list will take precedence.
+ *
+ * Example:
+ *
+ * ```js
+ * var result = merge({foo: 123}, {foo: 456});
+ * console.log(result.foo); // outputs 456
+ * ```
+ *
+ * @param {Object} obj1 Object to merge
+ * @returns {Object} Result of all merge properties
+ */
+function merge(/* obj1, obj2, obj3, ... */) {
+  var result = {};
+  function assignValue(val, key) {
+    if (isPlainObject(result[key]) && isPlainObject(val)) {
+      result[key] = merge(result[key], val);
+    } else if (isPlainObject(val)) {
+      result[key] = merge({}, val);
+    } else if (isArray(val)) {
+      result[key] = val.slice();
+    } else {
+      result[key] = val;
+    }
+  }
+
+  for (var i = 0, l = arguments.length; i < l; i++) {
+    forEach(arguments[i], assignValue);
+  }
+  return result;
+}
+
+/**
+ * Extends object a by mutably adding to it the properties of object b.
+ *
+ * @param {Object} a The object to be extended
+ * @param {Object} b The object to copy properties from
+ * @param {Object} thisArg The object to bind function to
+ * @return {Object} The resulting value of object a
+ */
+function extend(a, b, thisArg) {
+  forEach(b, function assignValue(val, key) {
+    if (thisArg && typeof val === 'function') {
+      a[key] = bind(val, thisArg);
+    } else {
+      a[key] = val;
+    }
+  });
+  return a;
+}
+
+/**
+ * Remove byte order marker. This catches EF BB BF (the UTF-8 BOM)
+ *
+ * @param {string} content with BOM
+ * @return {string} content value without BOM
+ */
+function stripBOM(content) {
+  if (content.charCodeAt(0) === 0xFEFF) {
+    content = content.slice(1);
+  }
+  return content;
+}
+
+module.exports = {
+  isArray: isArray,
+  isArrayBuffer: isArrayBuffer,
+  isBuffer: isBuffer,
+  isFormData: isFormData,
+  isArrayBufferView: isArrayBufferView,
+  isString: isString,
+  isNumber: isNumber,
+  isObject: isObject,
+  isPlainObject: isPlainObject,
+  isUndefined: isUndefined,
+  isDate: isDate,
+  isFile: isFile,
+  isBlob: isBlob,
+  isFunction: isFunction,
+  isStream: isStream,
+  isURLSearchParams: isURLSearchParams,
+  isStandardBrowserEnv: isStandardBrowserEnv,
+  forEach: forEach,
+  merge: merge,
+  extend: extend,
+  trim: trim,
+  stripBOM: stripBOM
+};
+
+
+/***/ }),
+
 /***/ "./resources/js/app.js":
 /*!*****************************!*\
   !*** ./resources/js/app.js ***!
@@ -2444,6 +4508,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Head__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Head */ "./resources/js/components/Head.js");
 /* harmony import */ var _Footer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Footer */ "./resources/js/components/Footer.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 
 
 
@@ -2451,6 +4527,16 @@ __webpack_require__.r(__webpack_exports__);
 
 
 function Credit() {
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+      _useState2 = _slicedToArray(_useState, 2),
+      isShown = _useState2[0],
+      setIsShown = _useState2[1];
+
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),
+      _useState4 = _slicedToArray(_useState3, 2),
+      isShowns = _useState4[0],
+      setIsShowns = _useState4[1];
+
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_Head__WEBPACK_IMPORTED_MODULE_1__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("form", {
       action: "",
@@ -2639,27 +4725,41 @@ function Credit() {
                 children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("td", {
                   colspan: "4",
                   children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                    onMouseEnter: function onMouseEnter() {
+                      return setIsShown(true);
+                    },
+                    onMouseLeave: function onMouseLeave() {
+                      return setIsShown(false);
+                    },
                     className: "tickbox",
                     style: {
                       height: "30px;"
                     },
-                    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
-                      className: "privacy-box",
-                      style: {
-                        display: "none;"
+                    children: [isShown && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+                      onMouseEnter: function onMouseEnter() {
+                        return setIsShowns(true);
                       },
+                      onMouseLeave: function onMouseLeave() {
+                        return setIsShowns(false);
+                      },
+                      className: "privacy-box",
                       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("p", {
                         children: ["Carloansales ABN 99 033 791 789 collects from me/us (being each of the Applicants and Guarantors (and from other persons, whose signature is acknowledged when the privacy consent box has been ticked) personal information about me/us, for purposes of: ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), ".Assessing the Applicant for finance, the guarantee and any insurance proposal", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), ".Arranging Finance and Insurance; and", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), ".Credit and Reference Checking.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "For the same purposes, Carloansales will use the information and disclose it to: ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), ".One or more of the financiers used by Carloansales to arrange finance (including BMA Pty Ltd), all of whom are collectively referred to as \u201CCredit Providers\u201D in this consent; and", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), ".(Where relevant) any business which provides information about the creditworthiness of persons (\u201CCredit Reporting Agency\u201D).Suppliers of goods, mercantile agents, collection agencies, insurers, and to Carloansales Agents, brokers, contractors and external advisers and to my/our car or finance brokers.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "I/We agree that Carloansales may disclose me/our personal information to it\u2019s related bodies corporate and to BMA Pty Ltd (Together referred to as the \u2018Related Companies\u2019) and that Carloansales and the related companies may use this personal information for product development and research and to inform me/us about products and services in the future.Carloan$ales and the related companies will not send information about products if I/We send a written request to the effect to Carloansales at the address below.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "I/we acknowledge that if we do not provide this information, Carloansales or the Credit Providers may not be able too process the application for finance.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "I/We are able to gain access to the information held about the me/us by Carloansales and the related companies subject to expectations stated in the Privacy Act 1988 (Cth) (\u201CThe Privacy Act\u201D).", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "I/We agree, if we supply Carloansales or the Credit Providers with personal information about any third party (such as a referee), I/We will inform that third party of this fact.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "The credit providers collect and use personal information about me/us for the following purposes: ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), ".Assesing the application for finance, the guarantee or any related insurance proposal; and", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), ".(if the application is accepted) providing finance and ancillary services (such as insurance) yo the Applicant(s) and for the ongoing management of finance, guarantees and ancillary services.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "For the same purposes, and subject to the Privacy Act, I/We agree that the credit providers may do all the following now and in the future: ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "1. Collect and use commercial or consumer credit information about me/us from a credit reporting agency", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "2. Collect and give to (i) any credit provider named in the application for finance or the information obtained under paragraph 1 above (ii) any body which maintains a register of encumbered vehicles (such as R.E.V.S.), or (iii) a Credit Reporting Agency), any personal information about me/us, including any information about my/our creditworthiness, credit standing, credit history or credit capacity, the status of the finance and any default by me/us in accordance with the Privacy Act.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "3. Collect from and give to any sources disclosed in the application for finance, personal information about me/us.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "4. Give to any guarantor or proposed guarantor of the application for finance, any information about the finance (including personal information about me/us) now or at any time in the future.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "5. Collect from and disclose personal informationabout me/us to the Credit Provider\u2019s agents, contactors, external advisors as well as to suppliers of goods, mercantile agents, collection agencies and insurers, and my/our car or finance/insurance broker.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "The credit provider who provides me/us with finance may also provide my/our consent to other acts of collection, disclosure and use of personal collection, disclosure and use of personal information about me/us.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "In this consent, \u201CPersonal Information\u201D has the same meaning as the Privacy Act and includes sensitive information (Eg Health and Financial information)", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "The Guarantor(s) acknowledgement that: ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), ".The application for finance will be supported by their guarantee; and", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), ".That they have read and understood thet terms of the application for finance.", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "Declaration", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "I/We solemnly declare and sincerely declare that: ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "(a) I am/We are not insolvent or an undischarged bankrupt; ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "(b) The information given by me/us is true and correct; ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "(c) The income and expenses declared represent", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "(d) I am/We are permanent resident(s) of Australia; ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "(e) I am/We are over the age of 18 years; and", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {}), "(f) I/We have read and understood this Privacy Act Consent and agree to CarloanSales, the related Companies and the Credit Providers collecting, using and disclosing information (including personal information) about me/us in accordance with provisions of this Consent."]
                       })
-                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
-                      name: "privacy",
-                      className: "required",
-                      id: "privacy-disclosure",
-                      type: "checkbox",
-                      value: "1"
-                    }), "I accept the above ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
-                      children: "Privacy Disclosure & Consent"
-                    }), " statement"]
+                    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
+                      className: "flex-col",
+                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+                        name: "privacy",
+                        className: "required",
+                        id: "privacy-disclosure",
+                        type: "checkbox",
+                        value: "1"
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("p", {
+                        children: ["I accept the above ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("strong", {
+                          children: "Privacy Disclosure & Consent"
+                        }), " statement\""]
+                      })]
+                    })]
                   }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("font", {
                     color: "red"
                   })]
@@ -2682,7 +4782,26 @@ function Credit() {
   });
 }
 
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Credit);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Credit); // import React, { useState } from 'react';
+// import './App.css';
+// function Credit() {
+//   const [isShown, setIsShown] = useState(false);
+//   return (
+//     <div className="Credit">
+//         {isShown && (
+//           <div>
+//             I'll appear when you hover over the button.
+//           </div>
+//         )}
+//       <button
+//         onMouseEnter={() => setIsShown(true)}
+//         onMouseLeave={() => setIsShown(false)}>
+//         Hover over me!
+//       </button>
+//     </div>
+//   );
+// }
+// export default Credit;
 
 /***/ }),
 
@@ -6733,8 +8852,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var _style_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./style.css */ "./resources/js/components/style.css");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/esm/react-router.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/esm/react-router-dom.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/esm/react-router.js");
 /* harmony import */ var _Head__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Head */ "./resources/js/components/Head.js");
 /* harmony import */ var _About__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./About */ "./resources/js/components/About.js");
 /* harmony import */ var _Home__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Home */ "./resources/js/components/Home.js");
@@ -6759,7 +8878,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Marine__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./Marine */ "./resources/js/components/Marine.js");
 /* harmony import */ var _BadCredit__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./BadCredit */ "./resources/js/components/BadCredit.js");
 /* harmony import */ var _Cities__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./Cities */ "./resources/js/components/Cities.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+/* harmony import */ var _new__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./new */ "./resources/js/components/new.js");
+/* harmony import */ var _pages_form__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ../pages/form */ "./resources/js/pages/form.js");
+/* harmony import */ var _pages_form2__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ../pages/form2 */ "./resources/js/pages/form2.js");
+/* harmony import */ var _pages_main_page__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ../pages/main-page */ "./resources/js/pages/main-page.js");
+/* harmony import */ var _pages_form3__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ../pages/form3 */ "./resources/js/pages/form3.js");
+/* harmony import */ var _pages_final_page__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ../pages/final-page */ "./resources/js/pages/final-page.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
  // import "./fountations.css";
 
 
@@ -6792,106 +8929,302 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
+
+
+
 function User() {
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)("div", {
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_28__.BrowserRouter, {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsxs)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Switch, {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+  // Always remember to keep const inside User() function
+  // --------Main page--------
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('90'),
+      _useState2 = _slicedToArray(_useState, 2),
+      amount = _useState2[0],
+      setAmount = _useState2[1];
+
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState4 = _slicedToArray(_useState3, 2),
+      residual = _useState4[0],
+      setResidual = _useState4[1];
+
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState6 = _slicedToArray(_useState5, 2),
+      repayment = _useState6[0],
+      setRepayment = _useState6[1]; // --------Page-2--------
+
+
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(),
+      _useState8 = _slicedToArray(_useState7, 2),
+      loanAmount = _useState8[0],
+      setLoanAmount = _useState8[1];
+
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(),
+      _useState10 = _slicedToArray(_useState9, 2),
+      term = _useState10[0],
+      setTerm = _useState10[1]; // --------Page-2--------
+
+
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('Vehicle Make 1'),
+      _useState12 = _slicedToArray(_useState11, 2),
+      vehicleMake = _useState12[0],
+      setVehicleMake = _useState12[1];
+
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('Vehicle Model 1'),
+      _useState14 = _slicedToArray(_useState13, 2),
+      vehicleModel = _useState14[0],
+      setVehicleModel = _useState14[1];
+
+  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState16 = _slicedToArray(_useState15, 2),
+      buildYear = _useState16[0],
+      setBuildYear = _useState16[1];
+
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState18 = _slicedToArray(_useState17, 2),
+      isVehicle = _useState18[0],
+      setIsVehicle = _useState18[1];
+
+  var _useState19 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState20 = _slicedToArray(_useState19, 2),
+      supplier = _useState20[0],
+      setSupplier = _useState20[1]; // --------Page-3--------
+
+
+  var _useState21 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState22 = _slicedToArray(_useState21, 2),
+      fullName = _useState22[0],
+      setFullName = _useState22[1];
+
+  var _useState23 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState24 = _slicedToArray(_useState23, 2),
+      mobile = _useState24[0],
+      setMobile = _useState24[1];
+
+  var _useState25 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState26 = _slicedToArray(_useState25, 2),
+      occupation = _useState26[0],
+      setOccupation = _useState26[1];
+
+  var _useState27 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState28 = _slicedToArray(_useState27, 2),
+      telephone = _useState28[0],
+      setTelephone = _useState28[1];
+
+  var _useState29 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState30 = _slicedToArray(_useState29, 2),
+      email = _useState30[0],
+      setEmail = _useState30[1];
+
+  var _useState31 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState32 = _slicedToArray(_useState31, 2),
+      postcode = _useState32[0],
+      setPostcode = _useState32[1];
+
+  var _useState33 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState34 = _slicedToArray(_useState33, 2),
+      income = _useState34[0],
+      setIncome = _useState34[1];
+
+  var _useState35 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('week'),
+      _useState36 = _slicedToArray(_useState35, 2),
+      perDuration = _useState36[0],
+      setPerDuration = _useState36[1]; // --------Final Page--------
+
+
+  var _useState37 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState38 = _slicedToArray(_useState37, 2),
+      repay = _useState38[0],
+      setRepay = _useState38[1];
+
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_34__.BrowserRouter, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsxs)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Switch, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/",
           component: _Home__WEBPACK_IMPORTED_MODULE_5__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/head",
           component: _Head__WEBPACK_IMPORTED_MODULE_3__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/about",
           component: _About__WEBPACK_IMPORTED_MODULE_4__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/contact-us",
           component: _Contact__WEBPACK_IMPORTED_MODULE_6__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/career",
           component: _Career__WEBPACK_IMPORTED_MODULE_7__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/testimonials",
           component: _Testimonial__WEBPACK_IMPORTED_MODULE_8__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/site-map",
           component: _Site__WEBPACK_IMPORTED_MODULE_9__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/faq",
           component: _FQA__WEBPACK_IMPORTED_MODULE_10__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/credit",
           component: _Credit__WEBPACK_IMPORTED_MODULE_11__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/blog",
           component: _Blogs__WEBPACK_IMPORTED_MODULE_12__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/low-doc-finance",
           component: _Low_Doc__WEBPACK_IMPORTED_MODULE_13__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/personal-car-loans",
           component: _Personal__WEBPACK_IMPORTED_MODULE_14__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/car-lease",
           component: _CarLease__WEBPACK_IMPORTED_MODULE_15__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/chattel-mortgage",
           component: _Chattel__WEBPACK_IMPORTED_MODULE_16__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/commercial-hire-purchase",
           component: _CHP__WEBPACK_IMPORTED_MODULE_17__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/novated-lease",
           component: _NL__WEBPACK_IMPORTED_MODULE_18__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/equipment-finance",
           component: _EF__WEBPACK_IMPORTED_MODULE_19__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/bike-loans",
           component: _Bike__WEBPACK_IMPORTED_MODULE_20__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/personal-car-lease",
           component: _Personal_Car__WEBPACK_IMPORTED_MODULE_21__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/small-ticket-finance",
           component: _Small__WEBPACK_IMPORTED_MODULE_22__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/truck-finance",
           component: _Truck__WEBPACK_IMPORTED_MODULE_23__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/marine-loans-boat-finance",
           component: _Marine__WEBPACK_IMPORTED_MODULE_24__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/bad-credit-car-loan",
           component: _BadCredit__WEBPACK_IMPORTED_MODULE_25__["default"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_29__.Route, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/carloan-city-view",
           component: _Cities__WEBPACK_IMPORTED_MODULE_26__["default"]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
+          exact: true,
+          path: "/new",
+          component: _new__WEBPACK_IMPORTED_MODULE_27__["default"]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
+          exact: true,
+          path: "/main-page",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(_pages_main_page__WEBPACK_IMPORTED_MODULE_30__["default"], {
+            amount: amount,
+            residual: residual,
+            repayment: repayment,
+            setAmount: setAmount,
+            setResidual: setResidual,
+            setRepayment: setRepayment
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
+          exact: true,
+          path: "/form",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(_pages_form__WEBPACK_IMPORTED_MODULE_28__["default"], {
+            loanAmount: loanAmount,
+            term: term,
+            setTerm: setTerm,
+            setLoanAmount: setLoanAmount
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
+          exact: true,
+          path: "/form2",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(_pages_form2__WEBPACK_IMPORTED_MODULE_29__["default"], {
+            vehicleMake: vehicleMake,
+            setVehicleMake: setVehicleMake,
+            vehicleModel: vehicleModel,
+            setVehicleModel: setVehicleModel,
+            buildYear: buildYear,
+            setBuildYear: setBuildYear,
+            isVehicle: isVehicle,
+            setIsVehicle: setIsVehicle,
+            supplier: supplier,
+            setSupplier: setSupplier,
+            loanAmount: loanAmount
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
+          exact: true,
+          path: "/form3",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(_pages_form3__WEBPACK_IMPORTED_MODULE_31__["default"] // Form 1
+          , {
+            loanAmount: loanAmount,
+            term: term,
+            setTerm: setTerm,
+            setLoanAmount: setLoanAmount // Form 2
+            ,
+            vehicleMake: vehicleMake,
+            setVehicleMake: setVehicleMake,
+            vehicleModel: vehicleModel,
+            setVehicleModel: setVehicleModel,
+            buildYear: buildYear,
+            setBuildYear: setBuildYear,
+            isVehicle: isVehicle,
+            setIsVehicle: setIsVehicle,
+            supplier: supplier,
+            setSupplier: setSupplier // Form 3
+            ,
+            fullName: fullName,
+            mobile: mobile,
+            occupation: occupation,
+            telephone: telephone,
+            email: email,
+            postcode: postcode,
+            income: income,
+            perDuration: perDuration,
+            setFullName: setFullName,
+            setMobile: setMobile,
+            setOccupation: setOccupation,
+            setTelephone: setTelephone,
+            setEmail: setEmail,
+            setPostcode: setPostcode,
+            setIncome: setIncome,
+            setPerDuration: setPerDuration
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
+          exact: true,
+          path: "/final-page",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(_pages_final_page__WEBPACK_IMPORTED_MODULE_32__["default"], {
+            loanAmount: loanAmount,
+            term: term,
+            setTerm: setTerm,
+            setLoanAmount: setLoanAmount,
+            repay: repay,
+            setRepay: setRepay
+          })
         })]
       })
     })
@@ -6901,8 +9234,4531 @@ function User() {
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (User); // DOM element
 
 if (document.getElementById('user')) {
-  react_dom__WEBPACK_IMPORTED_MODULE_2__.render( /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_27__.jsx)(User, {}), document.getElementById('user'));
+  react_dom__WEBPACK_IMPORTED_MODULE_2__.render( /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(User, {}), document.getElementById('user'));
 }
+
+/***/ }),
+
+/***/ "./resources/js/components/all-vehicles.js":
+/*!*************************************************!*\
+  !*** ./resources/js/components/all-vehicles.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ AllVehicles)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+
+
+function AllVehicles() {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.Fragment, {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("svg", {
+      id: "Component_6_1",
+      "data-name": "Component 6 \u2013 1",
+      width: "1285",
+      height: "189",
+      viewBox: "0 0 1285 189",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("defs", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("linearGradient", {
+          id: "linear-gradient",
+          x1: "0.5",
+          y1: "1",
+          x2: "0.5",
+          gradientUnits: "objectBoundingBox",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("stop", {
+            offset: "0",
+            "stop-color": "gray",
+            "stop-opacity": "0.251"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("stop", {
+            offset: "0.54",
+            "stop-color": "gray",
+            "stop-opacity": "0.122"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("stop", {
+            offset: "1",
+            "stop-color": "gray",
+            "stop-opacity": "0.102"
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("linearGradient", {
+          id: "linear-gradient-2",
+          x1: "0.5",
+          y1: "1",
+          x2: "0.5",
+          y2: "0"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "undraw_Vehicle_sale_a645",
+        transform: "translate(-25.243 -152.791)",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_171",
+          "data-name": "Path 171",
+          d: "M812.231,559.245c-2.268.018-5.271-.353-5.875-.721-.46-.28-.644-1.286-.705-1.75l-.067,0s.127,1.62.732,1.989,3.607.74,5.875.722c.655-.005.881-.238.869-.583C812.968,559.111,812.718,559.241,812.231,559.245Z",
+          transform: "translate(405.498 -279.987)",
+          opacity: "0.2"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_174",
+          "data-name": "Path 174",
+          d: "M977.413,450.064a21.894,21.894,0,0,1-43.707,1.879c-.032-.356-.056-.711-.066-1.072v-.019q-.016-.394-.016-.788a21.895,21.895,0,0,1,43.79,0Z",
+          transform: "translate(308.84 -182.903)",
+          fill: "#65617d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_175",
+          "data-name": "Path 175",
+          d: "M977.413,450.064a21.894,21.894,0,0,1-43.707,1.879c-.032-.356-.056-.711-.066-1.072v-.019q-.016-.394-.016-.788a21.895,21.895,0,0,1,43.79,0Z",
+          transform: "translate(308.84 -182.903)",
+          opacity: "0.2"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("ellipse", {
+          id: "Ellipse_43",
+          "data-name": "Ellipse 43",
+          cx: "11.943",
+          cy: "11.943",
+          rx: "11.943",
+          ry: "11.943",
+          transform: "translate(1252.414 255.219)",
+          fill: "#dce0ed"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("ellipse", {
+          id: "Ellipse_44",
+          "data-name": "Ellipse 44",
+          cx: "7.166",
+          cy: "7.166",
+          rx: "7.166",
+          ry: "7.166",
+          transform: "translate(1257.191 259.996)",
+          fill: "#65617d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_176",
+          "data-name": "Path 176",
+          d: "M500.5,450.064a21.894,21.894,0,0,1-43.707,1.879c-.032-.356-.056-.711-.066-1.072v-.019q-.016-.394-.016-.788a21.895,21.895,0,0,1,43.79,0Z",
+          transform: "translate(668.864 -182.903)",
+          fill: "#65617d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_177",
+          "data-name": "Path 177",
+          d: "M500.5,450.064a21.894,21.894,0,0,1-43.707,1.879c-.032-.356-.056-.711-.066-1.072v-.019q-.016-.394-.016-.788a21.895,21.895,0,0,1,43.79,0Z",
+          transform: "translate(668.864 -182.903)",
+          opacity: "0.2"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("ellipse", {
+          id: "Ellipse_45",
+          "data-name": "Ellipse 45",
+          cx: "11.943",
+          cy: "11.943",
+          rx: "11.943",
+          ry: "11.943",
+          transform: "translate(1135.527 255.219)",
+          fill: "#dce0ed"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("ellipse", {
+          id: "Ellipse_46",
+          "data-name": "Ellipse 46",
+          cx: "7.166",
+          cy: "7.166",
+          rx: "7.166",
+          ry: "7.166",
+          transform: "translate(1140.304 259.996)",
+          fill: "#65617d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_178",
+          "data-name": "Path 178",
+          d: "M634.238,362.82l-7.305-.318-6.67-12.387-23.5-1.906-11.435,14.929.635,4.129-1.588,3.812-74.643.635v-1.906h-.634l-.635-2.859h5.717l-4.129-4.447-14.611-12.387s-25.093.635-25.41,0,1.429-7.147,1.429-7.147l10.8-3.176,36.845-2.859c8.1-12.864,15.4-18.9,15.4-18.9h94.653L633.6,340.9v.054Z",
+          transform: "translate(658.843 -99.761)",
+          fill: "#444053"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_179",
+          "data-name": "Path 179",
+          d: "M923.292,452.457s9.529-17.787,16.834-17.787h17.787s4.447,0,6.353,3.494l7.306,14.293h-5.718s-4.764-13.34-10.164-13.658-14.611,0-14.611,0-3.176,0-5.082,3.812-8.349,12.114-8.349,12.114S920.751,456.9,923.292,452.457Z",
+          transform: "translate(317.063 -187.81)",
+          fill: "#33323d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_180",
+          "data-name": "Path 180",
+          d: "M1076.821,342.351h-11.948l-.123,9.529,12.071-2.859Z",
+          transform: "translate(220.39 -80.563)",
+          fill: "#33323d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_181",
+          "data-name": "Path 181",
+          d: "M452,446.816a9.03,9.03,0,0,1,5.082-6.67l29.222-1.588s4.764.318,7.305,6.353l8.258,12.388V459.2h-9.211S488.21,442.37,475.5,443H460.258s-3.494,0-4.764,5.717Z",
+          transform: "translate(672.421 -190.746)",
+          fill: "#33323d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_182",
+          "data-name": "Path 182",
+          d: "M731.926,315.048h97.512a3.494,3.494,0,0,0-3.494-3.494H735.42a3.494,3.494,0,0,0-3.494,3.494Z",
+          transform: "translate(461.103 -94.87)",
+          fill: "#33323d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_183",
+          "data-name": "Path 183",
+          d: "M728.458,349.441H701.474a1.824,1.824,0,0,1-1.667-2.565l4.27-9.607a8.385,8.385,0,0,1,7.662-4.98h16.395a2.3,2.3,0,0,1,2.3,2.3v12.884A1.972,1.972,0,0,1,728.458,349.441Z",
+          transform: "translate(485.468 -110.523)",
+          fill: "#6c63ff",
+          opacity: "0.3"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_76",
+          "data-name": "Rectangle 76",
+          width: "26.363",
+          height: "17.152",
+          rx: "5.539",
+          transform: "translate(1222.886 221.767)",
+          fill: "#6c63ff",
+          opacity: "0.3"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_184",
+          "data-name": "Path 184",
+          d: "M965.069,187.674v.054l-40.974.581-1.067-23.5h37.6Z",
+          transform: "translate(327.377 53.468)",
+          fill: "#33323d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_77",
+          "data-name": "Rectangle 77",
+          width: "30.175",
+          height: "17.152",
+          rx: "5.539",
+          transform: "translate(1254.966 221.767)",
+          fill: "#6c63ff",
+          opacity: "0.3"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_78",
+          "data-name": "Rectangle 78",
+          width: "10.164",
+          height: "1.906",
+          rx: "0.953",
+          transform: "translate(1207.64 244.954)",
+          fill: "#33323d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_79",
+          "data-name": "Rectangle 79",
+          width: "10.164",
+          height: "1.906",
+          rx: "0.953",
+          transform: "translate(1236.861 244.954)",
+          fill: "#33323d"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "undraw_town_r6pc",
+        transform: "translate(-241.25 -247.864)",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_163",
+          "data-name": "Rectangle 163",
+          width: "16.062",
+          height: "2.55",
+          transform: "translate(277.706 367.277)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_282",
+          "data-name": "Path 282",
+          d: "M549.691,537.447l-3.314.767-125.948.067-1.133-2.639a26.634,26.634,0,0,1-1.958-14.4c.542-3.644,1.9-7.266,4.989-8.838l5.589-37.227,69.681-.125,26.959,21.744s12.717-.229,19.626,8.372a20.188,20.188,0,0,1,4.223,11.119l.273,4.474Z",
+          transform: "translate(-139.791 -169.598)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_56",
+          "data-name": "Ellipse 56",
+          cx: "15.552",
+          cy: "15.552",
+          r: "15.552",
+          transform: "translate(366.685 351.673)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_57",
+          "data-name": "Ellipse 57",
+          cx: "8.185",
+          cy: "8.185",
+          r: "8.185",
+          transform: "translate(374.052 359.04)",
+          fill: "#ccc"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_58",
+          "data-name": "Ellipse 58",
+          cx: "15.552",
+          cy: "15.552",
+          r: "15.552",
+          transform: "translate(289.943 351.714)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_59",
+          "data-name": "Ellipse 59",
+          cx: "8.185",
+          cy: "8.185",
+          r: "8.185",
+          transform: "translate(297.31 359.081)",
+          fill: "#ccc"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_283",
+          "data-name": "Path 283",
+          d: "M412.992,328.122l-37.622.016h-4.592l-7.754.005v-.565l-.005-6.818-.005-7.656h5.159l4.592-.005,8.135-.005h4.592l9.392-.005Z",
+          transform: "translate(-38.937 -3.468)",
+          fill: "#fff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_284",
+          "data-name": "Path 284",
+          d: "M335.263,328.168l-19.883.011-.005-3.9V317.46l-.005-4.321h2.911l4.592-.005,12.384-.005Z",
+          transform: "translate(-17.299 -3.486)",
+          fill: "#fff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_164",
+          "data-name": "Rectangle 164",
+          width: "2.55",
+          height: "4.844",
+          transform: "translate(324.092 335.896)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_165",
+          "data-name": "Rectangle 165",
+          width: "2.55",
+          height: "4.844",
+          transform: "matrix(0.001, 1, -1, 0.001, 368.703, 328.988)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_285",
+          "data-name": "Path 285",
+          d: "M439.169,331.106h.28a5.329,5.329,0,0,1,5.329,5.329h0a5.329,5.329,0,0,1-5.329,5.329h-.28Z",
+          transform: "translate(-73.527 -11.652)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_286",
+          "data-name": "Path 286",
+          d: "M650.594,545.821a8.236,8.236,0,0,1-4.5-15.593,20.189,20.189,0,0,1,4.223,11.119Z",
+          transform: "translate(-241.707 -194.659)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_287",
+          "data-name": "Path 287",
+          d: "M372.768,313.108l-9.74,14.48-.005-6.818,5.153-7.656Z",
+          transform: "translate(-38.942 -3.477)",
+          fill: "#f2f2f2"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_288",
+          "data-name": "Path 288",
+          d: "M322.877,313.138l-7.5,11.144v-6.818l2.906-4.321Z",
+          transform: "translate(-17.303 -3.491)",
+          fill: "#f2f2f2"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_289",
+          "data-name": "Path 289",
+          d: "M391.953,313.1l-10.121,15.045h-4.592L387.36,313.1Z",
+          transform: "translate(-45.399 -3.473)",
+          fill: "#f2f2f2"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "undraw_Street_food_re_uwex_1_",
+        "data-name": "undraw_Street_food_re_uwex (1)",
+        transform: "translate(36.357 61.276)",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_325",
+          "data-name": "Path 325",
+          d: "M369,288.831h-.013a5.578,5.578,0,0,1-3.105-.9,5.787,5.787,0,0,1-2.63-5.068l2.158-53.906a5.725,5.725,0,0,1,5.736-5.511H493.89a16.209,16.209,0,0,1,10.659,4l29.576,25.808a24.019,24.019,0,0,1,11.736,22.143c-.184,3.116-.312,5.022-.4,6.284a53.213,53.213,0,0,0-.158,5.914l.006.849h-.14Z",
+          transform: "translate(-158 -223.444)",
+          fill: "#444053"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_326",
+          "data-name": "Path 326",
+          d: "M494.817,297.282H394.228a4.391,4.391,0,0,1-4.386-4.386V263.005a4.391,4.391,0,0,1,4.386-4.386H494.817a4.391,4.391,0,0,1,4.386,4.386V292.9A4.391,4.391,0,0,1,494.817,297.282Z",
+          transform: "translate(-177.192 -248.83)",
+          fill: "#e4e4e4"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_327",
+          "data-name": "Path 327",
+          d: "M844.329,291.459a2.361,2.361,0,0,1-.637-.088l-21.231-5.937a2.36,2.36,0,0,1-1.715-2.23l-.165-12.909a2.347,2.347,0,0,1,2.411-2.376l12.6.345a2.335,2.335,0,0,1,1.612.7l9.106,9.3a2.358,2.358,0,0,1,.669,1.72l-.307,9.206a2.35,2.35,0,0,1-2.341,2.27Z",
+          transform: "translate(-488.054 -255.54)",
+          fill: "#fff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_78",
+          "data-name": "Ellipse 78",
+          cx: "10.626",
+          cy: "10.626",
+          r: "10.626",
+          transform: "translate(363.184 53.627)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_79",
+          "data-name": "Ellipse 79",
+          cx: "6.723",
+          cy: "6.723",
+          r: "6.723",
+          transform: "translate(367.088 57.53)",
+          fill: "#fff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_80",
+          "data-name": "Ellipse 80",
+          cx: "10.626",
+          cy: "10.626",
+          r: "10.626",
+          transform: "translate(241.849 53.735)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_81",
+          "data-name": "Ellipse 81",
+          cx: "6.723",
+          cy: "6.723",
+          r: "6.723",
+          transform: "translate(245.752 57.639)",
+          fill: "#fff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_328",
+          "data-name": "Path 328",
+          d: "M907.459,327.1h-.867a2.853,2.853,0,0,1-2.85-2.85v-6.289a2.853,2.853,0,0,1,2.85-2.85h.867a2.853,2.853,0,0,1,2.85,2.85v6.289A2.853,2.853,0,0,1,907.459,327.1Z",
+          transform: "translate(-548.07 -289.601)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_182",
+          "data-name": "Rectangle 182",
+          width: "50.946",
+          height: "1.301",
+          transform: "translate(217.994 26.627)",
+          fill: "#444178"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_183",
+          "data-name": "Rectangle 183",
+          width: "50.946",
+          height: "1.301",
+          transform: "translate(217.994 35.302)",
+          fill: "#504a87"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_329",
+          "data-name": "Path 329",
+          d: "M445.8,380.593h-3.687a1.521,1.521,0,1,1,0-3.043H445.8a1.521,1.521,0,0,1,0,3.043Z",
+          transform: "translate(-213.817 -334.662)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_330",
+          "data-name": "Path 330",
+          d: "M471.665,378.55a1.243,1.243,0,0,0,0,2.486h3.687a1.243,1.243,0,0,0,0-2.486Z",
+          transform: "translate(-235.346 -335.383)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_331",
+          "data-name": "Path 331",
+          d: "M503.461,380.593h-3.686a1.521,1.521,0,1,1,0-3.043h3.687a1.521,1.521,0,0,1,0,3.043Z",
+          transform: "translate(-255.432 -334.662)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_332",
+          "data-name": "Path 332",
+          d: "M469.485,389.815h-45.77a1.847,1.847,0,0,1,0-3.693h45.77a1.847,1.847,0,1,1,0,3.693Z",
+          transform: "translate(-200.305 -340.847)",
+          fill: "#898989"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_333",
+          "data-name": "Path 333",
+          d: "M425.423,333.78h-1.763a.554.554,0,0,1-.554-.553v-3.859a.554.554,0,0,1,.554-.554.113.113,0,0,0,.113-.113v-.834a.768.768,0,0,1,1.536,0v.834a.114.114,0,0,0,.113.113.554.554,0,0,1,.554.554v3.859A.554.554,0,0,1,425.423,333.78Z",
+          transform: "translate(-201.199 -298.251)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_334",
+          "data-name": "Path 334",
+          d: "M440.555,333.78h-1.763a.554.554,0,0,1-.554-.554v-3.859a.554.554,0,0,1,.554-.554.113.113,0,0,0,.113-.113v-.834a.768.768,0,1,1,1.536,0v.834a.113.113,0,0,0,.113.113.554.554,0,0,1,.554.554v3.859A.554.554,0,0,1,440.555,333.78Z",
+          transform: "translate(-212.12 -298.251)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_335",
+          "data-name": "Path 335",
+          d: "M537.753,304.679H535.99a.554.554,0,0,1-.554-.554v-3.859a.554.554,0,0,1,.554-.554.113.113,0,0,0,.113-.113v-.834a.768.768,0,0,1,1.536,0v.834a.113.113,0,0,0,.113.113.554.554,0,0,1,.554.554v3.859A.554.554,0,0,1,537.753,304.679Z",
+          transform: "translate(-282.267 -277.249)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_336",
+          "data-name": "Path 336",
+          d: "M552.886,304.679h-1.763a.554.554,0,0,1-.554-.554v-3.859a.554.554,0,0,1,.554-.554.113.113,0,0,0,.113-.113v-.834a.768.768,0,0,1,1.536,0v.834a.113.113,0,0,0,.113.113.554.554,0,0,1,.554.554v3.859A.554.554,0,0,1,552.886,304.679Z",
+          transform: "translate(-293.188 -277.249)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_184",
+          "data-name": "Rectangle 184",
+          width: "23.973",
+          height: "31.91",
+          transform: "translate(287.892 16.952)",
+          fill: "#f0f0f0"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_185",
+          "data-name": "Rectangle 185",
+          width: "23.973",
+          height: "0.648",
+          transform: "translate(287.892 24.171)",
+          fill: "#e4e4e4"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_186",
+          "data-name": "Rectangle 186",
+          width: "23.973",
+          height: "0.648",
+          transform: "translate(287.892 31.946)",
+          fill: "#e4e4e4"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_187",
+          "data-name": "Rectangle 187",
+          width: "23.973",
+          height: "0.648",
+          transform: "translate(287.892 39.721)",
+          fill: "#e4e4e4"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_337",
+          "data-name": "Path 337",
+          d: "M459.023,341.6h-1.8a.941.941,0,0,1-.94-.94v-2.287a.941.941,0,0,1,.939-.94h1.8a.941.941,0,0,1,.939.94v2.287A.941.941,0,0,1,459.023,341.6Z",
+          transform: "translate(-225.142 -305.713)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_338",
+          "data-name": "Path 338",
+          d: "M671.143,345.393a2.346,2.346,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.149.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.347,4.347,0,0,0,1.084,0s.241-.046.241-.407v-2.89a.707.707,0,0,0-.149-.575.718.718,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,671.143,345.393Z",
+          transform: "translate(-379.484 -311.453)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_339",
+          "data-name": "Path 339",
+          d: "M681.62,345.393a2.343,2.343,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.149.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.346,4.346,0,0,0,1.084,0s.241-.046.241-.407v-2.89a.707.707,0,0,0-.149-.575.719.719,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,681.62,345.393Z",
+          transform: "translate(-387.045 -311.453)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_340",
+          "data-name": "Path 340",
+          d: "M692.1,345.392a2.343,2.343,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.148.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.345,4.345,0,0,0,1.084,0s.241-.046.241-.407v-2.89a.707.707,0,0,0-.149-.575.719.719,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,692.1,345.392Z",
+          transform: "translate(-394.605 -311.453)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_341",
+          "data-name": "Path 341",
+          d: "M671.143,317.455a2.343,2.343,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.149.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.348,4.348,0,0,0,1.084,0s.241-.046.241-.407V320.2a.707.707,0,0,0-.149-.575.719.719,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,671.143,317.455Z",
+          transform: "translate(-379.484 -291.291)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_342",
+          "data-name": "Path 342",
+          d: "M681.62,317.455a2.343,2.343,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.149.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.347,4.347,0,0,0,1.084,0s.241-.046.241-.407V320.2a.707.707,0,0,0-.149-.575.719.719,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,681.62,317.455Z",
+          transform: "translate(-387.045 -291.291)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_343",
+          "data-name": "Path 343",
+          d: "M692.1,317.455a2.338,2.338,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.149.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.348,4.348,0,0,0,1.084,0s.241-.046.241-.407V320.2a.707.707,0,0,0-.149-.575.719.719,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,692.1,317.455Z",
+          transform: "translate(-394.605 -291.291)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_344",
+          "data-name": "Path 344",
+          d: "M713.631,317.455a2.342,2.342,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.149.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.348,4.348,0,0,0,1.084,0s.241-.046.241-.407V320.2a.707.707,0,0,0-.149-.575.719.719,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,713.631,317.455Z",
+          transform: "translate(-410.147 -291.291)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_345",
+          "data-name": "Path 345",
+          d: "M724.108,317.455a2.343,2.343,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.149.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.348,4.348,0,0,0,1.084,0s.241-.046.241-.407V320.2a.707.707,0,0,0-.149-.575.718.718,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,724.108,317.455Z",
+          transform: "translate(-417.708 -291.291)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_346",
+          "data-name": "Path 346",
+          d: "M734.584,317.455a2.343,2.343,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.149.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.347,4.347,0,0,0,1.084,0s.241-.046.241-.407V320.2a.707.707,0,0,0-.149-.575.719.719,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,734.584,317.455Z",
+          transform: "translate(-425.268 -291.291)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_347",
+          "data-name": "Path 347",
+          d: "M689.186,290.1a2.338,2.338,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.149.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.344,4.344,0,0,0,1.084,0s.241-.046.241-.407v-2.89a.707.707,0,0,0-.149-.575.719.719,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,689.186,290.1Z",
+          transform: "translate(-392.505 -271.549)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_348",
+          "data-name": "Path 348",
+          d: "M699.663,290.1a2.339,2.339,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.149.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.345,4.345,0,0,0,1.084,0s.241-.046.241-.407v-2.89a.707.707,0,0,0-.149-.575.719.719,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,699.663,290.1Z",
+          transform: "translate(-400.066 -271.549)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_349",
+          "data-name": "Path 349",
+          d: "M710.139,290.1a2.342,2.342,0,0,1-.361.008.079.079,0,0,0-.087.068l-.23,1.728a.7.7,0,0,1-.149.342.746.746,0,0,0-.168.57v2.935s-.015.391.286.391a4.345,4.345,0,0,0,1.084,0s.241-.046.241-.407v-2.89a.707.707,0,0,0-.149-.575.72.72,0,0,1-.144-.34l-.239-1.764A.079.079,0,0,0,710.139,290.1Z",
+          transform: "translate(-407.627 -271.549)",
+          fill: "#c7c7c7"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_423",
+          "data-name": "Path 423",
+          d: "M493.826,241.589H376.8a1.809,1.809,0,0,1-1.687-2.462l5.834-15.071h108.73l5.834,15.071a1.809,1.809,0,0,1-1.687,2.462Z",
+          transform: "translate(-166.476 -223.886)",
+          fill: "#7b73ff"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "undraw_fishing_hoxa",
+        transform: "translate(758.073 -101.578)",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_426",
+          "data-name": "Path 426",
+          d: "M353.642,382.261l-.152.013.047-.117-.189.078.189-.5s-.616.248-1.757.654c-28.011,1.306-86.623-22.46-86.623-22.46l-32.443,4.455a6.828,6.828,0,0,1-.534-.559l.144.586q-.076-.083-.144-.165l.051.2h-.051l.08.11,3.712,15.058s66.16,36.453,105.977,31.82l11.334-28.646Z",
+          transform: "translate(-67.69 -180.241)",
+          fill: "url(#linear-gradient)"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_427",
+          "data-name": "Path 427",
+          d: "M299.628,365s59.052,23.938,85.23,21.5l-17.452,25.976L304.3,392.795l-30.852-14,14.4-9.741Z",
+          transform: "translate(-101.139 -184.35)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_428",
+          "data-name": "Path 428",
+          d: "M299.628,365s59.052,23.938,85.23,21.5l-17.452,25.976L304.3,392.795l-30.852-14,14.4-9.741Z",
+          transform: "translate(-101.139 -184.35)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_429",
+          "data-name": "Path 429",
+          d: "M229.6,352.45,245.331,356l-32.062,5.681-7.508-6.7Z",
+          transform: "translate(-33.449 -164.603)",
+          fill: "#fff",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_430",
+          "data-name": "Path 430",
+          d: "M368.52,399.938l18.57-6.8,13.089,4.362-22.932,8.524Z",
+          transform: "translate(-165.365 -197.582)",
+          fill: "#fff",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_431",
+          "data-name": "Path 431",
+          d: "M503.45,445.839l20.395-5.579,18.162,4.971-19.278,6.494Z",
+          transform: "translate(-274.725 -235.772)",
+          fill: "#fff",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_432",
+          "data-name": "Path 432",
+          d: "M176.31,318.8l31.759-4.362v7.711l-26.584,3.855Z",
+          transform: "translate(-9.58 -133.796)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_433",
+          "data-name": "Path 433",
+          d: "M177.38,319.208l31.557-4.768v7.711l-26.584,3.855Z",
+          transform: "translate(-10.447 -133.796)",
+          fill: "#fff",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_438",
+          "data-name": "Path 438",
+          d: "M510.928,267.823a16.158,16.158,0,0,1-4.186-6.623,26.272,26.272,0,0,1-1.152-4.47,15.674,15.674,0,0,0-3.35-7.091c-.064-.068-.131-.135-.19-.19-.322-1.273-.964-4.486.15-6.479a9.2,9.2,0,0,0,.68-1.525,18.11,18.11,0,0,1,3.032-5.638,6.74,6.74,0,0,0,.709-1.04c.464.08.737-.049.68-.506v-.051c.214-.049.326-.2.288-.51-.282-2.248.849-9.273.849-9.273a26.938,26.938,0,0,0,1.4-9.854c-.282-5.338-5.943-6.462-5.943-6.462l-.468.464c-.379-.233-.8-.495-1.234-.771a.711.711,0,0,0,.379-.392,9.95,9.95,0,0,0,.586-3.515,3.32,3.32,0,0,0-.049-1.067,2.477,2.477,0,0,0-.432-.824,4.937,4.937,0,0,0-3.709-1.946c-.47-.019-.948.03-1.408.03-.864,0-1.728-.167-2.589-.095a2.572,2.572,0,0,0-2.151,1.222c-.239.483-.241,1.065-.523,1.516-.326.529-.961.8-1.327,1.3a1.622,1.622,0,0,0-.309.948.658.658,0,0,0,.066.32,1.268,1.268,0,0,0,.317.307,1.241,1.241,0,0,1,.243,1.535,1.516,1.516,0,0,1,1.2,1.162.479.479,0,0,0,.1.267.362.362,0,0,0,.19.08,1.885,1.885,0,0,0,1.526-.538c.034.063.066.123.1.189a3.98,3.98,0,0,0,4.954,1.592q.117.148.231.305a6.414,6.414,0,0,1,.769,1.408l-.436.432a17.035,17.035,0,0,0-1.033,1.869,16.616,16.616,0,0,0-1.539,4.275c-1.027,1.016-2.615,2.843-2.8,4.533,0,0-7.359,3.654-9.339,1.687s-4.527,1.4-3.963,1.967a3.533,3.533,0,0,0,4.245.569h7.927a8.975,8.975,0,0,0,3.411-1.188c-.14.379-.315.771-.508,1.171-.3.569-.618,1.137-.917,1.647-.165.135-.328.265-.491.39-1.014.419-2.289.947-3.614,1.516a5.7,5.7,0,0,0-2.039.876c-3.059,1.327-5.827,2.619-5.746,2.888-.2.135-.311.235-.282.288s.053.117.093.216c-.218.8-.26,2.441.19,5.685,1.137,8.149-1.416,9.553-1.416,9.553s-1.98,2.528-4.245,2.248-.282,1.967,1.706,1.687c1.336-.19,4.22-.379,5.952-.483a1.063,1.063,0,0,0,.965-1.327,8.527,8.527,0,0,1-.125-3.8c.426-2.115,1.493-6.14,1.874-8.363v-.025a3.567,3.567,0,0,1,2.934-1.165c.68.1,1.9-.538,3.2-1.41-.682,3.883-1.2,8.054-.652,9.559a17.272,17.272,0,0,0,2.265,4.5s.544.025,1.308.015l.366.569,5.117,7.853s4.527,6.462.282,7.305c0,0-3.4.843-1.98,1.967,0,0,9.905.28,10.188-.569C511.322,268.313,511.178,268.069,510.928,267.823Z",
+          transform: "translate(-265.992 -50.598)",
+          fill: "url(#linear-gradient-2)"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_439",
+          "data-name": "Path 439",
+          d: "M589.786,230.992s-3.851,7.7-4.125,3.851a6.156,6.156,0,0,0-1.15-3.176,7.606,7.606,0,0,0-2.7-2.323s2.2-4.126,1.925-3.032c-.14.569,1.442,1.772,3.032,2.82C588.274,230.137,589.786,230.992,589.786,230.992Z",
+          transform: "translate(-351.063 -71.794)",
+          fill: "#ffb9b9"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_440",
+          "data-name": "Path 440",
+          d: "M488.629,392.467a8.4,8.4,0,0,0,.121,3.724,1.039,1.039,0,0,1-.936,1.306c-1.685.1-4.487.286-5.786.472-1.925.275-3.851-1.925-1.651-1.651s4.126-2.2,4.126-2.2,2.475-1.376,1.376-9.352c-.438-3.174-.4-4.781-.19-5.564a1.253,1.253,0,0,1,.256-.542h0a.418.418,0,0,1,.22-.133.657.657,0,0,1,.529.189s3.576,3.3,3.851,4.126a4.221,4.221,0,0,1-.1,1.442C490.081,386.458,489.044,390.4,488.629,392.467Z",
+          transform: "translate(-268.059 -195.311)",
+          fill: "#ffb9b9"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_441",
+          "data-name": "Path 441",
+          d: "M488.629,392.467a8.4,8.4,0,0,0,.121,3.724,1.039,1.039,0,0,1-.936,1.306c-1.685.1-4.487.286-5.786.472-1.925.275-3.851-1.925-1.651-1.651s4.126-2.2,4.126-2.2,2.475-1.376,1.376-9.352c-.438-3.174-.4-4.781-.19-5.564a1.253,1.253,0,0,1,.256-.542h0a.418.418,0,0,1,.22-.133.657.657,0,0,1,.529.189s3.576,3.3,3.851,4.126a4.221,4.221,0,0,1-.1,1.442C490.081,386.458,489.044,390.4,488.629,392.467Z",
+          transform: "translate(-268.059 -195.311)",
+          opacity: "0.05"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_442",
+          "data-name": "Path 442",
+          d: "M594.64,472.933c-.275.824-9.9.55-9.9.55-1.376-1.1,1.925-1.925,1.925-1.925,4.125-.824-.275-7.152-.275-7.152l-4.984-7.7-1.074-1.664a4.356,4.356,0,0,1,3.851-1.651,2.942,2.942,0,0,1,1.694,1.035,15.409,15.409,0,0,1,3.258,6.942,25.949,25.949,0,0,0,1.12,4.376,15.912,15.912,0,0,0,4.069,6.483C594.57,472.486,594.708,472.727,594.64,472.933Z",
+          transform: "translate(-349.864 -255.972)",
+          fill: "#ffb9b9"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_443",
+          "data-name": "Path 443",
+          d: "M516.984,384.282a4.8,4.8,0,0,0-.72.758c-2.028-.254-3.587-4.709-4.035-5.839-.038-.1-.068-.169-.091-.212s.1-.172.347-.33h0l.22-.133a.657.657,0,0,1,.529.189s3.576,3.3,3.851,4.126A4.077,4.077,0,0,1,516.984,384.282Z",
+          transform: "translate(-294.592 -195.311)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_444",
+          "data-name": "Path 444",
+          d: "M526.775,347.6s-13.478,5.5-13.2,6.051,1.925,5.776,4.126,6.051c0,0,1.376-1.925,3.3-1.651s8.251-5.5,8.251-5.5l4.4-3.3Z",
+          transform: "translate(-295.754 -170.248)",
+          fill: "#4c4c78"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_445",
+          "data-name": "Path 445",
+          d: "M526.775,347.6s-13.478,5.5-13.2,6.051,1.925,5.776,4.126,6.051c0,0,1.376-1.925,3.3-1.651s8.251-5.5,8.251-5.5l4.4-3.3Z",
+          transform: "translate(-295.754 -170.248)",
+          opacity: "0.05"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_446",
+          "data-name": "Path 446",
+          d: "M586.136,455.361c0,1.146-2.918,1.364-4.7,1.389l-1.075-1.664a4.356,4.356,0,0,1,3.851-1.651,2.942,2.942,0,0,1,1.694,1.035C586.03,455.018,586.136,455.361,586.136,455.361Z",
+          transform: "translate(-349.888 -256.005)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_447",
+          "data-name": "Path 447",
+          d: "M567.089,354.86s-3.3,14.023-2.2,17.056a16.661,16.661,0,0,0,2.2,4.4s6.051.275,6.051-1.376c0,0-1.376-4.4,0-6.877a9.052,9.052,0,0,0,.661-1.493,17.766,17.766,0,0,1,2.939-5.52,3.779,3.779,0,0,0,1.074-2.613C577.54,356.234,567.089,354.86,567.089,354.86Z",
+          transform: "translate(-337.166 -176.132)",
+          fill: "#4c4c78"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_448",
+          "data-name": "Path 448",
+          d: "M518.163,292.44s-3.3,2.759-3.576,5.223c0,0-7.152,3.576-9.077,1.651s-4.4,1.382-3.847,1.929a3.413,3.413,0,0,0,4.126.55h7.7s5.227-.55,5.5-4.675S518.163,292.44,518.163,292.44Z",
+          transform: "translate(-286.04 -125.541)",
+          fill: "#ffb9b9"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_449",
+          "data-name": "Path 449",
+          d: "M518.163,292.44s-3.3,2.759-3.576,5.223c0,0-7.152,3.576-9.077,1.651s-4.4,1.382-3.847,1.929a3.413,3.413,0,0,0,4.126.55h7.7s5.227-.55,5.5-4.675S518.163,292.44,518.163,292.44Z",
+          transform: "translate(-286.04 -125.541)",
+          opacity: "0.05"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_450",
+          "data-name": "Path 450",
+          d: "M586.082,228.93c-.049.178.074-.165,0,0-.4.91-.641,2.357-1.562,2.736a7.607,7.607,0,0,0-2.7-2.323s2.2-4.126,1.925-3.032C583.6,226.878,584.507,227.882,586.082,228.93Z",
+          transform: "translate(-351.071 -71.794)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_451",
+          "data-name": "Path 451",
+          d: "M574.271,218.64a3.826,3.826,0,1,1-1.121-2.73A3.851,3.851,0,0,1,574.271,218.64Z",
+          transform: "translate(-338.711 -62.606)",
+          fill: "#ffb9b9"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_452",
+          "data-name": "Path 452",
+          d: "M572.763,251.3l3.851-3.851s5.5,1.1,5.776,6.326a26.539,26.539,0,0,1-1.376,9.627s-1.1,6.877-.824,9.077-7.152-3.3-7.152-3.3-6.051,1.1-5.776.275,3.576-5.5,3.032-7.152a12.239,12.239,0,0,1-.013-3.851,16.337,16.337,0,0,1,2.488-7.152Z",
+          transform: "translate(-339.264 -89.077)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_453",
+          "data-name": "Path 453",
+          d: "M582.48,260.454s-1.1,6.873-.819,9.077-7.152-3.3-7.152-3.3-.948.172-2.085.33c-1.719.239-3.858.443-3.693-.055a2.462,2.462,0,0,1,.157-.339c.718-1.357,3.368-5.323,2.869-6.822a12.238,12.238,0,0,1-.013-3.851,16.354,16.354,0,0,1,2.49-7.152l3.851-3.851s5.5,1.1,5.776,6.326a26.538,26.538,0,0,1-1.381,9.638Z",
+          transform: "translate(-340.456 -86.678)",
+          fill: "#cbcdda"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_454",
+          "data-name": "Path 454",
+          d: "M574.263,218.63a3.826,3.826,0,0,1-.324,1.548,4.035,4.035,0,0,1-.84-.948,15.481,15.481,0,0,0-1.073-1.463.732.732,0,0,0-.334-.262.528.528,0,0,0-.584.415,2.375,2.375,0,0,0,0,.79.918.918,0,0,1-.207.743c-.328.305-.859.093-1.232-.157s-.841-.529-1.237-.318a1.152,1.152,0,0,0-.364.366,9.386,9.386,0,0,1-.961,1.266,3.851,3.851,0,1,1,7.152-1.98Z",
+          transform: "translate(-338.703 -62.596)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_455",
+          "data-name": "Path 455",
+          d: "M562.419,206.374a3.268,3.268,0,0,0-.047-1.044,2.428,2.428,0,0,0-.419-.805,4.788,4.788,0,0,0-3.6-1.906c-.457-.017-.912.03-1.368.03-.84,0-1.679-.163-2.517-.093a2.476,2.476,0,0,0-2.085,1.2c-.231.474-.233,1.042-.508,1.491-.316.517-.934.781-1.289,1.273a1.6,1.6,0,0,0-.3.927.648.648,0,0,0,.064.313,1.238,1.238,0,0,0,.307.3,1.22,1.22,0,0,1,.235,1.5,1.471,1.471,0,0,1,1.167,1.137.471.471,0,0,0,.1.261.35.35,0,0,0,.189.078,1.831,1.831,0,0,0,1.516-.559,8.76,8.76,0,0,0,1.023-1.327,1.124,1.124,0,0,1,.362-.366c.4-.21.862.072,1.236.32s.906.46,1.234.154a.911.911,0,0,0,.206-.741,2.343,2.343,0,0,1,0-.79.527.527,0,0,1,.584-.415.718.718,0,0,1,.33.263,15.358,15.358,0,0,1,1.074,1.463c.356.551,1.421,1.857,1.941.775A9.632,9.632,0,0,0,562.419,206.374Z",
+          transform: "translate(-325.513 -52.675)",
+          fill: "#b96b6b"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_456",
+          "data-name": "Path 456",
+          d: "M584,322.012s4.126-.275,5.227.55,5.5.55,5.5.55",
+          transform: "translate(-352.838 -149.473)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_457",
+          "data-name": "Path 457",
+          d: "M580.805,288.689a16.176,16.176,0,0,0-1.376,3.576c0,.826-1.1,1.925-1.1,1.925s-3.108,1.706-5.933,3.356c-1.719.239-3.858.443-3.694-.055a2.471,2.471,0,0,1,.157-.339c2.932-1.785,6.995-6.822,6.995-6.822a31.6,31.6,0,0,1,1.376-6.877s3.3-1.651,4.4,0S580.805,288.689,580.805,288.689Z",
+          transform: "translate(-340.431 -117.662)",
+          opacity: "0.05"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_458",
+          "data-name": "Path 458",
+          d: "M244,384.77l3.652,14.814s63.721,35.108,102.075,30.643l11.162-28.208s-27.509,11.12-56.7,6.007a28.979,28.979,0,0,1-3.313-.79C292.153,404.625,249.82,391.681,244,384.77Z",
+          transform: "translate(-77.27 -200.374)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_459",
+          "data-name": "Path 459",
+          d: "M244,386.91l3.652,14.814s63.719,35.106,102.073,30.643l11.162-28.208s-27.509,11.12-56.7,6.007a28.993,28.993,0,0,1-3.313-.79C292.153,406.765,249.82,393.821,244,386.91Z",
+          transform: "translate(-77.27 -202.108)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_188",
+          "data-name": "Rectangle 188",
+          width: "1.421",
+          height: "52.806",
+          transform: "translate(187.889 150.447) rotate(-49.88)",
+          fill: "#535461"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_460",
+          "data-name": "Path 460",
+          d: "M552.892,280.584a31.687,31.687,0,0,0-1.376,6.872s-5.776,7.152-8.528,7.427-4.4,1.925-3.3,2.475,2.475,1.376,4.126,0,10.177-6.051,10.177-6.051,1.1-1.1,1.1-1.925a16.216,16.216,0,0,1,1.376-3.576s1.925-3.576.824-5.227S552.892,280.584,552.892,280.584Z",
+          transform: "translate(-316.644 -115.334)",
+          fill: "#ffb9b9"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_461",
+          "data-name": "Path 461",
+          d: "M610.218,260.468s-4.952-.55-4.126,6.6c0,0,3.3-1.925,6.051,0C612.143,267.071,613.242,261.844,610.218,260.468Z",
+          transform: "translate(-370.668 -99.62)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_462",
+          "data-name": "Path 462",
+          d: "M610.218,257.568s-4.952-.55-4.126,6.6c0,0,3.3-1.925,6.051,0C612.143,264.169,613.242,258.944,610.218,257.568Z",
+          transform: "translate(-370.668 -97.27)",
+          fill: "#cbcdda"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("line", {
+          id: "Line_18",
+          "data-name": "Line 18",
+          x1: "1.624",
+          y2: "81.533",
+          transform: "translate(187.936 151.161)",
+          fill: "none",
+          stroke: "#535461",
+          "stroke-miterlimit": "10",
+          "stroke-width": "2"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "undraw_factory_dy0a",
+        transform: "translate(557.436 -282.295)",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_189",
+          "data-name": "Rectangle 189",
+          width: "84.519",
+          height: "3.581",
+          transform: "translate(300.662 370.786) rotate(180)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_190",
+          "data-name": "Rectangle 190",
+          width: "84.519",
+          height: "3.581",
+          transform: "translate(296.364 367.205) rotate(180)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_191",
+          "data-name": "Rectangle 191",
+          width: "84.519",
+          height: "3.581",
+          transform: "translate(301.378 363.624) rotate(180)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_192",
+          "data-name": "Rectangle 192",
+          width: "84.519",
+          height: "3.581",
+          transform: "translate(309.973 360.042) rotate(180)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_193",
+          "data-name": "Rectangle 193",
+          width: "2.935",
+          height: "20.835",
+          transform: "translate(156.475 361.471) rotate(180)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_194",
+          "data-name": "Rectangle 194",
+          width: "2.935",
+          height: "117.196",
+          transform: "translate(154.636 343.09) rotate(-112.092)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_195",
+          "data-name": "Rectangle 195",
+          width: "25.53",
+          height: "9.977",
+          transform: "translate(124.782 392.576) rotate(180)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_196",
+          "data-name": "Rectangle 196",
+          width: "125.89",
+          height: "11.151",
+          transform: "translate(227.49 402.554) rotate(180)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_467",
+          "data-name": "Path 467",
+          d: "M133.68,421.808h30.226v-38h-22.6l-7.63,19.167Z",
+          transform: "translate(-11.392 -24.83)",
+          fill: "#e2e2e2"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_197",
+          "data-name": "Rectangle 197",
+          width: "12.912",
+          height: "12.912",
+          transform: "translate(147.818 374.236) rotate(180)",
+          fill: "#fff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_468",
+          "data-name": "Path 468",
+          d: "M137.777,400.2h8.217V387.289h-3.522Z",
+          transform: "translate(-12.555 -25.818)",
+          fill: "#fff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_198",
+          "data-name": "Rectangle 198",
+          width: "2.935",
+          height: "5.576",
+          transform: "translate(147.231 387.147) rotate(180)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_469",
+          "data-name": "Path 469",
+          d: "M0,0H.147A2.788,2.788,0,0,1,2.935,2.788h0A2.788,2.788,0,0,1,.147,5.576H0V0Z",
+          transform: "translate(130.945 375.263) rotate(180)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_470",
+          "data-name": "Path 470",
+          d: "M0,0H.147A2.788,2.788,0,0,1,2.935,2.788h0A2.788,2.788,0,0,1,.147,5.576H0V0Z",
+          transform: "translate(240.108 396.978) rotate(180)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_471",
+          "data-name": "Path 471",
+          d: "M266.55,642.8a14.519,14.519,0,0,0-11.285,5.618H249.53l5.576-15.531,25.97-5.122-.734,20.653h-2.507A14.519,14.519,0,0,0,266.55,642.8Z",
+          transform: "translate(-156 -251.44)",
+          fill: "#e2e2e2"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_82",
+          "data-name": "Ellipse 82",
+          cx: "12.765",
+          cy: "12.765",
+          r: "12.765",
+          transform: "translate(97.492 387.881)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_83",
+          "data-name": "Ellipse 83",
+          cx: "6.718",
+          cy: "6.718",
+          r: "6.718",
+          transform: "translate(103.538 393.928)",
+          fill: "#e2e2e2"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_84",
+          "data-name": "Ellipse 84",
+          cx: "11.151",
+          cy: "11.151",
+          r: "11.151",
+          transform: "translate(214.432 390.963)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_85",
+          "data-name": "Ellipse 85",
+          cx: "5.869",
+          cy: "5.869",
+          r: "5.869",
+          transform: "translate(219.714 396.245)",
+          fill: "#e2e2e2"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_199",
+          "data-name": "Rectangle 199",
+          width: "6.162",
+          height: "44.458",
+          transform: "translate(157.796 398.152) rotate(180)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_200",
+          "data-name": "Rectangle 200",
+          width: "88.623",
+          height: "2.641",
+          transform: "translate(240.255 392.723) rotate(180)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_201",
+          "data-name": "Rectangle 201",
+          width: "2.935",
+          height: "1.174",
+          transform: "translate(132.119 376.143) rotate(180)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_472",
+          "data-name": "Path 472",
+          d: "M480.364,604.647a.294.294,0,0,1-.075-.228l4.047-38.271a.294.294,0,0,1,.291-.263h0a.294.294,0,0,1,.292.26l4.377,38.192a.293.293,0,0,1-.289.327l-8.424.079h0A.293.293,0,0,1,480.364,604.647Zm4.276-35.789-3.732,35.3,7.769-.073Z",
+          transform: "translate(-221.474 -233.882)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_473",
+          "data-name": "Path 473",
+          d: "M0,0H.147A2.788,2.788,0,0,1,2.935,2.788h0A2.788,2.788,0,0,1,.147,5.576H0V0Z",
+          transform: "matrix(0.935, 0.354, -0.354, 0.935, 99.159, 381.675)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_202",
+          "data-name": "Rectangle 202",
+          width: "2.935",
+          height: "42.844",
+          transform: "translate(264.759 339.168) rotate(180)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_86",
+          "data-name": "Ellipse 86",
+          cx: "4.108",
+          cy: "4.108",
+          r: "4.108",
+          transform: "translate(150.899 337.114)",
+          fill: "#3f3d56"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_203",
+          "data-name": "Rectangle 203",
+          width: "84.519",
+          height: "3.581",
+          transform: "translate(245.509 390.125) rotate(180)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_204",
+          "data-name": "Rectangle 204",
+          width: "84.519",
+          height: "3.581",
+          transform: "translate(250.523 386.544) rotate(180)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_205",
+          "data-name": "Rectangle 205",
+          width: "84.519",
+          height: "3.581",
+          transform: "translate(246.942 383.679) rotate(180)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          id: "Rectangle_206",
+          "data-name": "Rectangle 206",
+          width: "84.519",
+          height: "3.581",
+          transform: "translate(251.956 380.098) rotate(180)",
+          fill: "#6c63ff"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "undraw_Vehicle_sale_a645_1_",
+        "data-name": "undraw_Vehicle_sale_a645 (1)",
+        transform: "translate(426.542 -196.944)",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_596",
+          "data-name": "Path 596",
+          d: "M379.953,488.518c-1.821,1.98-3.161,2.759-3.1.67.191-6.318-10.909-34.883-10.909-34.883l3.283-.249A85.158,85.158,0,0,1,379.953,488.518Z",
+          transform: "translate(-233.715 -190.039)",
+          fill: "none"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_597",
+          "data-name": "Path 597",
+          d: "M391,580.294a15.794,15.794,0,0,1-31.531,1.356c-.023-.257-.04-.513-.048-.773v-.013q-.012-.284-.011-.569a15.8,15.8,0,0,1,31.59,0Z",
+          transform: "translate(-229.1 -268.03)",
+          fill: "#65617d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_123",
+          "data-name": "Ellipse 123",
+          cx: "8.615",
+          cy: "8.615",
+          r: "8.615",
+          transform: "translate(137.49 303.648)",
+          fill: "#dce0ed"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_124",
+          "data-name": "Ellipse 124",
+          cx: "5.169",
+          cy: "5.169",
+          r: "5.169",
+          transform: "translate(140.936 307.095)",
+          fill: "#65617d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_598",
+          "data-name": "Path 598",
+          d: "M180.587,488.27l-38.034.766v-5.615c.341-4.513,4.968-6.1,9.192-6.592a26.379,26.379,0,0,1,9.827.737,67.446,67.446,0,0,0,15.743,2.59,2.415,2.415,0,0,1,2.336,1.964c.121.641.239,1.34.35,2.029.084.54.165,1.072.237,1.568C180.448,487.156,180.587,488.27,180.587,488.27Z",
+          transform: "translate(-75.963 -206.001)",
+          fill: "#65617d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_599",
+          "data-name": "Path 599",
+          d: "M177.969,503.324H98.957a3.11,3.11,0,0,1-2.881-1.863A2.161,2.161,0,0,1,97.2,498.6a8.951,8.951,0,0,0,3.89-4.76,47.3,47.3,0,0,0,1.989-12.468c.333-6.293,2.611-9.4,5.074-10.911h0a10.046,10.046,0,0,1,6.666-1.216l32.036.257a6.158,6.158,0,0,1,1.564,1.02c2.855,2.657-1.308,6.127-1.308,6.127-8.935,9.444-2.171,19.017-2.171,19.017h16.392a15.086,15.086,0,0,0,8.587-2.629,8.578,8.578,0,0,0,3.4-3.908c.253-.685.509-1.369.816-2.031,4.3-9.326-.886-24.5-3.125-30.169-.555-1.411-.929-2.234-.929-2.234l5.141-.389,3.251-.247.033,0a85.158,85.158,0,0,1,10.723,34.462c.084.886.153,1.746.209,2.571a11.489,11.489,0,0,1-11.478,12.234Z",
+          transform: "translate(-43 -190.04)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_600",
+          "data-name": "Path 600",
+          d: "M180.239,503.718H142.553V502.15H180C180.086,502.69,180.166,503.222,180.239,503.718Z",
+          transform: "translate(-75.963 -224.001)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_601",
+          "data-name": "Path 601",
+          d: "M177.939,506.7H137.975a.755.755,0,0,1-.3-.061,10.045,10.045,0,0,1,6.666-1.216l32.036.257a6.159,6.159,0,0,1,1.564,1.02Z",
+          transform: "translate(-72.516 -226.218)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_602",
+          "data-name": "Path 602",
+          d: "M379.953,488.518c-1.821,1.98-3.161,2.759-3.1.67.191-6.318-10.909-34.883-10.909-34.883l3.283-.249A85.158,85.158,0,0,1,379.953,488.518Z",
+          transform: "translate(-233.715 -190.039)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_603",
+          "data-name": "Path 603",
+          d: "M390.933,578.564c-1.886.452-4.218.911-7.093,1.333q-1.6.236-3.439.452c-2.935.349-6.329.653-10.25.886q-1.666.1-3.46.182-3.36.152-7.193.234l-.048-.773v-.013c3.571-1.442,9.188-5.288,10.093-15.307a15.8,15.8,0,0,1,21.389,13.007Z",
+          transform: "translate(-229.128 -268.03)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_604",
+          "data-name": "Path 604",
+          d: "M349.318,550.608s18.131-1.964,11.889-29.593c0,0,8.959,8.212,14.531,12.777s15.5,10.858,15.5,10.858S385.311,550.193,349.318,550.608Z",
+          transform: "translate(-221.973 -237.323)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_605",
+          "data-name": "Path 605",
+          d: "M349.318,550.608s18.131-1.964,11.889-29.593c0,0,8.959,8.212,14.531,12.777s15.5,10.858,15.5,10.858S385.311,550.193,349.318,550.608Z",
+          transform: "translate(-221.973 -237.323)",
+          fill: "#fff",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_125",
+          "data-name": "Ellipse 125",
+          cx: "15.795",
+          cy: "15.795",
+          r: "15.795",
+          transform: "translate(63.112 296.469)",
+          fill: "#65617d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_126",
+          "data-name": "Ellipse 126",
+          cx: "8.615",
+          cy: "8.615",
+          r: "8.615",
+          transform: "translate(70.291 303.648)",
+          fill: "#dce0ed"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("circle", {
+          id: "Ellipse_127",
+          "data-name": "Ellipse 127",
+          cx: "5.169",
+          cy: "5.169",
+          r: "5.169",
+          transform: "translate(73.738 307.095)",
+          fill: "#65617d"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_606",
+          "data-name": "Path 606",
+          d: "M157.777,557.724a18.1,18.1,0,1,0-36.185,0c0,.43.016.857.044,1.28h36.1C157.761,558.581,157.777,558.154,157.777,557.724Z",
+          transform: "translate(-61.161 -250.203)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_607",
+          "data-name": "Path 607",
+          d: "M158.717,558.284a17.426,17.426,0,1,0-34.845,0c0,.414.015.825.042,1.233h34.76C158.7,559.109,158.717,558.7,158.717,558.284Z",
+          transform: "translate(-62.771 -251.082)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_608",
+          "data-name": "Path 608",
+          d: "M158.717,558.286c0,.285-.008.569-.021.85-.006.128-.013.255-.021.383H123.914c-.008-.128-.015-.255-.021-.383-.013-.281-.021-.565-.021-.85a17.426,17.426,0,1,1,34.845,0Z",
+          transform: "translate(-62.771 -251.083)",
+          fill: "#fff",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_609",
+          "data-name": "Path 609",
+          d: "M158.747,603.919c-.006.128-.013.255-.021.383H123.966c-.008-.128-.015-.255-.021-.383Z",
+          transform: "translate(-62.822 -295.867)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("ellipse", {
+          id: "Ellipse_128",
+          "data-name": "Ellipse 128",
+          cx: "2.293",
+          cy: "5.775",
+          rx: "2.293",
+          ry: "5.775",
+          transform: "matrix(0.911, -0.412, 0.412, 0.911, 136.276, 272.213)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("ellipse", {
+          id: "Ellipse_129",
+          "data-name": "Ellipse 129",
+          cx: "2.293",
+          cy: "5.775",
+          rx: "2.293",
+          ry: "5.775",
+          transform: "matrix(0.911, -0.412, 0.412, 0.911, 136.468, 272.022)",
+          fill: "#dce0ed"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_610",
+          "data-name": "Path 610",
+          d: "M356.842,454.063v3H351a10.059,10.059,0,0,1-1.624-.13c-.555-1.411-.929-2.234-.929-2.234l5.141-.389Z",
+          transform: "translate(-221.36 -190.044)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_611",
+          "data-name": "Path 611",
+          d: "M340.66,419.866H334.82c-5.128,0-9.286-3.837-9.286-8.57v-.8c0-4.733,4.157-8.57,9.286-8.57l5.839.53Z",
+          transform: "translate(-205.178 -153.229)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_612",
+          "data-name": "Path 612",
+          d: "M329.2,418.738s3.494,1.867,1.484,5.026c0,0-2.465,4.044-6.342,3.662l-1.412-8.687S327.572,418.307,329.2,418.738Z",
+          transform: "translate(-203.338 -164.963)",
+          fill: "#6c63ff"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_613",
+          "data-name": "Path 613",
+          d: "M327.857,418.6a3.714,3.714,0,0,1,2.837,1.5,3.061,3.061,0,0,1-.012,3.7s-2.465,4.044-6.342,3.662l-1.412-8.687a43.2,43.2,0,0,1,4.929-.169Z",
+          transform: "translate(-203.338 -164.99)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_614",
+          "data-name": "Path 614",
+          d: "M333.358,250.506h0a4.691,4.691,0,0,1,4.691,4.691v8.024a4.691,4.691,0,0,1-4.691,4.691h0v-17.4Z",
+          transform: "translate(-198.068 -1.275)",
+          opacity: "0.1"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+          id: "Path_615",
+          "data-name": "Path 615",
+          d: "M334.009,250.506h0A4.691,4.691,0,0,1,338.7,255.2v8.024a4.691,4.691,0,0,1-4.691,4.691h0Z",
+          transform: "translate(-198.528 -1.275)",
+          fill: "#dce0ed"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("ellipse", {
+          id: "Ellipse_130",
+          "data-name": "Ellipse 130",
+          cx: "3.879",
+          cy: "4.72",
+          rx: "3.879",
+          ry: "4.72",
+          transform: "translate(115.307 253.573)",
+          fill: "#6c63ff"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("text", {
+        id: "Personal_Car_Loan",
+        "data-name": "Personal Car Loan",
+        transform: "translate(101 167)",
+        "font-size": "16",
+        "font-family": "AbrilFatface-Regular, Abril Fatface",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("tspan", {
+          x: "-67.672",
+          y: "0",
+          children: "Personal Car Loan"
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("text", {
+        id: "Truck_Finance",
+        "data-name": "Truck Finance",
+        transform: "translate(333 167)",
+        "font-size": "16",
+        "font-family": "AbrilFatface-Regular, Abril Fatface",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("tspan", {
+          x: "-53.76",
+          y: "0",
+          children: "Truck Finance"
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("text", {
+        id: "Bike_Loan",
+        "data-name": "Bike Loan",
+        transform: "translate(538 167)",
+        "font-size": "16",
+        "font-family": "AbrilFatface-Regular, Abril Fatface",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("tspan", {
+          x: "-36.568",
+          y: "0",
+          children: "Bike Loan"
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("text", {
+        id: "Equipment_Finance",
+        "data-name": "Equipment Finance",
+        transform: "translate(751 167)",
+        "font-size": "16",
+        "font-family": "AbrilFatface-Regular, Abril Fatface",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("tspan", {
+          x: "-72",
+          y: "0",
+          children: "Equipment Finance"
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("text", {
+        id: "Marine_Loans",
+        "data-name": "Marine Loans",
+        transform: "translate(983 167)",
+        "font-size": "16",
+        "font-family": "AbrilFatface-Regular, Abril Fatface",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("tspan", {
+          x: "-50.008",
+          y: "0",
+          children: "Marine Loans"
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("text", {
+        id: "Chattel_Mortgage",
+        "data-name": "Chattel Mortgage",
+        transform: "translate(1187 167)",
+        "font-size": "16",
+        "font-family": "AbrilFatface-Regular, Abril Fatface",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("tspan", {
+          x: "-63.232",
+          y: "0",
+          children: "Chattel Mortgage"
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "Rectangle_207",
+        "data-name": "Rectangle 207",
+        fill: "none",
+        stroke: "#ccc",
+        "stroke-width": "1",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          width: "213",
+          height: "189",
+          stroke: "none"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          x: "0.5",
+          y: "0.5",
+          width: "212",
+          height: "188",
+          fill: "none"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "Rectangle_208",
+        "data-name": "Rectangle 208",
+        transform: "translate(213)",
+        fill: "none",
+        stroke: "#ccc",
+        "stroke-width": "1",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          width: "241",
+          height: "189",
+          stroke: "none"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          x: "0.5",
+          y: "0.5",
+          width: "240",
+          height: "188",
+          fill: "none"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "Rectangle_209",
+        "data-name": "Rectangle 209",
+        transform: "translate(452)",
+        fill: "none",
+        stroke: "#ccc",
+        "stroke-width": "1",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          width: "173",
+          height: "189",
+          stroke: "none"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          x: "0.5",
+          y: "0.5",
+          width: "172",
+          height: "188",
+          fill: "none"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "Rectangle_210",
+        "data-name": "Rectangle 210",
+        transform: "translate(625)",
+        fill: "none",
+        stroke: "#ccc",
+        "stroke-width": "1",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          width: "263",
+          height: "189",
+          stroke: "none"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          x: "0.5",
+          y: "0.5",
+          width: "262",
+          height: "188",
+          fill: "none"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "Rectangle_211",
+        "data-name": "Rectangle 211",
+        transform: "translate(888)",
+        fill: "none",
+        stroke: "#ccc",
+        "stroke-width": "1",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          width: "192",
+          height: "189",
+          stroke: "none"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          x: "0.5",
+          y: "0.5",
+          width: "191",
+          height: "188",
+          fill: "none"
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+        id: "Rectangle_212",
+        "data-name": "Rectangle 212",
+        transform: "translate(1077)",
+        fill: "none",
+        stroke: "#ccc",
+        "stroke-width": "1",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          width: "208",
+          height: "189",
+          stroke: "none"
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("rect", {
+          x: "0.5",
+          y: "0.5",
+          width: "207",
+          height: "188",
+          fill: "none"
+        })]
+      })]
+    })
+  });
+}
+
+/***/ }),
+
+/***/ "./resources/js/components/new.js":
+/*!****************************************!*\
+  !*** ./resources/js/components/new.js ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ NewDesign)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+
+
+function NewDesign() {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["default"], {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "208.569",
+      height: "51.026",
+      viewBox: "0 0 208.569 51.026",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("defs", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("clipPath", {
+          id: "clip-path",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path54",
+            d: "M0-114.156H208.569v-51.026H0Z",
+            transform: "translate(0 165.182)"
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("clipPath", {
+          id: "clip-path-2",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path60",
+            d: "M372.8-184.852h38.456v59.575H372.8Z",
+            transform: "translate(-372.796 184.852)"
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("clipPath", {
+          id: "clip-path-3",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path66",
+            d: "M403.2-165.182v51.026H534.949v-51.026Z",
+            transform: "translate(-403.195 165.182)"
+          })
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("g", {
+        id: "g10",
+        transform: "translate(-85 154.182)",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+          id: "g12",
+          transform: "translate(85 -154.182)",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path14",
+            d: "M14.817-104.762a5.567,5.567,0,0,0-5.23-3.486c-4.492,0-6.1,3.755-6.1,6.571,0,3.218,2.045,6.6,6.034,6.6a5.613,5.613,0,0,0,5.263-3.419h3.889a9.531,9.531,0,0,1-9.152,6.6c-6.1,0-9.52-4.995-9.52-9.789a9.5,9.5,0,0,1,9.554-9.755,9.455,9.455,0,0,1,9.118,6.671H14.817",
+            transform: "translate(0 128.037)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path16",
+            d: "M74.861-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.336,6.537,6.488,6.488,0,0,0,6.47-6.537,6.344,6.344,0,0,0-6.437-6.638Zm6.369,15.89v-2.883h-.067a7.107,7.107,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.361,7.361,0,0,1,6.3,3.118h.067v-2.615h3.486v18.572H81.23",
+            transform: "translate(-44.924 128.037)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path18",
+            d: "M140.365-92.359V-110.93h3.252v1.676h.067a5.723,5.723,0,0,1,4.727-2.179v3.587a6.55,6.55,0,0,0-2.514.67c-1.106.6-2.045,2.011-2.045,4.66v10.157h-3.487",
+            transform: "translate(-97.005 128.037)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path20",
+            d: "M177.71-105.184h-3.487V-129.99h3.487v24.807",
+            transform: "translate(-120.405 140.861)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path22",
+            d: "M203.878-108.248a6.547,6.547,0,0,0-6.537,6.571,6.576,6.576,0,0,0,6.537,6.6,6.587,6.587,0,0,0,6.537-6.638A6.54,6.54,0,0,0,203.878-108.248Zm0,16.359a9.986,9.986,0,0,1-10.023-9.889,9.87,9.87,0,0,1,10.023-9.654,9.861,9.861,0,0,1,10.023,9.722,9.991,9.991,0,0,1-10.023,9.822",
+            transform: "translate(-133.971 128.037)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path24",
+            d: "M276.31-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.335,6.537,6.488,6.488,0,0,0,6.47-6.537A6.343,6.343,0,0,0,276.31-108.248Zm6.369,15.89v-2.883h-.067a7.106,7.106,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.36,7.36,0,0,1,6.3,3.118h.067v-2.615h3.486v18.572h-3.486",
+            transform: "translate(-184.144 128.037)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path26",
+            d: "M353.513-92.359v-10.09c0-1.441,0-5.8-4.626-5.8-2.917,0-4.895,2.045-4.895,5.766v10.124h-3.487V-110.93h3.252v1.978h.067a6.6,6.6,0,0,1,5.431-2.481,7.548,7.548,0,0,1,6.571,3.319,9.061,9.061,0,0,1,1.173,4.76v11h-3.487",
+            transform: "translate(-235.321 128.037)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path28",
+            d: "M487.532-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.335,6.537,6.488,6.488,0,0,0,6.47-6.537A6.343,6.343,0,0,0,487.532-108.248Zm6.369,15.89v-2.883h-.067a7.106,7.106,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.36,7.36,0,0,1,6.3,3.118h.067v-2.615h3.487v18.572H493.9",
+            transform: "translate(-330.118 128.037)",
+            fill: "#7a79a5"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path30",
+            d: "M555.283-105.184H551.8V-129.99h3.487v24.807",
+            transform: "translate(-381.342 140.861)",
+            fill: "#7a79a5"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path32",
+            d: "M585.839-102.818a6.029,6.029,0,0,0-6-5.431,6.03,6.03,0,0,0-6,5.431Zm-12,2.682a6.3,6.3,0,0,0,6.1,5.062,5.936,5.936,0,0,0,5.3-3.118h3.487a9.465,9.465,0,0,1-8.917,6.3,9.689,9.689,0,0,1-9.453-9.789,9.547,9.547,0,0,1,9.521-9.755,9.52,9.52,0,0,1,9.453,9.52c0,.6-.067,1.542-.1,1.777H573.838",
+            transform: "translate(-394.166 128.037)",
+            fill: "#7a79a5"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path34",
+            d: "M642.612-106a2.286,2.286,0,0,0-2.38-2.246,2,2,0,0,0-2.179,1.978c0,1.542,1.341,1.944,2.883,2.413,1.442.436,5.6,1.609,5.6,6.034,0,3.285-2.28,5.934-6.235,5.934a6.363,6.363,0,0,1-6.57-6.571h3.487c.134,2.079,1.206,3.386,3.151,3.386a2.465,2.465,0,0,0,2.682-2.548c0-1.643-1.441-2.213-3.252-2.849-2.011-.738-5.23-1.643-5.23-5.6a5.561,5.561,0,0,1,5.833-5.364A5.486,5.486,0,0,1,646.1-106h-3.487",
+            transform: "translate(-437.965 128.037)",
+            fill: "#7a79a5"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path36",
+            d: "M546.476-23.343v-1.109h.945v1.109h-.945",
+            transform: "translate(-377.665 67.925)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path38",
+            d: "M557.026-35.793a1.51,1.51,0,0,0-1.418-.945,1.653,1.653,0,0,0-1.654,1.781,1.673,1.673,0,0,0,1.635,1.79,1.521,1.521,0,0,0,1.427-.927h1.054a2.584,2.584,0,0,1-2.481,1.79,2.572,2.572,0,0,1-2.58-2.654A2.576,2.576,0,0,1,555.6-37.6a2.563,2.563,0,0,1,2.472,1.809h-1.045",
+            transform: "translate(-382.18 77.013)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path40",
+            d: "M574-36.739a1.775,1.775,0,0,0-1.772,1.781A1.783,1.783,0,0,0,574-33.167a1.786,1.786,0,0,0,1.772-1.8A1.773,1.773,0,0,0,574-36.739Zm0,4.435a2.707,2.707,0,0,1-2.717-2.681A2.676,2.676,0,0,1,574-37.6a2.673,2.673,0,0,1,2.717,2.635A2.708,2.708,0,0,1,574-32.3",
+            transform: "translate(-394.807 77.013)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path42",
+            d: "M598.487-32.431v-2.8c0-.427-.055-1.508-1.191-1.508-1.209,0-1.191,1.081-1.2,1.5v2.808h-.945v-2.8a1.729,1.729,0,0,0-.209-1.036,1.048,1.048,0,0,0-.936-.473c-1.245,0-1.245,1.127-1.245,1.5v2.808h-.945v-5.035h.872v.545h.018a1.648,1.648,0,0,1,1.445-.682,1.727,1.727,0,0,1,1.563.845,1.74,1.74,0,0,1,1.663-.845,1.921,1.921,0,0,1,1.772.909,2.5,2.5,0,0,1,.282,1.227v3.035h-.945",
+            transform: "translate(-408.999 77.013)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path44",
+            d: "M620.8-23.343v-1.109h.945v1.109H620.8",
+            transform: "translate(-429.028 67.925)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path46",
+            d: "M630-36.739a1.75,1.75,0,0,0-1.727,1.8,1.757,1.757,0,0,0,1.718,1.772,1.759,1.759,0,0,0,1.754-1.772A1.72,1.72,0,0,0,630-36.739Zm1.727,4.308v-.781h-.018A1.927,1.927,0,0,1,630-32.3a2.585,2.585,0,0,1-2.671-2.626A2.609,2.609,0,0,1,630-37.6a2,2,0,0,1,1.709.845h.018v-.709h.945v5.035h-.945",
+            transform: "translate(-433.542 77.013)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+            id: "path48",
+            d: "M649.31-37.16v2.726c0,1.245.554,1.572,1.254,1.572.782,0,1.318-.5,1.318-1.6v-2.7h.945v5.035h-.863v-.545h-.018a1.686,1.686,0,0,1-1.482.672,2.15,2.15,0,0,1-1.435-.5,2.356,2.356,0,0,1-.664-1.935V-37.16h.945",
+            transform: "translate(-448.08 76.707)",
+            fill: "#21376c"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("g", {
+            id: "g50",
+            transform: "translate(0 0)",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("g", {
+              id: "g52",
+              "clip-path": "url(#clip-path)",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("g", {
+                id: "g58",
+                transform: "translate(115.16 -6.076)",
+                "clip-path": "url(#clip-path-2)",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("g", {
+                  id: "g64",
+                  transform: "translate(9.39 6.076)",
+                  "clip-path": "url(#clip-path-3)",
+                  children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+                    id: "path70",
+                    d: "M418.315-104.587a14.757,14.757,0,0,1-8.922,2.549,14.509,14.509,0,0,1-5.45-1.8,17.4,17.4,0,0,1-.747-4,1.147,1.147,0,0,1,1.1-1.1,20.073,20.073,0,0,1,2.131.528,10.209,10.209,0,0,0,2.176.571c3.274.176,8.658-.461,9.185-4.768a4.656,4.656,0,0,0,.22-1.077l-.022-.352-.2-.11c-1.121.066-2.285.11-3.406.2-1.121.066-2.263.11-3.384.11-2.11-.066-4.352-.373-5.955-1.736a5.073,5.073,0,0,1-1.6-4.021,11.731,11.731,0,0,1,.11-1.516,13.156,13.156,0,0,1,4.153-8.065,11.138,11.138,0,0,1,8.065-3.648c3.758-.066,7.757,1.736,8.812,5.472a2.365,2.365,0,0,1,.2,1.011c.11,1.055-1.143,1.362-1.912,1.253a10.609,10.609,0,0,1-2.944-.835,9.413,9.413,0,0,0-2.945-.791,8.237,8.237,0,0,0-4.505,1.275,5.044,5.044,0,0,0-2.637,3.758c-.11.791.4,1.758,1.318,1.582a16.452,16.452,0,0,0,2.769-.374,15.875,15.875,0,0,1,2.813-.352,7.046,7.046,0,0,1,5.823,2.659,8.82,8.82,0,0,1,1.275,6.087c-.418,3.186-2.857,5.779-5.516,7.493h0",
+                    transform: "translate(-403.195 142.821)",
+                    fill: "#7a79a5"
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+                    id: "path72",
+                    d: "M427.126-111.048l7.674-1.758c-1.757-4.716-5.363-30.7,1.017-44.659l-2.126-1.295c-3.144,2.868-12.76,16.277-6.565,47.712h0",
+                    transform: "translate(-418.326 160.744)",
+                    fill: "#231f20"
+                  }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
+                    id: "path74",
+                    d: "M438.731-107.092c-1.255-7.13-4.716-31.344,3.514-45.676",
+                    transform: "translate(-426.51 156.603)",
+                    fill: "none",
+                    stroke: "#fff",
+                    "stroke-miterlimit": "10",
+                    "stroke-dashoffset": "72.276",
+                    "stroke-width": "3.035",
+                    "stroke-dasharray": "72.319 48.211"
+                  })]
+                })
+              })
+            })
+          })]
+        })
+      })]
+    })
+  });
+}
+
+/***/ }),
+
+/***/ "./resources/js/components/testimonial-svg.js":
+/*!****************************************************!*\
+  !*** ./resources/js/components/testimonial-svg.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ TestimonialSvg)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+
+function TestimonialSvg() {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.Fragment, {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("img", {
+      src: "/images/testimonials.png",
+      alt: "Testimonials"
+    })
+  });
+}
+
+/***/ }),
+
+/***/ "./resources/js/helpers/validators.js":
+/*!********************************************!*\
+  !*** ./resources/js/helpers/validators.js ***!
+  \********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "VALIDATE_EMAIL": () => (/* binding */ VALIDATE_EMAIL),
+/* harmony export */   "VALIDATE_PHONE_NUMBER": () => (/* binding */ VALIDATE_PHONE_NUMBER),
+/* harmony export */   "VALIDATE_ALPHA": () => (/* binding */ VALIDATE_ALPHA),
+/* harmony export */   "VALIDATE_BLOOD_GROUP": () => (/* binding */ VALIDATE_BLOOD_GROUP),
+/* harmony export */   "VALIDATE_ALPHA_NUMERIC": () => (/* binding */ VALIDATE_ALPHA_NUMERIC),
+/* harmony export */   "VALIDATE_YEAR": () => (/* binding */ VALIDATE_YEAR),
+/* harmony export */   "VALIDATE_NUMERIC": () => (/* binding */ VALIDATE_NUMERIC),
+/* harmony export */   "VALIDATE_PASSWORD": () => (/* binding */ VALIDATE_PASSWORD),
+/* harmony export */   "VALIDATE_CITY": () => (/* binding */ VALIDATE_CITY),
+/* harmony export */   "VALIDATE_STATE": () => (/* binding */ VALIDATE_STATE)
+/* harmony export */ });
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/@babel/runtime/regenerator/index.js");
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__);
+
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+var VALIDATE_EMAIL = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee(value) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            return _context.abrupt("return", /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/.test(value));
+
+          case 1:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
+
+  return function VALIDATE_EMAIL(_x) {
+    return _ref.apply(this, arguments);
+  };
+}();
+var VALIDATE_PHONE_NUMBER = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee2(value) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            return _context2.abrupt("return", /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/.test(value));
+
+          case 1:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2);
+  }));
+
+  return function VALIDATE_PHONE_NUMBER(_x2) {
+    return _ref2.apply(this, arguments);
+  };
+}();
+var VALIDATE_ALPHA = /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee3(value) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            return _context3.abrupt("return", /^[a-z]*/gi.test(value));
+
+          case 1:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3);
+  }));
+
+  return function VALIDATE_ALPHA(_x3) {
+    return _ref3.apply(this, arguments);
+  };
+}();
+var VALIDATE_BLOOD_GROUP = /*#__PURE__*/function () {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee4(value) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee4$(_context4) {
+      while (1) {
+        switch (_context4.prev = _context4.next) {
+          case 0:
+            return _context4.abrupt("return", /^[a-zA-Z+-]*/.test(value));
+
+          case 1:
+          case "end":
+            return _context4.stop();
+        }
+      }
+    }, _callee4);
+  }));
+
+  return function VALIDATE_BLOOD_GROUP(_x4) {
+    return _ref4.apply(this, arguments);
+  };
+}();
+var VALIDATE_ALPHA_NUMERIC = /*#__PURE__*/function () {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee5(value) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            return _context5.abrupt("return", /^[a-z0-9]*/gi.test(value));
+
+          case 1:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5);
+  }));
+
+  return function VALIDATE_ALPHA_NUMERIC(_x5) {
+    return _ref5.apply(this, arguments);
+  };
+}();
+var VALIDATE_YEAR = /*#__PURE__*/function () {
+  var _ref6 = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee6(value) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee6$(_context6) {
+      while (1) {
+        switch (_context6.prev = _context6.next) {
+          case 0:
+            return _context6.abrupt("return", /^[1-9][0-9]{3}$/.test(value));
+
+          case 1:
+          case "end":
+            return _context6.stop();
+        }
+      }
+    }, _callee6);
+  }));
+
+  return function VALIDATE_YEAR(_x6) {
+    return _ref6.apply(this, arguments);
+  };
+}();
+var VALIDATE_NUMERIC = /*#__PURE__*/function () {
+  var _ref7 = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee7(value) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee7$(_context7) {
+      while (1) {
+        switch (_context7.prev = _context7.next) {
+          case 0:
+            return _context7.abrupt("return", /^[1-9]*$/.test(value));
+
+          case 1:
+          case "end":
+            return _context7.stop();
+        }
+      }
+    }, _callee7);
+  }));
+
+  return function VALIDATE_NUMERIC(_x7) {
+    return _ref7.apply(this, arguments);
+  };
+}();
+var VALIDATE_PASSWORD = /*#__PURE__*/function () {
+  var _ref8 = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee8(value) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee8$(_context8) {
+      while (1) {
+        switch (_context8.prev = _context8.next) {
+          case 0:
+            return _context8.abrupt("return", /^[ A-Za-z0-9_@./#&+-]*$/.test(value));
+
+          case 1:
+          case "end":
+            return _context8.stop();
+        }
+      }
+    }, _callee8);
+  }));
+
+  return function VALIDATE_PASSWORD(_x8) {
+    return _ref8.apply(this, arguments);
+  };
+}();
+var VALIDATE_CITY = /*#__PURE__*/function () {
+  var _ref9 = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee9(value) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee9$(_context9) {
+      while (1) {
+        switch (_context9.prev = _context9.next) {
+          case 0:
+            return _context9.abrupt("return", /^[a-z0-9]*/gi.test(value));
+
+          case 1:
+          case "end":
+            return _context9.stop();
+        }
+      }
+    }, _callee9);
+  }));
+
+  return function VALIDATE_CITY(_x9) {
+    return _ref9.apply(this, arguments);
+  };
+}();
+var VALIDATE_STATE = /*#__PURE__*/function () {
+  var _ref10 = _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee10(value) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().wrap(function _callee10$(_context10) {
+      while (1) {
+        switch (_context10.prev = _context10.next) {
+          case 0:
+            return _context10.abrupt("return", /^[a-z0-9]*/gi.test(value));
+
+          case 1:
+          case "end":
+            return _context10.stop();
+        }
+      }
+    }, _callee10);
+  }));
+
+  return function VALIDATE_STATE(_x10) {
+    return _ref10.apply(this, arguments);
+  };
+}();
+
+/***/ }),
+
+/***/ "./resources/js/pages/final-page.js":
+/*!******************************************!*\
+  !*** ./resources/js/pages/final-page.js ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ FinalPage)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var _helpers_validators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/validators */ "./resources/js/helpers/validators.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+
+
+
+function FinalPage(props) {
+  function updateRepay() {
+    document.getElementById('repay').innerHTML = props.repay;
+    console.log(props.repay);
+    document.getElementById("repay-span").style.display = "none";
+  }
+
+  function submitForm(e) {
+    e.preventDefault();
+    var validated = 1;
+    console.log(props.repay);
+
+    if (!props.repay) {
+      document.getElementById("repay-span").style.display = "block";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_ALPHA)(props.repay) == false) {
+      document.getElementById("repay-span").style.display = "block";
+      validated = 0;
+    }
+
+    if (validated == 1) {
+      // window.location.href="https://instagram.com";
+      console.log("Success"); // const data = {
+      //     loanAmount: props.loanAmount,
+      //     term: props.term,
+      // }
+      // console.log(data)
+      // const res = axios.post(`http://127.0.0.1:8000/validate`, data).then(() => {
+      //     console.log("Success. . . . ")
+      // }).catch(error => {
+      //     console.log("ERRRR:: ", error.response.data);
+      // });
+      // if (res === "Worked") {
+      //     console.log(res)
+      // }
+      // else {
+      //     console.log("Shit")
+      //     console.log("___")
+      // }
+      // console.log(res)
+      // console.log("Sent data")
+      // console.log("Appended")
+      // window.location.href = "http://127.0.0.1:8000/form2";
+    }
+  }
+
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    className: "w99",
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        md: 2,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
+          className: "mt15",
+          xmlns: "http://www.w3.org/2000/svg",
+          width: "208.569",
+          height: "51.026",
+          viewBox: "0 0 208.569 51.026",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("defs", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("clipPath", {
+              id: "clip-path",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path54",
+                d: "M0-114.156H208.569v-51.026H0Z",
+                transform: "translate(0 165.182)"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("clipPath", {
+              id: "clip-path-2",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path60",
+                d: "M372.8-184.852h38.456v59.575H372.8Z",
+                transform: "translate(-372.796 184.852)"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("clipPath", {
+              id: "clip-path-3",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path66",
+                d: "M403.2-165.182v51.026H534.949v-51.026Z",
+                transform: "translate(-403.195 165.182)"
+              })
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("g", {
+            id: "g10",
+            transform: "translate(-85 154.182)",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("g", {
+              id: "g12",
+              transform: "translate(85 -154.182)",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path14",
+                d: "M14.817-104.762a5.567,5.567,0,0,0-5.23-3.486c-4.492,0-6.1,3.755-6.1,6.571,0,3.218,2.045,6.6,6.034,6.6a5.613,5.613,0,0,0,5.263-3.419h3.889a9.531,9.531,0,0,1-9.152,6.6c-6.1,0-9.52-4.995-9.52-9.789a9.5,9.5,0,0,1,9.554-9.755,9.455,9.455,0,0,1,9.118,6.671H14.817",
+                transform: "translate(0 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path16",
+                d: "M74.861-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.336,6.537,6.488,6.488,0,0,0,6.47-6.537,6.344,6.344,0,0,0-6.437-6.638Zm6.369,15.89v-2.883h-.067a7.107,7.107,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.361,7.361,0,0,1,6.3,3.118h.067v-2.615h3.486v18.572H81.23",
+                transform: "translate(-44.924 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path18",
+                d: "M140.365-92.359V-110.93h3.252v1.676h.067a5.723,5.723,0,0,1,4.727-2.179v3.587a6.55,6.55,0,0,0-2.514.67c-1.106.6-2.045,2.011-2.045,4.66v10.157h-3.487",
+                transform: "translate(-97.005 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path20",
+                d: "M177.71-105.184h-3.487V-129.99h3.487v24.807",
+                transform: "translate(-120.405 140.861)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path22",
+                d: "M203.878-108.248a6.547,6.547,0,0,0-6.537,6.571,6.576,6.576,0,0,0,6.537,6.6,6.587,6.587,0,0,0,6.537-6.638A6.54,6.54,0,0,0,203.878-108.248Zm0,16.359a9.986,9.986,0,0,1-10.023-9.889,9.87,9.87,0,0,1,10.023-9.654,9.861,9.861,0,0,1,10.023,9.722,9.991,9.991,0,0,1-10.023,9.822",
+                transform: "translate(-133.971 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path24",
+                d: "M276.31-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.335,6.537,6.488,6.488,0,0,0,6.47-6.537A6.343,6.343,0,0,0,276.31-108.248Zm6.369,15.89v-2.883h-.067a7.106,7.106,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.36,7.36,0,0,1,6.3,3.118h.067v-2.615h3.486v18.572h-3.486",
+                transform: "translate(-184.144 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path26",
+                d: "M353.513-92.359v-10.09c0-1.441,0-5.8-4.626-5.8-2.917,0-4.895,2.045-4.895,5.766v10.124h-3.487V-110.93h3.252v1.978h.067a6.6,6.6,0,0,1,5.431-2.481,7.548,7.548,0,0,1,6.571,3.319,9.061,9.061,0,0,1,1.173,4.76v11h-3.487",
+                transform: "translate(-235.321 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path28",
+                d: "M487.532-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.335,6.537,6.488,6.488,0,0,0,6.47-6.537A6.343,6.343,0,0,0,487.532-108.248Zm6.369,15.89v-2.883h-.067a7.106,7.106,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.36,7.36,0,0,1,6.3,3.118h.067v-2.615h3.487v18.572H493.9",
+                transform: "translate(-330.118 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path30",
+                d: "M555.283-105.184H551.8V-129.99h3.487v24.807",
+                transform: "translate(-381.342 140.861)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path32",
+                d: "M585.839-102.818a6.029,6.029,0,0,0-6-5.431,6.03,6.03,0,0,0-6,5.431Zm-12,2.682a6.3,6.3,0,0,0,6.1,5.062,5.936,5.936,0,0,0,5.3-3.118h3.487a9.465,9.465,0,0,1-8.917,6.3,9.689,9.689,0,0,1-9.453-9.789,9.547,9.547,0,0,1,9.521-9.755,9.52,9.52,0,0,1,9.453,9.52c0,.6-.067,1.542-.1,1.777H573.838",
+                transform: "translate(-394.166 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path34",
+                d: "M642.612-106a2.286,2.286,0,0,0-2.38-2.246,2,2,0,0,0-2.179,1.978c0,1.542,1.341,1.944,2.883,2.413,1.442.436,5.6,1.609,5.6,6.034,0,3.285-2.28,5.934-6.235,5.934a6.363,6.363,0,0,1-6.57-6.571h3.487c.134,2.079,1.206,3.386,3.151,3.386a2.465,2.465,0,0,0,2.682-2.548c0-1.643-1.441-2.213-3.252-2.849-2.011-.738-5.23-1.643-5.23-5.6a5.561,5.561,0,0,1,5.833-5.364A5.486,5.486,0,0,1,646.1-106h-3.487",
+                transform: "translate(-437.965 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path36",
+                d: "M546.476-23.343v-1.109h.945v1.109h-.945",
+                transform: "translate(-377.665 67.925)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path38",
+                d: "M557.026-35.793a1.51,1.51,0,0,0-1.418-.945,1.653,1.653,0,0,0-1.654,1.781,1.673,1.673,0,0,0,1.635,1.79,1.521,1.521,0,0,0,1.427-.927h1.054a2.584,2.584,0,0,1-2.481,1.79,2.572,2.572,0,0,1-2.58-2.654A2.576,2.576,0,0,1,555.6-37.6a2.563,2.563,0,0,1,2.472,1.809h-1.045",
+                transform: "translate(-382.18 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path40",
+                d: "M574-36.739a1.775,1.775,0,0,0-1.772,1.781A1.783,1.783,0,0,0,574-33.167a1.786,1.786,0,0,0,1.772-1.8A1.773,1.773,0,0,0,574-36.739Zm0,4.435a2.707,2.707,0,0,1-2.717-2.681A2.676,2.676,0,0,1,574-37.6a2.673,2.673,0,0,1,2.717,2.635A2.708,2.708,0,0,1,574-32.3",
+                transform: "translate(-394.807 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path42",
+                d: "M598.487-32.431v-2.8c0-.427-.055-1.508-1.191-1.508-1.209,0-1.191,1.081-1.2,1.5v2.808h-.945v-2.8a1.729,1.729,0,0,0-.209-1.036,1.048,1.048,0,0,0-.936-.473c-1.245,0-1.245,1.127-1.245,1.5v2.808h-.945v-5.035h.872v.545h.018a1.648,1.648,0,0,1,1.445-.682,1.727,1.727,0,0,1,1.563.845,1.74,1.74,0,0,1,1.663-.845,1.921,1.921,0,0,1,1.772.909,2.5,2.5,0,0,1,.282,1.227v3.035h-.945",
+                transform: "translate(-408.999 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path44",
+                d: "M620.8-23.343v-1.109h.945v1.109H620.8",
+                transform: "translate(-429.028 67.925)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path46",
+                d: "M630-36.739a1.75,1.75,0,0,0-1.727,1.8,1.757,1.757,0,0,0,1.718,1.772,1.759,1.759,0,0,0,1.754-1.772A1.72,1.72,0,0,0,630-36.739Zm1.727,4.308v-.781h-.018A1.927,1.927,0,0,1,630-32.3a2.585,2.585,0,0,1-2.671-2.626A2.609,2.609,0,0,1,630-37.6a2,2,0,0,1,1.709.845h.018v-.709h.945v5.035h-.945",
+                transform: "translate(-433.542 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                id: "path48",
+                d: "M649.31-37.16v2.726c0,1.245.554,1.572,1.254,1.572.782,0,1.318-.5,1.318-1.6v-2.7h.945v5.035h-.863v-.545h-.018a1.686,1.686,0,0,1-1.482.672,2.15,2.15,0,0,1-1.435-.5,2.356,2.356,0,0,1-.664-1.935V-37.16h.945",
+                transform: "translate(-448.08 76.707)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("g", {
+                id: "g50",
+                transform: "translate(0 0)",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("g", {
+                  id: "g52",
+                  "clip-path": "url(#clip-path)",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("g", {
+                    id: "g58",
+                    transform: "translate(115.16 -6.076)",
+                    "clip-path": "url(#clip-path-2)",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("g", {
+                      id: "g64",
+                      transform: "translate(9.39 6.076)",
+                      "clip-path": "url(#clip-path-3)",
+                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                        id: "path70",
+                        d: "M418.315-104.587a14.757,14.757,0,0,1-8.922,2.549,14.509,14.509,0,0,1-5.45-1.8,17.4,17.4,0,0,1-.747-4,1.147,1.147,0,0,1,1.1-1.1,20.073,20.073,0,0,1,2.131.528,10.209,10.209,0,0,0,2.176.571c3.274.176,8.658-.461,9.185-4.768a4.656,4.656,0,0,0,.22-1.077l-.022-.352-.2-.11c-1.121.066-2.285.11-3.406.2-1.121.066-2.263.11-3.384.11-2.11-.066-4.352-.373-5.955-1.736a5.073,5.073,0,0,1-1.6-4.021,11.731,11.731,0,0,1,.11-1.516,13.156,13.156,0,0,1,4.153-8.065,11.138,11.138,0,0,1,8.065-3.648c3.758-.066,7.757,1.736,8.812,5.472a2.365,2.365,0,0,1,.2,1.011c.11,1.055-1.143,1.362-1.912,1.253a10.609,10.609,0,0,1-2.944-.835,9.413,9.413,0,0,0-2.945-.791,8.237,8.237,0,0,0-4.505,1.275,5.044,5.044,0,0,0-2.637,3.758c-.11.791.4,1.758,1.318,1.582a16.452,16.452,0,0,0,2.769-.374,15.875,15.875,0,0,1,2.813-.352,7.046,7.046,0,0,1,5.823,2.659,8.82,8.82,0,0,1,1.275,6.087c-.418,3.186-2.857,5.779-5.516,7.493h0",
+                        transform: "translate(-403.195 142.821)",
+                        fill: "#7a79a5"
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                        id: "path72",
+                        d: "M427.126-111.048l7.674-1.758c-1.757-4.716-5.363-30.7,1.017-44.659l-2.126-1.295c-3.144,2.868-12.76,16.277-6.565,47.712h0",
+                        transform: "translate(-418.326 160.744)",
+                        fill: "#231f20"
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("path", {
+                        id: "path74",
+                        d: "M438.731-107.092c-1.255-7.13-4.716-31.344,3.514-45.676",
+                        transform: "translate(-426.51 156.603)",
+                        fill: "none",
+                        stroke: "#fff",
+                        "stroke-miterlimit": "10",
+                        "stroke-dashoffset": "72.276",
+                        "stroke-width": "3.035",
+                        "stroke-dasharray": "72.319 48.211"
+                      })]
+                    })
+                  })
+                })
+              })]
+            })
+          })]
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        className: " ",
+        md: 6,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("svg", {
+          className: "float-right mt15 mr30",
+          xmlns: "http://www.w3.org/2000/svg",
+          width: "339",
+          height: "49",
+          viewBox: "0 0 339 49",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("g", {
+            id: "Group_4",
+            "data-name": "Group 4",
+            transform: "translate(-512 -23)",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("g", {
+              id: "Ellipse_5",
+              "data-name": "Ellipse 5",
+              transform: "translate(512 23)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "23.5",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("g", {
+              id: "Ellipse_6",
+              "data-name": "Ellipse 6",
+              transform: "translate(657 23)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "23.5",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("g", {
+              id: "Ellipse_7",
+              "data-name": "Ellipse 7",
+              transform: "translate(802 23)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
+              id: "Line_12",
+              "data-name": "Line 12",
+              x2: "95",
+              transform: "translate(561.5 47.5)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("line", {
+              id: "Line_13",
+              "data-name": "Line 13",
+              x2: "95",
+              transform: "translate(706.5 47.5)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("text", {
+              id: "_1",
+              "data-name": "1",
+              transform: "translate(532 55)",
+              fill: "#4d4acf",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "1"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("text", {
+              id: "_2",
+              "data-name": "2",
+              transform: "translate(676 56)",
+              fill: "#4d4acf",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "2"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("text", {
+              id: "_3",
+              "data-name": "3",
+              transform: "translate(821 55)",
+              fill: "#4d4acf",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "3"
+              })
+            })]
+          })
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        className: " ",
+        md: 4,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("a", {
+          href: "/",
+          className: "text-decoration-none float-right mt15",
+          children: "Go back to home page"
+        })
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      className: "d-flex align-items-center pl40p5",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["default"], {
+        id: "page4",
+        className: "mx-auto w62 form-container-no-bg",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          md: 12,
+          className: "sub-heading-text mt15",
+          children: ["Here are your quote details", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("br", {})]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          md: 12,
+          className: "normal-text mt15",
+          children: ["Amount financed", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+            className: "mt4"
+          }), "$10,000"]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          md: 12,
+          className: "normal-text mt15",
+          children: ["Loan terms", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+            className: "mt4"
+          }), "60 months"]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          md: 12,
+          className: "normal-text mt15",
+          children: ["Residual", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+            className: "mt4"
+          }), "30%"]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          md: 12,
+          className: "normal-text mt15",
+          children: ["Repayment", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+            className: "mt4"
+          }), "$158.96", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("br", {})]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          md: 12,
+          className: "mt15 normal-text",
+          children: ["How would you like to do the repayment?", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("br", {})]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          className: "w19 mt4",
+          md: 3,
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
+            onClick: function onClick(e) {
+              e.preventDefault();
+              props.setRepay("Week");
+              updateRepay();
+            },
+            className: "w100 small-button-text",
+            children: "Week"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("br", {})]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          className: "w19 mt4",
+          md: 3,
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
+            onClick: function onClick(e) {
+              e.preventDefault();
+              props.setRepay("Fortnight");
+              updateRepay();
+            },
+            className: "w100 small-button-text",
+            children: "Fortnight"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("br", {})]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          className: "w19 mt4",
+          md: 3,
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
+            onClick: function onClick(e) {
+              e.preventDefault();
+              props.setRepay("Month");
+              updateRepay();
+            },
+            className: "w100 small-button-text",
+            children: "Month"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("br", {})]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("input", {
+          type: "text",
+          id: "repay",
+          name: "repay",
+          className: "form-control",
+          hidden: true
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("span", {
+          id: "repay-span",
+          className: " dn ml-2 p-2",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("span", {
+            className: "color-red",
+            children: "* "
+          }), "Please select the type of repayment"]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          md: 12,
+          className: "mt15 mb20",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
+            onClick: submitForm,
+            className: "w19 big-button-text bg-blue",
+            children: "Confirm"
+          })
+        })]
+      })
+    })]
+  });
+}
+
+/***/ }),
+
+/***/ "./resources/js/pages/form.js":
+/*!************************************!*\
+  !*** ./resources/js/pages/form.js ***!
+  \************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Form)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var _form_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./form.css */ "./resources/js/pages/form.css");
+/* harmony import */ var _helpers_validators__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../helpers/validators */ "./resources/js/helpers/validators.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+
+
+
+
+
+
+
+
+function Form(props) {
+  // const [loanAmount, setLoanAmount] = useState(0);
+  // const [term, setTerm] = useState(0);
+  // const [image, setImage] = useState('');
+  function updateTerm() {
+    console.log("Youuu");
+    document.getElementById('term').innerHTML = props.term;
+    console.log(props.term);
+    document.getElementById("term-span").style.opacity = "0";
+  }
+
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({
+    loanAmount: 0,
+    term: 0,
+    error_list: []
+  }),
+      _useState2 = _slicedToArray(_useState, 2),
+      studentInput = _useState2[0],
+      setStudent = _useState2[1];
+
+  var handleInput = function handleInput(e) {
+    e.persist();
+    setStudent(_objectSpread(_objectSpread({}, studentInput), {}, _defineProperty({}, e.target.name, e.target.value)));
+    setLoanAmount(e.target.value);
+    console.log(props.loanAmount);
+  };
+
+  var saveStudent = function saveStudent(e) {};
+
+  function submitForm(e) {
+    e.preventDefault();
+    var validated = 1;
+    console.log(studentInput.loanAmount);
+    console.log(props.loanAmount);
+
+    if (!props.loanAmount) {
+      document.getElementById("loanAmount").style.border = "2px";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_2__.VALIDATE_NUMERIC)(props.loanAmount) == false) {
+      document.getElementById("loanAmount").style.border = "2px soild red";
+      validated = 0;
+    }
+
+    if (!props.term) {
+      document.getElementById("term-span").style.opacity = "1";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_2__.VALIDATE_NUMERIC)(props.term) == false) {
+      document.getElementById("term-span").style.opacity = "1";
+      validated = 0;
+    }
+
+    if (validated == 1) {
+      // window.location.href="https://instagram.com";
+      console.log(props.term);
+      var data = {
+        loanAmount: props.loanAmount,
+        term: props.term
+      };
+      console.log(data);
+      var res = axios__WEBPACK_IMPORTED_MODULE_3___default().post("http://127.0.0.1:8000/validate", data).then(function () {
+        console.log("Success. . . . ");
+      })["catch"](function (error) {
+        console.log("ERRRR:: ", error.response.data);
+      });
+
+      if (res === "Worked") {
+        console.log(res);
+      } else {
+        console.log("Shit");
+        console.log("___");
+      }
+
+      console.log(res);
+      console.log("Sent data");
+      console.log("Appended");
+      window.location.href = "http://127.0.0.1:8000/form2";
+    }
+  }
+
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    className: "w99",
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+        md: 2,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+          className: "mt15",
+          xmlns: "http://www.w3.org/2000/svg",
+          width: "208.569",
+          height: "51.026",
+          viewBox: "0 0 208.569 51.026",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("defs", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("clipPath", {
+              id: "clip-path",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path54",
+                d: "M0-114.156H208.569v-51.026H0Z",
+                transform: "translate(0 165.182)"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("clipPath", {
+              id: "clip-path-2",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path60",
+                d: "M372.8-184.852h38.456v59.575H372.8Z",
+                transform: "translate(-372.796 184.852)"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("clipPath", {
+              id: "clip-path-3",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path66",
+                d: "M403.2-165.182v51.026H534.949v-51.026Z",
+                transform: "translate(-403.195 165.182)"
+              })
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("g", {
+            id: "g10",
+            transform: "translate(-85 154.182)",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("g", {
+              id: "g12",
+              transform: "translate(85 -154.182)",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path14",
+                d: "M14.817-104.762a5.567,5.567,0,0,0-5.23-3.486c-4.492,0-6.1,3.755-6.1,6.571,0,3.218,2.045,6.6,6.034,6.6a5.613,5.613,0,0,0,5.263-3.419h3.889a9.531,9.531,0,0,1-9.152,6.6c-6.1,0-9.52-4.995-9.52-9.789a9.5,9.5,0,0,1,9.554-9.755,9.455,9.455,0,0,1,9.118,6.671H14.817",
+                transform: "translate(0 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path16",
+                d: "M74.861-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.336,6.537,6.488,6.488,0,0,0,6.47-6.537,6.344,6.344,0,0,0-6.437-6.638Zm6.369,15.89v-2.883h-.067a7.107,7.107,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.361,7.361,0,0,1,6.3,3.118h.067v-2.615h3.486v18.572H81.23",
+                transform: "translate(-44.924 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path18",
+                d: "M140.365-92.359V-110.93h3.252v1.676h.067a5.723,5.723,0,0,1,4.727-2.179v3.587a6.55,6.55,0,0,0-2.514.67c-1.106.6-2.045,2.011-2.045,4.66v10.157h-3.487",
+                transform: "translate(-97.005 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path20",
+                d: "M177.71-105.184h-3.487V-129.99h3.487v24.807",
+                transform: "translate(-120.405 140.861)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path22",
+                d: "M203.878-108.248a6.547,6.547,0,0,0-6.537,6.571,6.576,6.576,0,0,0,6.537,6.6,6.587,6.587,0,0,0,6.537-6.638A6.54,6.54,0,0,0,203.878-108.248Zm0,16.359a9.986,9.986,0,0,1-10.023-9.889,9.87,9.87,0,0,1,10.023-9.654,9.861,9.861,0,0,1,10.023,9.722,9.991,9.991,0,0,1-10.023,9.822",
+                transform: "translate(-133.971 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path24",
+                d: "M276.31-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.335,6.537,6.488,6.488,0,0,0,6.47-6.537A6.343,6.343,0,0,0,276.31-108.248Zm6.369,15.89v-2.883h-.067a7.106,7.106,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.36,7.36,0,0,1,6.3,3.118h.067v-2.615h3.486v18.572h-3.486",
+                transform: "translate(-184.144 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path26",
+                d: "M353.513-92.359v-10.09c0-1.441,0-5.8-4.626-5.8-2.917,0-4.895,2.045-4.895,5.766v10.124h-3.487V-110.93h3.252v1.978h.067a6.6,6.6,0,0,1,5.431-2.481,7.548,7.548,0,0,1,6.571,3.319,9.061,9.061,0,0,1,1.173,4.76v11h-3.487",
+                transform: "translate(-235.321 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path28",
+                d: "M487.532-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.335,6.537,6.488,6.488,0,0,0,6.47-6.537A6.343,6.343,0,0,0,487.532-108.248Zm6.369,15.89v-2.883h-.067a7.106,7.106,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.36,7.36,0,0,1,6.3,3.118h.067v-2.615h3.487v18.572H493.9",
+                transform: "translate(-330.118 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path30",
+                d: "M555.283-105.184H551.8V-129.99h3.487v24.807",
+                transform: "translate(-381.342 140.861)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path32",
+                d: "M585.839-102.818a6.029,6.029,0,0,0-6-5.431,6.03,6.03,0,0,0-6,5.431Zm-12,2.682a6.3,6.3,0,0,0,6.1,5.062,5.936,5.936,0,0,0,5.3-3.118h3.487a9.465,9.465,0,0,1-8.917,6.3,9.689,9.689,0,0,1-9.453-9.789,9.547,9.547,0,0,1,9.521-9.755,9.52,9.52,0,0,1,9.453,9.52c0,.6-.067,1.542-.1,1.777H573.838",
+                transform: "translate(-394.166 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path34",
+                d: "M642.612-106a2.286,2.286,0,0,0-2.38-2.246,2,2,0,0,0-2.179,1.978c0,1.542,1.341,1.944,2.883,2.413,1.442.436,5.6,1.609,5.6,6.034,0,3.285-2.28,5.934-6.235,5.934a6.363,6.363,0,0,1-6.57-6.571h3.487c.134,2.079,1.206,3.386,3.151,3.386a2.465,2.465,0,0,0,2.682-2.548c0-1.643-1.441-2.213-3.252-2.849-2.011-.738-5.23-1.643-5.23-5.6a5.561,5.561,0,0,1,5.833-5.364A5.486,5.486,0,0,1,646.1-106h-3.487",
+                transform: "translate(-437.965 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path36",
+                d: "M546.476-23.343v-1.109h.945v1.109h-.945",
+                transform: "translate(-377.665 67.925)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path38",
+                d: "M557.026-35.793a1.51,1.51,0,0,0-1.418-.945,1.653,1.653,0,0,0-1.654,1.781,1.673,1.673,0,0,0,1.635,1.79,1.521,1.521,0,0,0,1.427-.927h1.054a2.584,2.584,0,0,1-2.481,1.79,2.572,2.572,0,0,1-2.58-2.654A2.576,2.576,0,0,1,555.6-37.6a2.563,2.563,0,0,1,2.472,1.809h-1.045",
+                transform: "translate(-382.18 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path40",
+                d: "M574-36.739a1.775,1.775,0,0,0-1.772,1.781A1.783,1.783,0,0,0,574-33.167a1.786,1.786,0,0,0,1.772-1.8A1.773,1.773,0,0,0,574-36.739Zm0,4.435a2.707,2.707,0,0,1-2.717-2.681A2.676,2.676,0,0,1,574-37.6a2.673,2.673,0,0,1,2.717,2.635A2.708,2.708,0,0,1,574-32.3",
+                transform: "translate(-394.807 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path42",
+                d: "M598.487-32.431v-2.8c0-.427-.055-1.508-1.191-1.508-1.209,0-1.191,1.081-1.2,1.5v2.808h-.945v-2.8a1.729,1.729,0,0,0-.209-1.036,1.048,1.048,0,0,0-.936-.473c-1.245,0-1.245,1.127-1.245,1.5v2.808h-.945v-5.035h.872v.545h.018a1.648,1.648,0,0,1,1.445-.682,1.727,1.727,0,0,1,1.563.845,1.74,1.74,0,0,1,1.663-.845,1.921,1.921,0,0,1,1.772.909,2.5,2.5,0,0,1,.282,1.227v3.035h-.945",
+                transform: "translate(-408.999 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path44",
+                d: "M620.8-23.343v-1.109h.945v1.109H620.8",
+                transform: "translate(-429.028 67.925)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path46",
+                d: "M630-36.739a1.75,1.75,0,0,0-1.727,1.8,1.757,1.757,0,0,0,1.718,1.772,1.759,1.759,0,0,0,1.754-1.772A1.72,1.72,0,0,0,630-36.739Zm1.727,4.308v-.781h-.018A1.927,1.927,0,0,1,630-32.3a2.585,2.585,0,0,1-2.671-2.626A2.609,2.609,0,0,1,630-37.6a2,2,0,0,1,1.709.845h.018v-.709h.945v5.035h-.945",
+                transform: "translate(-433.542 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                id: "path48",
+                d: "M649.31-37.16v2.726c0,1.245.554,1.572,1.254,1.572.782,0,1.318-.5,1.318-1.6v-2.7h.945v5.035h-.863v-.545h-.018a1.686,1.686,0,0,1-1.482.672,2.15,2.15,0,0,1-1.435-.5,2.356,2.356,0,0,1-.664-1.935V-37.16h.945",
+                transform: "translate(-448.08 76.707)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("g", {
+                id: "g50",
+                transform: "translate(0 0)",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("g", {
+                  id: "g52",
+                  "clip-path": "url(#clip-path)",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("g", {
+                    id: "g58",
+                    transform: "translate(115.16 -6.076)",
+                    "clip-path": "url(#clip-path-2)",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("g", {
+                      id: "g64",
+                      transform: "translate(9.39 6.076)",
+                      "clip-path": "url(#clip-path-3)",
+                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                        id: "path70",
+                        d: "M418.315-104.587a14.757,14.757,0,0,1-8.922,2.549,14.509,14.509,0,0,1-5.45-1.8,17.4,17.4,0,0,1-.747-4,1.147,1.147,0,0,1,1.1-1.1,20.073,20.073,0,0,1,2.131.528,10.209,10.209,0,0,0,2.176.571c3.274.176,8.658-.461,9.185-4.768a4.656,4.656,0,0,0,.22-1.077l-.022-.352-.2-.11c-1.121.066-2.285.11-3.406.2-1.121.066-2.263.11-3.384.11-2.11-.066-4.352-.373-5.955-1.736a5.073,5.073,0,0,1-1.6-4.021,11.731,11.731,0,0,1,.11-1.516,13.156,13.156,0,0,1,4.153-8.065,11.138,11.138,0,0,1,8.065-3.648c3.758-.066,7.757,1.736,8.812,5.472a2.365,2.365,0,0,1,.2,1.011c.11,1.055-1.143,1.362-1.912,1.253a10.609,10.609,0,0,1-2.944-.835,9.413,9.413,0,0,0-2.945-.791,8.237,8.237,0,0,0-4.505,1.275,5.044,5.044,0,0,0-2.637,3.758c-.11.791.4,1.758,1.318,1.582a16.452,16.452,0,0,0,2.769-.374,15.875,15.875,0,0,1,2.813-.352,7.046,7.046,0,0,1,5.823,2.659,8.82,8.82,0,0,1,1.275,6.087c-.418,3.186-2.857,5.779-5.516,7.493h0",
+                        transform: "translate(-403.195 142.821)",
+                        fill: "#7a79a5"
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                        id: "path72",
+                        d: "M427.126-111.048l7.674-1.758c-1.757-4.716-5.363-30.7,1.017-44.659l-2.126-1.295c-3.144,2.868-12.76,16.277-6.565,47.712h0",
+                        transform: "translate(-418.326 160.744)",
+                        fill: "#231f20"
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("path", {
+                        id: "path74",
+                        d: "M438.731-107.092c-1.255-7.13-4.716-31.344,3.514-45.676",
+                        transform: "translate(-426.51 156.603)",
+                        fill: "none",
+                        stroke: "#fff",
+                        "stroke-miterlimit": "10",
+                        "stroke-dashoffset": "72.276",
+                        "stroke-width": "3.035",
+                        "stroke-dasharray": "72.319 48.211"
+                      })]
+                    })
+                  })
+                })
+              })]
+            })
+          })]
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+        className: " ",
+        md: 6,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+          className: "float-right mt15 mr30",
+          xmlns: "http://www.w3.org/2000/svg",
+          width: "339",
+          height: "49",
+          viewBox: "0 0 339 49",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("g", {
+            id: "Group_3",
+            "data-name": "Group 3",
+            transform: "translate(-514 -23)",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("g", {
+              id: "Ellipse_2",
+              "data-name": "Ellipse 2",
+              transform: "translate(514 23)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "23.5",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("g", {
+              id: "Ellipse_3",
+              "data-name": "Ellipse 3",
+              transform: "translate(659 23)",
+              fill: "none",
+              stroke: "#ccc",
+              "stroke-width": "1",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("g", {
+              id: "Ellipse_4",
+              "data-name": "Ellipse 4",
+              transform: "translate(804 23)",
+              fill: "none",
+              stroke: "#ccc",
+              "stroke-width": "1",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+              id: "Line_7",
+              "data-name": "Line 7",
+              x2: "95",
+              transform: "translate(563.5 47.5)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+              id: "Line_8",
+              "data-name": "Line 8",
+              x2: "95",
+              transform: "translate(708.5 47.5)",
+              fill: "none",
+              stroke: "#ccc",
+              "stroke-width": "2"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              id: "_1",
+              "data-name": "1",
+              transform: "translate(534 55)",
+              fill: "#4d4acf",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "1"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              id: "_2",
+              "data-name": "2",
+              transform: "translate(678 56)",
+              fill: "#ccc",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "2"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              id: "_3",
+              "data-name": "3",
+              transform: "translate(823 55)",
+              fill: "#ccc",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "3"
+              })
+            })]
+          })
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+        className: " ",
+        md: 4,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+          href: "/",
+          className: "text-decoration-none float-right mt15",
+          children: "Go back to home page"
+        })
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      className: "d-flex align-items-center pl35",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("form", {
+        className: "d-flex mx-auto ",
+        id: "form1",
+        onSubmit: submitForm,
+        enctype: "multipart/form-data",
+        method: "POST",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          id: "page1",
+          className: "mx-auto w50 form-container",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+            md: 12,
+            className: "sub-heading-text",
+            children: ["Amount", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {})]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+            md: 12,
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+              className: "normal-text",
+              children: "Loan Amount"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+              type: "text",
+              id: "loanAmount",
+              name: "loanAmount",
+              onChange: function onChange(e) {
+                e.preventDefault();
+                props.setLoanAmount(e.target.value);
+              },
+              className: "form-control w50 mt10"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+              className: "",
+              md: 12,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                className: "normal-text",
+                children: "What is the term of the loan"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {})]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+                className: "",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                  onClick: function onClick(e) {
+                    e.preventDefault();
+                    props.setTerm(5);
+                    updateTerm();
+                  },
+                  className: "w25 small-button-text mt15",
+                  children: "5 years"
+                })
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+                className: "mt15",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                  onClick: function onClick(e) {
+                    e.preventDefault();
+                    props.setTerm(4);
+                    updateTerm();
+                  },
+                  className: "w25 small-button-text",
+                  children: "4 years"
+                })
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+                className: "mt15",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                  onClick: function onClick(e) {
+                    e.preventDefault();
+                    props.setTerm(3);
+                    updateTerm();
+                  },
+                  className: "w25 small-button-text",
+                  children: "3 years"
+                })
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+                className: "mt15",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                  onClick: function onClick(e) {
+                    e.preventDefault();
+                    props.setTerm(2);
+                    updateTerm();
+                  },
+                  className: "w25 small-button-text",
+                  children: "2 years"
+                })
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+                className: "mt15",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                  onClick: function onClick(e) {
+                    e.preventDefault();
+                    props.setTerm(1);
+                    updateTerm();
+                  },
+                  className: "w25 small-button-text",
+                  children: "1 year"
+                })
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+              type: "text",
+              id: "term",
+              name: "term",
+              onChange: handleInput,
+              value: studentInput.term,
+              className: "form-control",
+              hidden: true
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("span", {
+              id: "term-span",
+              className: " o0 ml-2 p-2 d-block",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                className: "color-red",
+                children: "* "
+              }), "Please click on the term you want"]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+                md: 12,
+                className: " mb20",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+                  type: "submit",
+                  className: " bg-dark big-button-text btn d-flex",
+                  children: "Continue"
+                })
+              })
+            })]
+          })]
+        })
+      })
+    })]
+  });
+}
+
+/***/ }),
+
+/***/ "./resources/js/pages/form2.js":
+/*!*************************************!*\
+  !*** ./resources/js/pages/form2.js ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Form2)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var _helpers_validators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/validators */ "./resources/js/helpers/validators.js");
+/* harmony import */ var _form_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./form.css */ "./resources/js/pages/form.css");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+
+
+
+
+function Form2(props) {
+  function updateIsVehicle() {
+    document.getElementById('isVehicle').innerHTML = props.isVehicle;
+    console.log(props.isVehicle); // document.getElementById("isVehicle-span").style.opacity = "0";
+
+    document.getElementById("isVehicle-span").style.display = "none";
+  }
+
+  function updateSupplier() {
+    document.getElementById('supplier').innerHTML = props.supplier;
+    console.log(props.supplier);
+    document.getElementById("supplier-span").style.display = "none";
+  }
+
+  function submitForm(e) {
+    e.preventDefault();
+    var validated = 1; // Vehicle Make
+
+    console.log("vehicleMake");
+    console.log(props.vehicleMake);
+
+    if (!props.vehicleMake) {
+      document.getElementById("vehicleMake").style.border = "2px";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_ALPHA)(props.vehicleMake) == false) {
+      document.getElementById("vehicleMake").style.border = "2px soild red";
+      validated = 0;
+    } // Vehicle Model
+
+
+    console.log("vehicleModel");
+    console.log(props.vehicleModel);
+
+    if (!props.vehicleModel) {
+      document.getElementById("vehicleModel").style.border = "2px";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_ALPHA)(props.vehicleModel) == false) {
+      document.getElementById("vehicleModel").style.border = "2px soild red";
+      validated = 0;
+    } // Build Year
+
+
+    console.log(props.buildYear);
+
+    if (!props.buildYear) {
+      document.getElementById("buildYear").style.border = "2px";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_NUMERIC)(props.buildYear) == false) {
+      document.getElementById("buildYear").style.border = "2px soild red";
+      validated = 0;
+    } // Is Vehicle
+
+
+    console.log(props.isVehicle);
+
+    if (!props.isVehicle) {
+      // document.getElementById("isVehicle-span").style.opacity = "1";
+      document.getElementById("isVehicle-span").style.display = "block";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_ALPHA)(props.isVehicle) == false) {
+      document.getElementById("isVehicle-span").style.display = "block";
+      validated = 0;
+    } // Suppiler
+
+
+    console.log(props.supplier);
+
+    if (!props.supplier) {
+      document.getElementById("supplier-span").style.display = "block";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_ALPHA)(props.supplier) == false) {
+      document.getElementById("supplier-span").style.display = "block";
+      validated = 0;
+    }
+
+    if (validated == 1) {
+      console.log("Success");
+      window.location.href = "http://127.0.0.1:8000/form3";
+    }
+  }
+
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    className: "w99 h100",
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        md: 2,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+          className: "mt15",
+          xmlns: "http://www.w3.org/2000/svg",
+          width: "208.569",
+          height: "51.026",
+          viewBox: "0 0 208.569 51.026",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("defs", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("clipPath", {
+              id: "clip-path",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path54",
+                d: "M0-114.156H208.569v-51.026H0Z",
+                transform: "translate(0 165.182)"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("clipPath", {
+              id: "clip-path-2",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path60",
+                d: "M372.8-184.852h38.456v59.575H372.8Z",
+                transform: "translate(-372.796 184.852)"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("clipPath", {
+              id: "clip-path-3",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path66",
+                d: "M403.2-165.182v51.026H534.949v-51.026Z",
+                transform: "translate(-403.195 165.182)"
+              })
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("g", {
+            id: "g10",
+            transform: "translate(-85 154.182)",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+              id: "g12",
+              transform: "translate(85 -154.182)",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path14",
+                d: "M14.817-104.762a5.567,5.567,0,0,0-5.23-3.486c-4.492,0-6.1,3.755-6.1,6.571,0,3.218,2.045,6.6,6.034,6.6a5.613,5.613,0,0,0,5.263-3.419h3.889a9.531,9.531,0,0,1-9.152,6.6c-6.1,0-9.52-4.995-9.52-9.789a9.5,9.5,0,0,1,9.554-9.755,9.455,9.455,0,0,1,9.118,6.671H14.817",
+                transform: "translate(0 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path16",
+                d: "M74.861-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.336,6.537,6.488,6.488,0,0,0,6.47-6.537,6.344,6.344,0,0,0-6.437-6.638Zm6.369,15.89v-2.883h-.067a7.107,7.107,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.361,7.361,0,0,1,6.3,3.118h.067v-2.615h3.486v18.572H81.23",
+                transform: "translate(-44.924 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path18",
+                d: "M140.365-92.359V-110.93h3.252v1.676h.067a5.723,5.723,0,0,1,4.727-2.179v3.587a6.55,6.55,0,0,0-2.514.67c-1.106.6-2.045,2.011-2.045,4.66v10.157h-3.487",
+                transform: "translate(-97.005 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path20",
+                d: "M177.71-105.184h-3.487V-129.99h3.487v24.807",
+                transform: "translate(-120.405 140.861)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path22",
+                d: "M203.878-108.248a6.547,6.547,0,0,0-6.537,6.571,6.576,6.576,0,0,0,6.537,6.6,6.587,6.587,0,0,0,6.537-6.638A6.54,6.54,0,0,0,203.878-108.248Zm0,16.359a9.986,9.986,0,0,1-10.023-9.889,9.87,9.87,0,0,1,10.023-9.654,9.861,9.861,0,0,1,10.023,9.722,9.991,9.991,0,0,1-10.023,9.822",
+                transform: "translate(-133.971 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path24",
+                d: "M276.31-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.335,6.537,6.488,6.488,0,0,0,6.47-6.537A6.343,6.343,0,0,0,276.31-108.248Zm6.369,15.89v-2.883h-.067a7.106,7.106,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.36,7.36,0,0,1,6.3,3.118h.067v-2.615h3.486v18.572h-3.486",
+                transform: "translate(-184.144 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path26",
+                d: "M353.513-92.359v-10.09c0-1.441,0-5.8-4.626-5.8-2.917,0-4.895,2.045-4.895,5.766v10.124h-3.487V-110.93h3.252v1.978h.067a6.6,6.6,0,0,1,5.431-2.481,7.548,7.548,0,0,1,6.571,3.319,9.061,9.061,0,0,1,1.173,4.76v11h-3.487",
+                transform: "translate(-235.321 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path28",
+                d: "M487.532-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.335,6.537,6.488,6.488,0,0,0,6.47-6.537A6.343,6.343,0,0,0,487.532-108.248Zm6.369,15.89v-2.883h-.067a7.106,7.106,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.36,7.36,0,0,1,6.3,3.118h.067v-2.615h3.487v18.572H493.9",
+                transform: "translate(-330.118 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path30",
+                d: "M555.283-105.184H551.8V-129.99h3.487v24.807",
+                transform: "translate(-381.342 140.861)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path32",
+                d: "M585.839-102.818a6.029,6.029,0,0,0-6-5.431,6.03,6.03,0,0,0-6,5.431Zm-12,2.682a6.3,6.3,0,0,0,6.1,5.062,5.936,5.936,0,0,0,5.3-3.118h3.487a9.465,9.465,0,0,1-8.917,6.3,9.689,9.689,0,0,1-9.453-9.789,9.547,9.547,0,0,1,9.521-9.755,9.52,9.52,0,0,1,9.453,9.52c0,.6-.067,1.542-.1,1.777H573.838",
+                transform: "translate(-394.166 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path34",
+                d: "M642.612-106a2.286,2.286,0,0,0-2.38-2.246,2,2,0,0,0-2.179,1.978c0,1.542,1.341,1.944,2.883,2.413,1.442.436,5.6,1.609,5.6,6.034,0,3.285-2.28,5.934-6.235,5.934a6.363,6.363,0,0,1-6.57-6.571h3.487c.134,2.079,1.206,3.386,3.151,3.386a2.465,2.465,0,0,0,2.682-2.548c0-1.643-1.441-2.213-3.252-2.849-2.011-.738-5.23-1.643-5.23-5.6a5.561,5.561,0,0,1,5.833-5.364A5.486,5.486,0,0,1,646.1-106h-3.487",
+                transform: "translate(-437.965 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path36",
+                d: "M546.476-23.343v-1.109h.945v1.109h-.945",
+                transform: "translate(-377.665 67.925)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path38",
+                d: "M557.026-35.793a1.51,1.51,0,0,0-1.418-.945,1.653,1.653,0,0,0-1.654,1.781,1.673,1.673,0,0,0,1.635,1.79,1.521,1.521,0,0,0,1.427-.927h1.054a2.584,2.584,0,0,1-2.481,1.79,2.572,2.572,0,0,1-2.58-2.654A2.576,2.576,0,0,1,555.6-37.6a2.563,2.563,0,0,1,2.472,1.809h-1.045",
+                transform: "translate(-382.18 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path40",
+                d: "M574-36.739a1.775,1.775,0,0,0-1.772,1.781A1.783,1.783,0,0,0,574-33.167a1.786,1.786,0,0,0,1.772-1.8A1.773,1.773,0,0,0,574-36.739Zm0,4.435a2.707,2.707,0,0,1-2.717-2.681A2.676,2.676,0,0,1,574-37.6a2.673,2.673,0,0,1,2.717,2.635A2.708,2.708,0,0,1,574-32.3",
+                transform: "translate(-394.807 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path42",
+                d: "M598.487-32.431v-2.8c0-.427-.055-1.508-1.191-1.508-1.209,0-1.191,1.081-1.2,1.5v2.808h-.945v-2.8a1.729,1.729,0,0,0-.209-1.036,1.048,1.048,0,0,0-.936-.473c-1.245,0-1.245,1.127-1.245,1.5v2.808h-.945v-5.035h.872v.545h.018a1.648,1.648,0,0,1,1.445-.682,1.727,1.727,0,0,1,1.563.845,1.74,1.74,0,0,1,1.663-.845,1.921,1.921,0,0,1,1.772.909,2.5,2.5,0,0,1,.282,1.227v3.035h-.945",
+                transform: "translate(-408.999 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path44",
+                d: "M620.8-23.343v-1.109h.945v1.109H620.8",
+                transform: "translate(-429.028 67.925)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path46",
+                d: "M630-36.739a1.75,1.75,0,0,0-1.727,1.8,1.757,1.757,0,0,0,1.718,1.772,1.759,1.759,0,0,0,1.754-1.772A1.72,1.72,0,0,0,630-36.739Zm1.727,4.308v-.781h-.018A1.927,1.927,0,0,1,630-32.3a2.585,2.585,0,0,1-2.671-2.626A2.609,2.609,0,0,1,630-37.6a2,2,0,0,1,1.709.845h.018v-.709h.945v5.035h-.945",
+                transform: "translate(-433.542 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path48",
+                d: "M649.31-37.16v2.726c0,1.245.554,1.572,1.254,1.572.782,0,1.318-.5,1.318-1.6v-2.7h.945v5.035h-.863v-.545h-.018a1.686,1.686,0,0,1-1.482.672,2.15,2.15,0,0,1-1.435-.5,2.356,2.356,0,0,1-.664-1.935V-37.16h.945",
+                transform: "translate(-448.08 76.707)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("g", {
+                id: "g50",
+                transform: "translate(0 0)",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("g", {
+                  id: "g52",
+                  "clip-path": "url(#clip-path)",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("g", {
+                    id: "g58",
+                    transform: "translate(115.16 -6.076)",
+                    "clip-path": "url(#clip-path-2)",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+                      id: "g64",
+                      transform: "translate(9.39 6.076)",
+                      "clip-path": "url(#clip-path-3)",
+                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                        id: "path70",
+                        d: "M418.315-104.587a14.757,14.757,0,0,1-8.922,2.549,14.509,14.509,0,0,1-5.45-1.8,17.4,17.4,0,0,1-.747-4,1.147,1.147,0,0,1,1.1-1.1,20.073,20.073,0,0,1,2.131.528,10.209,10.209,0,0,0,2.176.571c3.274.176,8.658-.461,9.185-4.768a4.656,4.656,0,0,0,.22-1.077l-.022-.352-.2-.11c-1.121.066-2.285.11-3.406.2-1.121.066-2.263.11-3.384.11-2.11-.066-4.352-.373-5.955-1.736a5.073,5.073,0,0,1-1.6-4.021,11.731,11.731,0,0,1,.11-1.516,13.156,13.156,0,0,1,4.153-8.065,11.138,11.138,0,0,1,8.065-3.648c3.758-.066,7.757,1.736,8.812,5.472a2.365,2.365,0,0,1,.2,1.011c.11,1.055-1.143,1.362-1.912,1.253a10.609,10.609,0,0,1-2.944-.835,9.413,9.413,0,0,0-2.945-.791,8.237,8.237,0,0,0-4.505,1.275,5.044,5.044,0,0,0-2.637,3.758c-.11.791.4,1.758,1.318,1.582a16.452,16.452,0,0,0,2.769-.374,15.875,15.875,0,0,1,2.813-.352,7.046,7.046,0,0,1,5.823,2.659,8.82,8.82,0,0,1,1.275,6.087c-.418,3.186-2.857,5.779-5.516,7.493h0",
+                        transform: "translate(-403.195 142.821)",
+                        fill: "#7a79a5"
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                        id: "path72",
+                        d: "M427.126-111.048l7.674-1.758c-1.757-4.716-5.363-30.7,1.017-44.659l-2.126-1.295c-3.144,2.868-12.76,16.277-6.565,47.712h0",
+                        transform: "translate(-418.326 160.744)",
+                        fill: "#231f20"
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                        id: "path74",
+                        d: "M438.731-107.092c-1.255-7.13-4.716-31.344,3.514-45.676",
+                        transform: "translate(-426.51 156.603)",
+                        fill: "none",
+                        stroke: "#fff",
+                        "stroke-miterlimit": "10",
+                        "stroke-dashoffset": "72.276",
+                        "stroke-width": "3.035",
+                        "stroke-dasharray": "72.319 48.211"
+                      })]
+                    })
+                  })
+                })
+              })]
+            })
+          })]
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        className: " ",
+        md: 6,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
+          className: "float-right mt15 mr30",
+          xmlns: "http://www.w3.org/2000/svg",
+          width: "339",
+          height: "49",
+          viewBox: "0 0 339 49",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+            id: "Group_4",
+            "data-name": "Group 4",
+            transform: "translate(-512 -23)",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+              id: "Ellipse_5",
+              "data-name": "Ellipse 5",
+              transform: "translate(512 23)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "23.5",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+              id: "Ellipse_6",
+              "data-name": "Ellipse 6",
+              transform: "translate(657 23)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "23.5",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+              id: "Ellipse_7",
+              "data-name": "Ellipse 7",
+              transform: "translate(802 23)",
+              fill: "none",
+              stroke: "#ccc",
+              "stroke-width": "1",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+              id: "Line_12",
+              "data-name": "Line 12",
+              x2: "95",
+              transform: "translate(561.5 47.5)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+              id: "Line_13",
+              "data-name": "Line 13",
+              x2: "95",
+              transform: "translate(706.5 47.5)",
+              fill: "none",
+              stroke: "#ccc",
+              "stroke-width": "2"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("text", {
+              id: "_1",
+              "data-name": "1",
+              transform: "translate(532 55)",
+              fill: "#4d4acf",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "1"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("text", {
+              id: "_2",
+              "data-name": "2",
+              transform: "translate(676 56)",
+              fill: "#4d4acf",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "2"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("text", {
+              id: "_3",
+              "data-name": "3",
+              transform: "translate(821 55)",
+              fill: "#ccc",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "3"
+              })
+            })]
+          })
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        className: " ",
+        md: 4,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("a", {
+          href: "/",
+          className: "text-decoration-none float-right mt15",
+          children: "Go back to home page"
+        })
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      className: "d-flex align-items-center pl22",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("form", {
+        onSubmit: submitForm,
+        enctype: "multipart/form-data",
+        method: "post",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          id: "page2",
+          className: "mx-auto w75 form-container ",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              md: 12,
+              className: "sub-heading-text mt15",
+              children: ["Your Vehicle Details", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              md: 12,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+                className: "normal-text mt15",
+                children: "Vehicle Make"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("select", {
+                id: "vehicleMake",
+                onChange: function onChange(e) {
+                  e.preventDefault();
+                  props.setVehicleMake(e.target.value);
+                },
+                className: "select w50",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                  children: "Vehicle Make 1"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                  children: "Vehicle Make 2"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                  children: "Vehicle Make 3"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                  children: "Vehicle Make 4"
+                })]
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              md: 12,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+                className: "normal-text mt15",
+                children: "Vehicle Model"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("select", {
+                id: "vehicleModel",
+                onChange: function onChange(e) {
+                  e.preventDefault();
+                  props.setVehicleModel(e.target.value);
+                },
+                className: "select w50",
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                  children: "Vehicle Model 1"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                  children: "Vehicle Model 2"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                  children: "Vehicle Model 3"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                  children: "Vehicle Model 4"
+                })]
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              md: 12,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+                className: "normal-text mt15",
+                children: "Build Year"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+                id: "buildYear",
+                onChange: function onChange(e) {
+                  e.preventDefault();
+                  props.setBuildYear(e.target.value);
+                },
+                className: "w50",
+                type: "text"
+              })]
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              md: 12,
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+                className: "normal-text ",
+                children: "Is the vehicle.."
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              className: "w19 mt10",
+              md: 2,
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                onClick: function onClick(e) {
+                  e.preventDefault();
+                  props.setIsVehicle("New");
+                  updateIsVehicle();
+                },
+                className: "w100 small-button-text",
+                children: "New"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              className: "w19 mt10",
+              md: 2,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                onClick: function onClick(e) {
+                  e.preventDefault();
+                  props.setIsVehicle("Used");
+                  updateIsVehicle();
+                },
+                className: "w100 small-button-text",
+                children: "Used"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              className: "w19 mt10",
+              md: 2,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                onClick: function onClick(e) {
+                  e.preventDefault();
+                  props.setIsVehicle("Demo");
+                  updateIsVehicle();
+                },
+                className: "w100 small-button-text",
+                children: "Demo"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              className: "w19 mt10",
+              md: 2,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                onClick: function onClick(e) {
+                  e.preventDefault();
+                  props.setIsVehicle("Unsure");
+                  updateIsVehicle();
+                },
+                className: "w100 small-button-text",
+                children: "Unsure"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              type: "text",
+              id: "isVehicle",
+              name: "isVehicle",
+              className: "form-control",
+              hidden: true
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+              id: "isVehicle-span",
+              className: " dn ml-2 p-2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                className: "color-red",
+                children: "* "
+              }), "Please select the vehicle type"]
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              md: 12,
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
+                className: "normal-text mt10",
+                children: "Who is the supplier?"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              className: "w19",
+              md: 2,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                onClick: function onClick(e) {
+                  e.preventDefault();
+                  props.setSupplier("Dealer");
+                  updateSupplier();
+                },
+                className: "w100 mt10 small-button-text",
+                children: "Dealer"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              className: "w19",
+              md: 2,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                onClick: function onClick(e) {
+                  e.preventDefault();
+                  props.setSupplier("Refinance");
+                  updateSupplier();
+                },
+                className: "w100 mt10 small-button-text",
+                children: "Refinance"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              className: "w19",
+              md: 2,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                onClick: function onClick(e) {
+                  e.preventDefault();
+                  props.setSupplier("Private Sale");
+                  updateSupplier();
+                },
+                className: "w100 mt10 small-button-text",
+                children: "Private Sale"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              className: "w19",
+              md: 2,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                onClick: function onClick(e) {
+                  e.preventDefault();
+                  props.setSupplier("Auction");
+                  updateSupplier();
+                },
+                className: "w100 mt10 small-button-text",
+                children: "Auction"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              className: "w19",
+              md: 2,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                onClick: function onClick(e) {
+                  e.preventDefault();
+                  props.setSupplier("Unsure");
+                  updateSupplier();
+                },
+                className: "w100 mt10 small-button-text",
+                children: "Unsure"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              type: "text",
+              id: "supplier",
+              name: "supplier",
+              className: "form-control",
+              hidden: true
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+              id: "supplier-span",
+              className: " dn ml-2 p-2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                className: "color-red",
+                children: "* "
+              }), "Please select the supplier"]
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              className: "mt15 mb20",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+                type: "submit",
+                className: "w19 btn big-button-text bg-dark",
+                children: "Continue"
+              })
+            })
+          })]
+        })
+      })
+    })]
+  });
+}
+
+/***/ }),
+
+/***/ "./resources/js/pages/form3.js":
+/*!*************************************!*\
+  !*** ./resources/js/pages/form3.js ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Form3)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var _helpers_validators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/validators */ "./resources/js/helpers/validators.js");
+/* harmony import */ var _form_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./form.css */ "./resources/js/pages/form.css");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+
+
+
+
+function Form3(props) {
+  var _jsx2;
+
+  function submitForm(e) {
+    e.preventDefault();
+    var validated = 1; // FullName
+
+    console.log(props.fullName);
+
+    if (!props.fullName) {
+      document.getElementById("fullName").style.border = "2px";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_ALPHA)(props.fullName) == false) {
+      document.getElementById("fullName").style.border = "2px soild red";
+      validated = 0;
+    } // Mobile
+
+
+    console.log(props.mobile);
+
+    if (!props.mobile) {
+      document.getElementById("mobile").style.border = "2px";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_NUMERIC)(props.mobile) == false) {
+      document.getElementById("mobile").style.border = "2px soild red";
+      validated = 0;
+    } // Occupation
+
+
+    console.log(props.occupation);
+
+    if (!props.occupation) {
+      document.getElementById("occupation").style.border = "2px";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_ALPHA)(props.occupation) == false) {
+      document.getElementById("occupation").style.border = "2px soild red";
+      validated = 0;
+    } // Telephone
+
+
+    console.log(props.telephone);
+
+    if (!props.telephone) {
+      document.getElementById("telephone").style.border = "2px";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_NUMERIC)(props.telephone) == false) {
+      document.getElementById("telephone").style.border = "2px soild red";
+      validated = 0;
+    } // Email
+
+
+    console.log(props.email);
+
+    if (!props.email) {
+      document.getElementById("email").style.border = "2px";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_EMAIL)(props.email) == false) {
+      document.getElementById("email").style.border = "2px soild red";
+      validated = 0;
+    } // postcode
+
+
+    console.log(props.postcode);
+
+    if (!props.postcode) {
+      document.getElementById("postcode").style.border = "2px";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_NUMERIC)(props.postcode) == false) {
+      document.getElementById("postcode").style.border = "2px soild red";
+      validated = 0;
+    } // Income
+
+
+    console.log(props.income);
+
+    if (!props.income) {
+      document.getElementById("income").style.border = "2px";
+      validated = 0;
+    }
+
+    if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_NUMERIC)(props.income) == false) {
+      document.getElementById("income").style.border = "2px soild red";
+      validated = 0;
+    } // PerDuration
+
+
+    console.log(props.perDuration); // We don't have to write if clauses for select
+    // Check Box
+    // var checkboxs = false;
+    // var checkboxs = document.getElementById('check-box');
+    // console.log(checkboxs.checked)
+    // if (checkboxs.checked === null)
+    // {
+    //     alert("Please agree to our terms and policies");
+    //     validated = 0;
+    // }
+
+    if (validated == 1) {
+      console.log("Success");
+      window.location.href = "http://127.0.0.1:8000/final-page";
+    }
+  }
+
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    className: "w99",
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        md: 2,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
+          className: "mt15",
+          xmlns: "http://www.w3.org/2000/svg",
+          width: "208.569",
+          height: "51.026",
+          viewBox: "0 0 208.569 51.026",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("defs", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("clipPath", {
+              id: "clip-path",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path54",
+                d: "M0-114.156H208.569v-51.026H0Z",
+                transform: "translate(0 165.182)"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("clipPath", {
+              id: "clip-path-2",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path60",
+                d: "M372.8-184.852h38.456v59.575H372.8Z",
+                transform: "translate(-372.796 184.852)"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("clipPath", {
+              id: "clip-path-3",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path66",
+                d: "M403.2-165.182v51.026H534.949v-51.026Z",
+                transform: "translate(-403.195 165.182)"
+              })
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("g", {
+            id: "g10",
+            transform: "translate(-85 154.182)",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+              id: "g12",
+              transform: "translate(85 -154.182)",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path14",
+                d: "M14.817-104.762a5.567,5.567,0,0,0-5.23-3.486c-4.492,0-6.1,3.755-6.1,6.571,0,3.218,2.045,6.6,6.034,6.6a5.613,5.613,0,0,0,5.263-3.419h3.889a9.531,9.531,0,0,1-9.152,6.6c-6.1,0-9.52-4.995-9.52-9.789a9.5,9.5,0,0,1,9.554-9.755,9.455,9.455,0,0,1,9.118,6.671H14.817",
+                transform: "translate(0 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path16",
+                d: "M74.861-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.336,6.537,6.488,6.488,0,0,0,6.47-6.537,6.344,6.344,0,0,0-6.437-6.638Zm6.369,15.89v-2.883h-.067a7.107,7.107,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.361,7.361,0,0,1,6.3,3.118h.067v-2.615h3.486v18.572H81.23",
+                transform: "translate(-44.924 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path18",
+                d: "M140.365-92.359V-110.93h3.252v1.676h.067a5.723,5.723,0,0,1,4.727-2.179v3.587a6.55,6.55,0,0,0-2.514.67c-1.106.6-2.045,2.011-2.045,4.66v10.157h-3.487",
+                transform: "translate(-97.005 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path20",
+                d: "M177.71-105.184h-3.487V-129.99h3.487v24.807",
+                transform: "translate(-120.405 140.861)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path22",
+                d: "M203.878-108.248a6.547,6.547,0,0,0-6.537,6.571,6.576,6.576,0,0,0,6.537,6.6,6.587,6.587,0,0,0,6.537-6.638A6.54,6.54,0,0,0,203.878-108.248Zm0,16.359a9.986,9.986,0,0,1-10.023-9.889,9.87,9.87,0,0,1,10.023-9.654,9.861,9.861,0,0,1,10.023,9.722,9.991,9.991,0,0,1-10.023,9.822",
+                transform: "translate(-133.971 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path24",
+                d: "M276.31-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.335,6.537,6.488,6.488,0,0,0,6.47-6.537A6.343,6.343,0,0,0,276.31-108.248Zm6.369,15.89v-2.883h-.067a7.106,7.106,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.36,7.36,0,0,1,6.3,3.118h.067v-2.615h3.486v18.572h-3.486",
+                transform: "translate(-184.144 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path26",
+                d: "M353.513-92.359v-10.09c0-1.441,0-5.8-4.626-5.8-2.917,0-4.895,2.045-4.895,5.766v10.124h-3.487V-110.93h3.252v1.978h.067a6.6,6.6,0,0,1,5.431-2.481,7.548,7.548,0,0,1,6.571,3.319,9.061,9.061,0,0,1,1.173,4.76v11h-3.487",
+                transform: "translate(-235.321 128.037)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path28",
+                d: "M487.532-108.248a6.454,6.454,0,0,0-6.369,6.638,6.479,6.479,0,0,0,6.335,6.537,6.488,6.488,0,0,0,6.47-6.537A6.343,6.343,0,0,0,487.532-108.248Zm6.369,15.89v-2.883h-.067a7.106,7.106,0,0,1-6.3,3.352,9.535,9.535,0,0,1-9.856-9.688,9.626,9.626,0,0,1,9.856-9.856,7.36,7.36,0,0,1,6.3,3.118h.067v-2.615h3.487v18.572H493.9",
+                transform: "translate(-330.118 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path30",
+                d: "M555.283-105.184H551.8V-129.99h3.487v24.807",
+                transform: "translate(-381.342 140.861)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path32",
+                d: "M585.839-102.818a6.029,6.029,0,0,0-6-5.431,6.03,6.03,0,0,0-6,5.431Zm-12,2.682a6.3,6.3,0,0,0,6.1,5.062,5.936,5.936,0,0,0,5.3-3.118h3.487a9.465,9.465,0,0,1-8.917,6.3,9.689,9.689,0,0,1-9.453-9.789,9.547,9.547,0,0,1,9.521-9.755,9.52,9.52,0,0,1,9.453,9.52c0,.6-.067,1.542-.1,1.777H573.838",
+                transform: "translate(-394.166 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path34",
+                d: "M642.612-106a2.286,2.286,0,0,0-2.38-2.246,2,2,0,0,0-2.179,1.978c0,1.542,1.341,1.944,2.883,2.413,1.442.436,5.6,1.609,5.6,6.034,0,3.285-2.28,5.934-6.235,5.934a6.363,6.363,0,0,1-6.57-6.571h3.487c.134,2.079,1.206,3.386,3.151,3.386a2.465,2.465,0,0,0,2.682-2.548c0-1.643-1.441-2.213-3.252-2.849-2.011-.738-5.23-1.643-5.23-5.6a5.561,5.561,0,0,1,5.833-5.364A5.486,5.486,0,0,1,646.1-106h-3.487",
+                transform: "translate(-437.965 128.037)",
+                fill: "#7a79a5"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path36",
+                d: "M546.476-23.343v-1.109h.945v1.109h-.945",
+                transform: "translate(-377.665 67.925)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path38",
+                d: "M557.026-35.793a1.51,1.51,0,0,0-1.418-.945,1.653,1.653,0,0,0-1.654,1.781,1.673,1.673,0,0,0,1.635,1.79,1.521,1.521,0,0,0,1.427-.927h1.054a2.584,2.584,0,0,1-2.481,1.79,2.572,2.572,0,0,1-2.58-2.654A2.576,2.576,0,0,1,555.6-37.6a2.563,2.563,0,0,1,2.472,1.809h-1.045",
+                transform: "translate(-382.18 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path40",
+                d: "M574-36.739a1.775,1.775,0,0,0-1.772,1.781A1.783,1.783,0,0,0,574-33.167a1.786,1.786,0,0,0,1.772-1.8A1.773,1.773,0,0,0,574-36.739Zm0,4.435a2.707,2.707,0,0,1-2.717-2.681A2.676,2.676,0,0,1,574-37.6a2.673,2.673,0,0,1,2.717,2.635A2.708,2.708,0,0,1,574-32.3",
+                transform: "translate(-394.807 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path42",
+                d: "M598.487-32.431v-2.8c0-.427-.055-1.508-1.191-1.508-1.209,0-1.191,1.081-1.2,1.5v2.808h-.945v-2.8a1.729,1.729,0,0,0-.209-1.036,1.048,1.048,0,0,0-.936-.473c-1.245,0-1.245,1.127-1.245,1.5v2.808h-.945v-5.035h.872v.545h.018a1.648,1.648,0,0,1,1.445-.682,1.727,1.727,0,0,1,1.563.845,1.74,1.74,0,0,1,1.663-.845,1.921,1.921,0,0,1,1.772.909,2.5,2.5,0,0,1,.282,1.227v3.035h-.945",
+                transform: "translate(-408.999 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path44",
+                d: "M620.8-23.343v-1.109h.945v1.109H620.8",
+                transform: "translate(-429.028 67.925)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path46",
+                d: "M630-36.739a1.75,1.75,0,0,0-1.727,1.8,1.757,1.757,0,0,0,1.718,1.772,1.759,1.759,0,0,0,1.754-1.772A1.72,1.72,0,0,0,630-36.739Zm1.727,4.308v-.781h-.018A1.927,1.927,0,0,1,630-32.3a2.585,2.585,0,0,1-2.671-2.626A2.609,2.609,0,0,1,630-37.6a2,2,0,0,1,1.709.845h.018v-.709h.945v5.035h-.945",
+                transform: "translate(-433.542 77.013)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                id: "path48",
+                d: "M649.31-37.16v2.726c0,1.245.554,1.572,1.254,1.572.782,0,1.318-.5,1.318-1.6v-2.7h.945v5.035h-.863v-.545h-.018a1.686,1.686,0,0,1-1.482.672,2.15,2.15,0,0,1-1.435-.5,2.356,2.356,0,0,1-.664-1.935V-37.16h.945",
+                transform: "translate(-448.08 76.707)",
+                fill: "#21376c"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("g", {
+                id: "g50",
+                transform: "translate(0 0)",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("g", {
+                  id: "g52",
+                  "clip-path": "url(#clip-path)",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("g", {
+                    id: "g58",
+                    transform: "translate(115.16 -6.076)",
+                    "clip-path": "url(#clip-path-2)",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+                      id: "g64",
+                      transform: "translate(9.39 6.076)",
+                      "clip-path": "url(#clip-path-3)",
+                      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                        id: "path70",
+                        d: "M418.315-104.587a14.757,14.757,0,0,1-8.922,2.549,14.509,14.509,0,0,1-5.45-1.8,17.4,17.4,0,0,1-.747-4,1.147,1.147,0,0,1,1.1-1.1,20.073,20.073,0,0,1,2.131.528,10.209,10.209,0,0,0,2.176.571c3.274.176,8.658-.461,9.185-4.768a4.656,4.656,0,0,0,.22-1.077l-.022-.352-.2-.11c-1.121.066-2.285.11-3.406.2-1.121.066-2.263.11-3.384.11-2.11-.066-4.352-.373-5.955-1.736a5.073,5.073,0,0,1-1.6-4.021,11.731,11.731,0,0,1,.11-1.516,13.156,13.156,0,0,1,4.153-8.065,11.138,11.138,0,0,1,8.065-3.648c3.758-.066,7.757,1.736,8.812,5.472a2.365,2.365,0,0,1,.2,1.011c.11,1.055-1.143,1.362-1.912,1.253a10.609,10.609,0,0,1-2.944-.835,9.413,9.413,0,0,0-2.945-.791,8.237,8.237,0,0,0-4.505,1.275,5.044,5.044,0,0,0-2.637,3.758c-.11.791.4,1.758,1.318,1.582a16.452,16.452,0,0,0,2.769-.374,15.875,15.875,0,0,1,2.813-.352,7.046,7.046,0,0,1,5.823,2.659,8.82,8.82,0,0,1,1.275,6.087c-.418,3.186-2.857,5.779-5.516,7.493h0",
+                        transform: "translate(-403.195 142.821)",
+                        fill: "#7a79a5"
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                        id: "path72",
+                        d: "M427.126-111.048l7.674-1.758c-1.757-4.716-5.363-30.7,1.017-44.659l-2.126-1.295c-3.144,2.868-12.76,16.277-6.565,47.712h0",
+                        transform: "translate(-418.326 160.744)",
+                        fill: "#231f20"
+                      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("path", {
+                        id: "path74",
+                        d: "M438.731-107.092c-1.255-7.13-4.716-31.344,3.514-45.676",
+                        transform: "translate(-426.51 156.603)",
+                        fill: "none",
+                        stroke: "#fff",
+                        "stroke-miterlimit": "10",
+                        "stroke-dashoffset": "72.276",
+                        "stroke-width": "3.035",
+                        "stroke-dasharray": "72.319 48.211"
+                      })]
+                    })
+                  })
+                })
+              })]
+            })
+          })]
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        className: " ",
+        md: 6,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
+          className: "float-right mt15 mr30",
+          xmlns: "http://www.w3.org/2000/svg",
+          width: "339",
+          height: "49",
+          viewBox: "0 0 339 49",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+            id: "Group_4",
+            "data-name": "Group 4",
+            transform: "translate(-512 -23)",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+              id: "Ellipse_5",
+              "data-name": "Ellipse 5",
+              transform: "translate(512 23)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "23.5",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+              id: "Ellipse_6",
+              "data-name": "Ellipse 6",
+              transform: "translate(657 23)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "23.5",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("g", {
+              id: "Ellipse_7",
+              "data-name": "Ellipse 7",
+              transform: "translate(802 23)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24.5",
+                stroke: "none"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("circle", {
+                cx: "24.5",
+                cy: "24.5",
+                r: "24",
+                fill: "none"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+              id: "Line_12",
+              "data-name": "Line 12",
+              x2: "95",
+              transform: "translate(561.5 47.5)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("line", {
+              id: "Line_13",
+              "data-name": "Line 13",
+              x2: "95",
+              transform: "translate(706.5 47.5)",
+              fill: "none",
+              stroke: "#4d4acf",
+              "stroke-width": "2"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("text", {
+              id: "_1",
+              "data-name": "1",
+              transform: "translate(532 55)",
+              fill: "#4d4acf",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "1"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("text", {
+              id: "_2",
+              "data-name": "2",
+              transform: "translate(676 56)",
+              fill: "#4d4acf",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "2"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("text", {
+              id: "_3",
+              "data-name": "3",
+              transform: "translate(821 55)",
+              fill: "#4d4acf",
+              "font-size": "20",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "3"
+              })
+            })]
+          })
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        className: " ",
+        md: 4,
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("a", {
+          href: "/",
+          className: "text-decoration-none float-right mt15",
+          children: "Go back to home page"
+        })
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      className: "d-flex align-items-center pl29p5",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("form", {
+        onSubmit: submitForm,
+        enctype: "multipart/form-data",
+        method: "post",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          id: "page3",
+          className: "mx-auto w60 form-container",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            md: 12,
+            className: "sub-heading-text mt15",
+            children: "Your Personal Details"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            md: 12,
+            className: "mt20",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "normal-text",
+              children: "Fullname"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              id: "fullName",
+              onChange: function onChange(e) {
+                e.preventDefault();
+                props.setFullName(e.target.value);
+              },
+              className: "w50",
+              type: "text"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            md: 12,
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "normal-text mt15",
+              children: "Mobile"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              id: "mobile",
+              onChange: function onChange(e) {
+                e.preventDefault();
+                props.setMobile(e.target.value);
+              },
+              className: "w50",
+              type: "tel"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            md: 12,
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "normal-text mt15",
+              children: "Occupation"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              id: "occupation",
+              onChange: function onChange(e) {
+                e.preventDefault();
+                props.setOccupation(e.target.value);
+              },
+              className: "w50",
+              type: "text"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            md: 12,
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "normal-text mt15",
+              children: "Work Telephone"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              id: "telephone",
+              onChange: function onChange(e) {
+                e.preventDefault();
+                props.setTelephone(e.target.value);
+              },
+              className: "w50",
+              type: "tel"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            md: 12,
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "normal-text mt15",
+              children: "Email"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              id: "email",
+              onChange: function onChange(e) {
+                e.preventDefault();
+                props.setEmail(e.target.value);
+              },
+              className: "w50",
+              type: "email"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            md: 12,
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "normal-text mt15",
+              children: "Postcode"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              id: "postcode",
+              onChange: function onChange(e) {
+                e.preventDefault();
+                props.setPostcode(e.target.value);
+              },
+              className: "w50",
+              type: "text"
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            md: 12,
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "normal-text mt15",
+              children: "What is your income (after tax)"
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            md: 4,
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
+              id: "income",
+              onChange: function onChange(e) {
+                e.preventDefault();
+                props.setIncome(e.target.value);
+              },
+              className: "",
+              type: "text"
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            md: 8,
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+              className: "per-text",
+              children: "per"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("select", {
+              id: "perDuration",
+              onChange: function onChange(e) {
+                e.preventDefault();
+                props.setPerDuration(e.target.value);
+              },
+              className: "select-middle w30",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                children: "week"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                children: "month"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("option", {
+                children: "year"
+              })]
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+            className: "mt15 -ml3",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              md: 1,
+              className: "pl0 pr0 w2",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", (_jsx2 = {
+                id: "check-box",
+                className: "w50 -mt3",
+                type: "checkbox"
+              }, _defineProperty(_jsx2, "id", "allow"), _defineProperty(_jsx2, "name", "allow"), _jsx2))
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              className: "pl0 pr0",
+              md: 11,
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                className: "allow-text mt-auto mb-auto",
+                children: "I accept the Privacy Disclouser & Consent statement"
+              })
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            className: "mt20 mb20",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
+              type: "submit",
+              className: "w19 big-button-text bg-blue",
+              children: "Finish"
+            })
+          })]
+        })
+      })
+    })]
+  });
+}
+
+/***/ }),
+
+/***/ "./resources/js/pages/main-page.js":
+/*!*****************************************!*\
+  !*** ./resources/js/pages/main-page.js ***!
+  \*****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ MainPage)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var _components_new__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/new */ "./resources/js/components/new.js");
+/* harmony import */ var _components_all_vehicles__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/all-vehicles */ "./resources/js/components/all-vehicles.js");
+/* harmony import */ var _components_testimonial_svg__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/testimonial-svg */ "./resources/js/components/testimonial-svg.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+
+
+
+
+
+function MainPage(props) {
+  function submitForm(e) {
+    e.preventDefault();
+    var validated = 1;
+    var a = document.getElementById('amount').innerHTML;
+    var r = document.getElementById('residual').innerHTML;
+    var m = document.getElementById('monthly-repayment').innerHTML;
+    console.log(a);
+    console.log(r);
+    console.log(m);
+    props.setAmount(a);
+    props.setResidual(r);
+    props.setRepayment(m);
+    console.log(props.amount);
+    console.log(props.residual);
+    console.log(props.repayment);
+  }
+
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    className: "",
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      className: "h100",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        className: "sub-heading-text",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          md: 3,
+          className: "-ml10",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_new__WEBPACK_IMPORTED_MODULE_1__["default"], {})
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          md: 2,
+          className: "mxw11",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "mt4 center",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+              className: "mt15 align-middle",
+              href: "/about",
+              children: "About"
+            })
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          md: 2,
+          className: "mxw11",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "mt4 center",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+              className: "mt15 align-middle",
+              href: "/about",
+              children: "Products"
+            })
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          md: 2,
+          className: "mxw11",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "mt4 center",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+              className: "mt15 align-middle",
+              href: "/form",
+              children: "Get Pre-Approval"
+            })
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          md: 2,
+          className: "mxw11",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "mt4 center",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+              className: "mt15 align-middle",
+              href: "/faq",
+              children: "FAQs"
+            })
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          md: 2,
+          className: "mxw11",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "mt4 center",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+              className: "mt15 align-middle",
+              href: "/contact-us",
+              children: "Contact"
+            })
+          })
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          md: 6,
+          className: "pl85",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+            className: "mt150",
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "500",
+            height: "69",
+            viewBox: "0 0 500 69",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("text", {
+              id: "Finance_as_low_as_2.99_TAP_conditions_apply",
+              "data-name": "Finance as low as 2.99%\r *TAP conditions apply",
+              transform: "translate(0 37)",
+              fill: "#3c3c3c",
+              "font-size": "46",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "Finance as low as 2.99%"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                "font-size": "16",
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                  x: "0",
+                  y: "27",
+                  children: "*TAP conditions apply"
+                })
+              })]
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+            className: "bg-blue big-button-text btn mt15",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+              className: "text-decoration-none color-white",
+              href: "/form",
+              children: "Get approval now!"
+            })
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          md: 6,
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("img", {
+            src: "/images/women-car.png",
+            alt: "women with car"
+          })
+        })]
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      className: "mt150",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        width: "364",
+        height: "65",
+        viewBox: "0 0 364 65",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("text", {
+          id: "_1_min_pre_approval_loans",
+          "data-name": "1 min pre approval loans",
+          transform: "translate(6 26)",
+          fill: "#4d4acf",
+          "font-size": "32",
+          "font-family": "AbrilFatface-Regular, Abril Fatface",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+            x: "0",
+            y: "0",
+            children: "1 min"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+            y: "0",
+            fill: "#7a79a5",
+            children: " "
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+            y: "0",
+            fill: "#3c3c3c",
+            children: "pre approval loans"
+          })]
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+          id: "fast_approvals_fixed_repayments_low_car_loan_rates_",
+          "data-name": "fast approvals, fixed repayments, low car loan rates!",
+          transform: "translate(0 61)",
+          fill: "#666",
+          "font-size": "16",
+          "font-family": "SegoeUI, Segoe UI",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+            x: "0",
+            y: "0",
+            children: "fast approvals, fixed repayments, low car loan rates!"
+          })
+        })]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+        className: "home-box2",
+        id: "car-loan-cal",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+          className: "loan-calculatorbg mx-auto",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+            className: "big-button-text d-inline ml62 color-black car-loan-calculator-title",
+            children: "CAR LOANCALCULATOR"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+            className: "box2-wrapper",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("ul", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  className: "slider-label",
+                  children: "Amount"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  id: "amount",
+                  className: "slider-value",
+                  children: " $  0"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+                  id: "amount-slider",
+                  className: "ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+                    className: "ui-slider-handle ui-state-default ui-corner-all",
+                    href: "#"
+                  })
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  id: "residual",
+                  className: "slider-label",
+                  children: "Residual: 0 %"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  id: "residual-slider-amount",
+                  className: "slider-value",
+                  children: "($ 0)"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+                  id: "residual-slider",
+                  className: "ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+                    className: "ui-slider-handle ui-state-default ui-corner-all",
+                    href: "#"
+                  })
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  className: "slider-label",
+                  children: "Interest"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  className: "slider-value",
+                  children: "0 %"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+                  id: "interest-slider",
+                  className: "ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+                    className: "ui-slider-handle ui-state-default ui-corner-all",
+                    href: "#"
+                  })
+                })]
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  className: "slider-label",
+                  children: "Term of lease"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                  className: "slider-value",
+                  children: "1 Year(s)"
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
+                  id: "term-of-lease-slider",
+                  className: "ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all",
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+                    className: "ui-slider-handle ui-state-default ui-corner-all",
+                    href: "#"
+                  })
+                })]
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+              className: "box2-repayment",
+              children: ["Monthly Repayment: $", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                id: "monthly-repayment",
+                children: "0.00"
+              })]
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+              type: "hidden",
+              id: "amount1",
+              name: "amttxt"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+              type: "hidden",
+              id: "resi",
+              name: "resitxt"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+              type: "hidden",
+              id: "intrst",
+              name: "intrsttxt"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+              type: "hidden",
+              id: "tim",
+              name: "timtxt"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+              type: "hidden",
+              id: "wrate",
+              name: "wratetxt"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+              onClick: submitForm,
+              className: "mx-auto bg-blue big-button-text btn d-flex",
+              children: "Get a quote"
+            })]
+          })]
+        })
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      className: "mt100",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_all_vehicles__WEBPACK_IMPORTED_MODULE_2__["default"], {})
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      className: "mt100",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_testimonial_svg__WEBPACK_IMPORTED_MODULE_3__["default"], {})
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      className: "mt100",
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        width: "566",
+        height: "26",
+        viewBox: "0 0 566 26",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+          id: "Our_staff_are_there_to_help_you_every_step_of_the_way.",
+          "data-name": "Our staff are there to help you every step of the way.",
+          transform: "translate(283 19)",
+          "font-size": "24",
+          "font-family": "AbrilFatface-Regular, Abril Fatface",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+            x: "-282.228",
+            y: "0",
+            children: "Our staff are there to help you every step of the way."
+          })
+        })
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+        className: "mx-auto bg-blue big-button-text btn w19 text-center mt15",
+        children: "Speak to an expert"
+      })]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      className: "mt100 pl0 pr0",
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("img", {
+        className: "pl0 pr0",
+        src: "/images/footersvg.png",
+        alt: "Footer"
+      })
+    })]
+  });
+}
+
+/***/ }),
+
+/***/ "./node_modules/classnames/index.js":
+/*!******************************************!*\
+  !*** ./node_modules/classnames/index.js ***!
+  \******************************************/
+/***/ ((module, exports) => {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+  Copyright (c) 2018 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+/* global define */
+
+(function () {
+	'use strict';
+
+	var hasOwn = {}.hasOwnProperty;
+
+	function classNames() {
+		var classes = [];
+
+		for (var i = 0; i < arguments.length; i++) {
+			var arg = arguments[i];
+			if (!arg) continue;
+
+			var argType = typeof arg;
+
+			if (argType === 'string' || argType === 'number') {
+				classes.push(arg);
+			} else if (Array.isArray(arg)) {
+				if (arg.length) {
+					var inner = classNames.apply(null, arg);
+					if (inner) {
+						classes.push(inner);
+					}
+				}
+			} else if (argType === 'object') {
+				if (arg.toString === Object.prototype.toString) {
+					for (var key in arg) {
+						if (hasOwn.call(arg, key) && arg[key]) {
+							classes.push(key);
+						}
+					}
+				} else {
+					classes.push(arg.toString());
+				}
+			}
+		}
+
+		return classes.join(' ');
+	}
+
+	if ( true && module.exports) {
+		classNames.default = classNames;
+		module.exports = classNames;
+	} else if (true) {
+		// register as 'classnames', consistent with npm package name
+		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = (function () {
+			return classNames;
+		}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+		__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	} else {}
+}());
+
 
 /***/ }),
 
@@ -6923,7 +13779,31 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "/*! jQuery UI - v1.9.1 - 2012-10-25\r\n* http://jqueryui.com\r\n* Includes: jquery.ui.core.css, jquery.ui.accordion.css, jquery.ui.autocomplete.css, jquery.ui.button.css, jquery.ui.datepicker.css, jquery.ui.dialog.css, jquery.ui.menu.css, jquery.ui.progressbar.css, jquery.ui.resizable.css, jquery.ui.selectable.css, jquery.ui.slider.css, jquery.ui.spinner.css, jquery.ui.tabs.css, jquery.ui.tooltip.css, jquery.ui.theme.css\r\n* Copyright 2012 jQuery Foundation and other contributors; Licensed MIT */\r\n\r\n/* Layout helpers\r\n----------------------------------*/\r\n.ui-helper-hidden { display: none; }\r\n.ui-helper-hidden-accessible { position: absolute !important; clip: rect(1px 1px 1px 1px); clip: rect(1px,1px,1px,1px); }\r\n.ui-helper-reset { margin: 0; padding: 0; border: 0; outline: 0; line-height: 1.3; text-decoration: none; font-size: 100%; list-style: none; }\r\n.ui-helper-clearfix:before, .ui-helper-clearfix:after { content: \"\"; display: table; }\r\n.ui-helper-clearfix:after { clear: both; }\r\n.ui-helper-clearfix { zoom: 1; }\r\n.ui-helper-zfix { width: 100%; height: 100%; top: 0; left: 0; position: absolute; opacity: 0; filter:Alpha(Opacity=0); }\r\n\r\n\r\n/* Interaction Cues\r\n----------------------------------*/\r\n.ui-state-disabled { cursor: default !important; }\r\n\r\n\r\n/* Icons\r\n----------------------------------*/\r\n\r\n/* states and images */\r\n.ui-icon { display: block; text-indent: -99999px; overflow: hidden; background-repeat: no-repeat; }\r\n\r\n\r\n/* Misc visuals\r\n----------------------------------*/\r\n\r\n/* Overlays */\r\n.ui-widget-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }\r\n\r\n.ui-accordion .ui-accordion-header { display: block; cursor: pointer; position: relative; margin-top: 2px; padding: .5em .5em .5em .7em; zoom: 1; }\r\n.ui-accordion .ui-accordion-icons { padding-left: 2.2em; }\r\n.ui-accordion .ui-accordion-noicons { padding-left: .7em; }\r\n.ui-accordion .ui-accordion-icons .ui-accordion-icons { padding-left: 2.2em; }\r\n.ui-accordion .ui-accordion-header .ui-accordion-header-icon { position: absolute; left: .5em; top: 50%; margin-top: -8px; }\r\n.ui-accordion .ui-accordion-content { padding: 1em 2.2em; border-top: 0; overflow: auto; zoom: 1; }\r\n\r\n.ui-autocomplete {\r\n\tposition: absolute;\r\n\ttop: 0; /* #8656 */\r\n\tcursor: default;\r\n}\r\n\r\n/* workarounds */\r\n* html .ui-autocomplete { width:1px; } /* without this, the menu expands to 100% in IE6 */\r\n\r\n.ui-button { display: inline-block; position: relative; padding: 0; margin-right: .1em; cursor: pointer; text-align: center; zoom: 1; overflow: visible; } /* the overflow property removes extra width in IE */\r\n.ui-button, .ui-button:link, .ui-button:visited, .ui-button:hover, .ui-button:active { text-decoration: none; }\r\n.ui-button-icon-only { width: 2.2em; } /* to make room for the icon, a width needs to be set here */\r\nbutton.ui-button-icon-only { width: 2.4em; } /* button elements seem to need a little more width */\r\n.ui-button-icons-only { width: 3.4em; } \r\nbutton.ui-button-icons-only { width: 3.7em; } \r\n\r\n/*button text element */\r\n.ui-button .ui-button-text { display: block; line-height: 1.4;  }\r\n.ui-button-text-only .ui-button-text { padding: .4em 1em; }\r\n.ui-button-icon-only .ui-button-text, .ui-button-icons-only .ui-button-text { padding: .4em; text-indent: -9999999px; }\r\n.ui-button-text-icon-primary .ui-button-text, .ui-button-text-icons .ui-button-text { padding: .4em 1em .4em 2.1em; }\r\n.ui-button-text-icon-secondary .ui-button-text, .ui-button-text-icons .ui-button-text { padding: .4em 2.1em .4em 1em; }\r\n.ui-button-text-icons .ui-button-text { padding-left: 2.1em; padding-right: 2.1em; }\r\n/* no icon support for input elements, provide padding by default */\r\ninput.ui-button { padding: .4em 1em; }\r\n\r\n/*button icon element(s) */\r\n.ui-button-icon-only .ui-icon, .ui-button-text-icon-primary .ui-icon, .ui-button-text-icon-secondary .ui-icon, .ui-button-text-icons .ui-icon, .ui-button-icons-only .ui-icon { position: absolute; top: 50%; margin-top: -8px; }\r\n.ui-button-icon-only .ui-icon { left: 50%; margin-left: -8px; }\r\n.ui-button-text-icon-primary .ui-button-icon-primary, .ui-button-text-icons .ui-button-icon-primary, .ui-button-icons-only .ui-button-icon-primary { left: .5em; }\r\n.ui-button-text-icon-secondary .ui-button-icon-secondary, .ui-button-text-icons .ui-button-icon-secondary, .ui-button-icons-only .ui-button-icon-secondary { right: .5em; }\r\n.ui-button-text-icons .ui-button-icon-secondary, .ui-button-icons-only .ui-button-icon-secondary { right: .5em; }\r\n\r\n/*button sets*/\r\n.ui-buttonset { margin-right: 7px; }\r\n.ui-buttonset .ui-button { margin-left: 0; margin-right: -.3em; }\r\n\r\n/* workarounds */\r\nbutton.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra padding in Firefox */\r\n\r\n.ui-datepicker { width: 17em; padding: .2em .2em 0; display: none; }\r\n.ui-datepicker .ui-datepicker-header { position:relative; padding:.2em 0; }\r\n.ui-datepicker .ui-datepicker-prev, .ui-datepicker .ui-datepicker-next { position:absolute; top: 2px; width: 1.8em; height: 1.8em; }\r\n.ui-datepicker .ui-datepicker-prev-hover, .ui-datepicker .ui-datepicker-next-hover { top: 1px; }\r\n.ui-datepicker .ui-datepicker-prev { left:2px; }\r\n.ui-datepicker .ui-datepicker-next { right:2px; }\r\n.ui-datepicker .ui-datepicker-prev-hover { left:1px; }\r\n.ui-datepicker .ui-datepicker-next-hover { right:1px; }\r\n.ui-datepicker .ui-datepicker-prev span, .ui-datepicker .ui-datepicker-next span { display: block; position: absolute; left: 50%; margin-left: -8px; top: 50%; margin-top: -8px;  }\r\n.ui-datepicker .ui-datepicker-title { margin: 0 2.3em; line-height: 1.8em; text-align: center; }\r\n.ui-datepicker .ui-datepicker-title select { font-size:1em; margin:1px 0; }\r\n.ui-datepicker select.ui-datepicker-month-year {width: 100%;}\r\n.ui-datepicker select.ui-datepicker-month, \r\n.ui-datepicker select.ui-datepicker-year { width: 49%;}\r\n.ui-datepicker table {width: 100%; font-size: .9em; border-collapse: collapse; margin:0 0 .4em; }\r\n.ui-datepicker th { padding: .7em .3em; text-align: center; font-weight: bold; border: 0;  }\r\n.ui-datepicker td { border: 0; padding: 1px; }\r\n.ui-datepicker td span, .ui-datepicker td a { display: block; padding: .2em; text-align: right; text-decoration: none; }\r\n.ui-datepicker .ui-datepicker-buttonpane { background-image: none; margin: .7em 0 0 0; padding:0 .2em; border-left: 0; border-right: 0; border-bottom: 0; }\r\n.ui-datepicker .ui-datepicker-buttonpane button { float: right; margin: .5em .2em .4em; cursor: pointer; padding: .2em .6em .3em .6em; width:auto; overflow:visible; }\r\n.ui-datepicker .ui-datepicker-buttonpane button.ui-datepicker-current { float:left; }\r\n\r\n/* with multiple calendars */\r\n.ui-datepicker.ui-datepicker-multi { width:auto; }\r\n.ui-datepicker-multi .ui-datepicker-group { float:left; }\r\n.ui-datepicker-multi .ui-datepicker-group table { width:95%; margin:0 auto .4em; }\r\n.ui-datepicker-multi-2 .ui-datepicker-group { width:50%; }\r\n.ui-datepicker-multi-3 .ui-datepicker-group { width:33.3%; }\r\n.ui-datepicker-multi-4 .ui-datepicker-group { width:25%; }\r\n.ui-datepicker-multi .ui-datepicker-group-last .ui-datepicker-header { border-left-width:0; }\r\n.ui-datepicker-multi .ui-datepicker-group-middle .ui-datepicker-header { border-left-width:0; }\r\n.ui-datepicker-multi .ui-datepicker-buttonpane { clear:left; }\r\n.ui-datepicker-row-break { clear:both; width:100%; font-size:0em; }\r\n\r\n/* RTL support */\r\n.ui-datepicker-rtl { direction: rtl; }\r\n.ui-datepicker-rtl .ui-datepicker-prev { right: 2px; left: auto; }\r\n.ui-datepicker-rtl .ui-datepicker-next { left: 2px; right: auto; }\r\n.ui-datepicker-rtl .ui-datepicker-prev:hover { right: 1px; left: auto; }\r\n.ui-datepicker-rtl .ui-datepicker-next:hover { left: 1px; right: auto; }\r\n.ui-datepicker-rtl .ui-datepicker-buttonpane { clear:right; }\r\n.ui-datepicker-rtl .ui-datepicker-buttonpane button { float: left; }\r\n.ui-datepicker-rtl .ui-datepicker-buttonpane button.ui-datepicker-current { float:right; }\r\n.ui-datepicker-rtl .ui-datepicker-group { float:right; }\r\n.ui-datepicker-rtl .ui-datepicker-group-last .ui-datepicker-header { border-right-width:0; border-left-width:1px; }\r\n.ui-datepicker-rtl .ui-datepicker-group-middle .ui-datepicker-header { border-right-width:0; border-left-width:1px; }\r\n\r\n/* IE6 IFRAME FIX (taken from datepicker 1.5.3 */\r\n.ui-datepicker-cover {\r\n    position: absolute; /*must have*/\r\n    z-index: -1; /*must have*/\r\n    filter: mask(); /*must have*/\r\n    top: -4px; /*must have*/\r\n    left: -4px; /*must have*/\r\n    width: 200px; /*must have*/\r\n    height: 200px; /*must have*/\r\n}\r\n.ui-dialog { position: absolute; padding: .2em; width: 300px; overflow: hidden; }\r\n.ui-dialog .ui-dialog-titlebar { padding: .4em 1em; position: relative;  }\r\n.ui-dialog .ui-dialog-title { float: left; margin: .1em 16px .1em 0; }\r\n.ui-dialog .ui-dialog-titlebar-close { position: absolute; right: .3em; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 18px; }\r\n.ui-dialog .ui-dialog-titlebar-close span { display: block; margin: 1px; }\r\n.ui-dialog .ui-dialog-titlebar-close:hover, .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; }\r\n.ui-dialog .ui-dialog-content { position: relative; border: 0; padding: .5em 1em; background: none; overflow: auto; zoom: 1; }\r\n.ui-dialog .ui-dialog-buttonpane { text-align: left; border-width: 1px 0 0 0; background-image: none; margin: .5em 0 0 0; padding: .3em 1em .5em .4em; }\r\n.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { float: right; }\r\n.ui-dialog .ui-dialog-buttonpane button { margin: .5em .4em .5em 0; cursor: pointer; }\r\n.ui-dialog .ui-resizable-se { width: 14px; height: 14px; right: 3px; bottom: 3px; }\r\n.ui-draggable .ui-dialog-titlebar { cursor: move; }\r\n\r\n.ui-menu { list-style:none; padding: 2px; margin: 0; display:block; outline: none; }\r\n.ui-menu .ui-menu { margin-top: -3px; position: absolute; }\r\n.ui-menu .ui-menu-item { margin: 0; padding: 0; zoom: 1; width: 100%; }\r\n.ui-menu .ui-menu-divider { margin: 5px -2px 5px -2px; height: 0; font-size: 0; line-height: 0; border-width: 1px 0 0 0; }\r\n.ui-menu .ui-menu-item a { text-decoration: none; display: block; padding: 2px .4em; line-height: 1.5; zoom: 1; font-weight: normal; }\r\n.ui-menu .ui-menu-item a.ui-state-focus,\r\n.ui-menu .ui-menu-item a.ui-state-active { font-weight: normal; margin: -1px; }\r\n\r\n.ui-menu .ui-state-disabled { font-weight: normal; margin: .4em 0 .2em; line-height: 1.5; }\r\n.ui-menu .ui-state-disabled a { cursor: default; }\r\n\r\n/* icon support */\r\n.ui-menu-icons { position: relative; }\r\n.ui-menu-icons .ui-menu-item a { position: relative; padding-left: 2em; }\r\n\r\n/* left-aligned */\r\n.ui-menu .ui-icon { position: absolute; top: .2em; left: .2em; }\r\n\r\n/* right-aligned */\r\n.ui-menu .ui-menu-icon { position: static; float: right; }\r\n\r\n.ui-progressbar { height:2em; text-align: left; overflow: hidden; }\r\n.ui-progressbar .ui-progressbar-value {margin: -1px; height:100%; }\r\n.ui-resizable { position: relative;}\r\n.ui-resizable-handle { position: absolute;font-size: 0.1px; display: block; }\r\n.ui-resizable-disabled .ui-resizable-handle, .ui-resizable-autohide .ui-resizable-handle { display: none; }\r\n.ui-resizable-n { cursor: n-resize; height: 7px; width: 100%; top: -5px; left: 0; }\r\n.ui-resizable-s { cursor: s-resize; height: 7px; width: 100%; bottom: -5px; left: 0; }\r\n.ui-resizable-e { cursor: e-resize; width: 7px; right: -5px; top: 0; height: 100%; }\r\n.ui-resizable-w { cursor: w-resize; width: 7px; left: -5px; top: 0; height: 100%; }\r\n.ui-resizable-se { cursor: se-resize; width: 12px; height: 12px; right: 1px; bottom: 1px; }\r\n.ui-resizable-sw { cursor: sw-resize; width: 9px; height: 9px; left: -5px; bottom: -5px; }\r\n.ui-resizable-nw { cursor: nw-resize; width: 9px; height: 9px; left: -5px; top: -5px; }\r\n.ui-resizable-ne { cursor: ne-resize; width: 9px; height: 9px; right: -5px; top: -5px;}\r\n.ui-selectable-helper { position: absolute; z-index: 100; border:1px dotted black; }\r\n\r\n.ui-slider { position: relative; text-align: left; }\r\n.ui-slider .ui-slider-handle { position: absolute; z-index: 2; width: 1.2em; height: 1.2em; cursor: default; }\r\n.ui-slider .ui-slider-range { position: absolute; z-index: 1; font-size: .7em; display: block; border: 0; background-position: 0 0; }\r\n\r\n.ui-slider-horizontal { height: .8em; }\r\n.ui-slider-horizontal .ui-slider-handle { top: -.3em; margin-left: -.6em; }\r\n.ui-slider-horizontal .ui-slider-range { top: 0; height: 100%; }\r\n.ui-slider-horizontal .ui-slider-range-min { left: 0; }\r\n.ui-slider-horizontal .ui-slider-range-max { right: 0; }\r\n\r\n.ui-slider-vertical { width: .8em; height: 100px; }\r\n.ui-slider-vertical .ui-slider-handle { left: -.3em; margin-left: 0; margin-bottom: -.6em; }\r\n.ui-slider-vertical .ui-slider-range { left: 0; width: 100%; }\r\n.ui-slider-vertical .ui-slider-range-min { bottom: 0; }\r\n.ui-slider-vertical .ui-slider-range-max { top: 0; }\r\n.ui-spinner { position:relative; display: inline-block; overflow: hidden; padding: 0; vertical-align: middle; }\r\n.ui-spinner-input { border: none; background: none; padding: 0; margin: .2em 0; vertical-align: middle; margin-left: .4em; margin-right: 22px; }\r\n.ui-spinner-button { width: 16px; height: 50%; font-size: .5em; padding: 0; margin: 0; text-align: center; position: absolute; cursor: default; display: block; overflow: hidden; right: 0; }\r\n.ui-spinner a.ui-spinner-button { border-top: none; border-bottom: none; border-right: none; } /* more specificity required here to overide default borders */\r\n.ui-spinner .ui-icon { position: absolute; margin-top: -8px; top: 50%; left: 0; } /* vertical centre icon */\r\n.ui-spinner-up { top: 0; }\r\n.ui-spinner-down { bottom: 0; }\r\n\r\n/* TR overrides */\r\n.ui-spinner .ui-icon-triangle-1-s {\r\n\t/* need to fix icons sprite */\r\n\tbackground-position:-65px -16px;\r\n}\r\n\r\n.ui-tabs { position: relative; padding: .2em; zoom: 1; } /* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as \"fixed\") */\r\n.ui-tabs .ui-tabs-nav { margin: 0; padding: .2em .2em 0; }\r\n.ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relative; top: 0; margin: 1px .2em 0 0; border-bottom: 0; padding: 0; white-space: nowrap; }\r\n.ui-tabs .ui-tabs-nav li a { float: left; padding: .5em 1em; text-decoration: none; }\r\n.ui-tabs .ui-tabs-nav li.ui-tabs-active { margin-bottom: -1px; padding-bottom: 1px; }\r\n.ui-tabs .ui-tabs-nav li.ui-tabs-active a, .ui-tabs .ui-tabs-nav li.ui-state-disabled a, .ui-tabs .ui-tabs-nav li.ui-tabs-loading a { cursor: text; }\r\n.ui-tabs .ui-tabs-nav li a, .ui-tabs-collapsible .ui-tabs-nav li.ui-tabs-active a { cursor: pointer; } /* first selector in group seems obsolete, but required to overcome bug in Opera applying cursor: text overall if defined elsewhere... */\r\n.ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 1em 1.4em; background: none; }\r\n\r\n.ui-tooltip {\r\n\tpadding: 8px;\r\n\tposition: absolute;\r\n\tz-index: 9999;\r\n\tmax-width: 300px;\r\n\tbox-shadow: 0 0 5px #aaa;\r\n}\r\n/* Fades and background-images don't work well together in IE6, drop the image */\r\n* html .ui-tooltip {\r\n\tbackground-image: none;\r\n}\r\nbody .ui-tooltip { border-width: 2px; }\r\n\r\n/* Component containers\r\n----------------------------------*/\r\n.ui-widget { font-family: Verdana,Arial,sans-serif/*{ffDefault}*/; font-size: 1.1em/*{fsDefault}*/; }\r\n.ui-widget .ui-widget { font-size: 1em; }\r\n.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Verdana,Arial,sans-serif/*{ffDefault}*/; font-size: 1em; }\r\n.ui-widget-content { border: 1px solid #aaaaaa/*{borderColorContent}*/; background: #ffffff/*{bgColorContent}*/ url(/images/ui-bg_flat_75_ffffff_40x100.png)/*{bgImgUrlContent}*/ 50%/*{bgContentXPos}*/ 50%/*{bgContentYPos}*/ repeat-x/*{bgContentRepeat}*/; color: #222222/*{fcContent}*/; }\r\n.ui-widget-content a { color: #222222/*{fcContent}*/; }\r\n.ui-widget-header { border: 1px solid #aaaaaa/*{borderColorHeader}*/; background: #cccccc/*{bgColorHeader}*/ url(/images/ui-bg_highlight-soft_75_cccccc_1x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/; color: #222222/*{fcHeader}*/; font-weight: bold; }\r\n.ui-widget-header a { color: #222222/*{fcHeader}*/; }\r\n\r\n/* Interaction states\r\n----------------------------------*/\r\n.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { border: 1px solid #d3d3d3/*{borderColorDefault}*/; background: #e6e6e6/*{bgColorDefault}*/ url(/images/ui-bg_glass_75_e6e6e6_1x400.png)/*{bgImgUrlDefault}*/ 50%/*{bgDefaultXPos}*/ 50%/*{bgDefaultYPos}*/ repeat-x/*{bgDefaultRepeat}*/; font-weight: normal/*{fwDefault}*/; color: #555555/*{fcDefault}*/; }\r\n.ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited { color: #555555/*{fcDefault}*/; text-decoration: none; }\r\n.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: 1px solid #999999/*{borderColorHover}*/; background: #dadada/*{bgColorHover}*/ url(/images/ui-bg_glass_75_dadada_1x400.png)/*{bgImgUrlHover}*/ 50%/*{bgHoverXPos}*/ 50%/*{bgHoverYPos}*/ repeat-x/*{bgHoverRepeat}*/; font-weight: normal/*{fwDefault}*/; color: #212121/*{fcHover}*/; }\r\n.ui-state-hover a, .ui-state-hover a:hover, .ui-state-hover a:link, .ui-state-hover a:visited { color: #212121/*{fcHover}*/; text-decoration: none; }\r\n.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active { border: 1px solid #aaaaaa/*{borderColorActive}*/; background: #ffffff/*{bgColorActive}*/ url(/images/ui-bg_glass_65_ffffff_1x400.png)/*{bgImgUrlActive}*/ 50%/*{bgActiveXPos}*/ 50%/*{bgActiveYPos}*/ repeat-x/*{bgActiveRepeat}*/; font-weight: normal/*{fwDefault}*/; color: #212121/*{fcActive}*/; }\r\n.ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited { color: #212121/*{fcActive}*/; text-decoration: none; }\r\n\r\n/* Interaction Cues\r\n----------------------------------*/\r\n.ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {border: 1px solid #fcefa1/*{borderColorHighlight}*/; background: #fbf9ee/*{bgColorHighlight}*/ url(/images/ui-bg_glass_55_fbf9ee_1x400.png)/*{bgImgUrlHighlight}*/ 50%/*{bgHighlightXPos}*/ 50%/*{bgHighlightYPos}*/ repeat-x/*{bgHighlightRepeat}*/; color: #363636/*{fcHighlight}*/; }\r\n.ui-state-highlight a, .ui-widget-content .ui-state-highlight a,.ui-widget-header .ui-state-highlight a { color: #363636/*{fcHighlight}*/; }\r\n.ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {border: 1px solid #cd0a0a/*{borderColorError}*/; background: #fef1ec/*{bgColorError}*/ url(/images/ui-bg_glass_95_fef1ec_1x400.png)/*{bgImgUrlError}*/ 50%/*{bgErrorXPos}*/ 50%/*{bgErrorYPos}*/ repeat-x/*{bgErrorRepeat}*/; color: #cd0a0a/*{fcError}*/; }\r\n.ui-state-error a, .ui-widget-content .ui-state-error a, .ui-widget-header .ui-state-error a { color: #cd0a0a/*{fcError}*/; }\r\n.ui-state-error-text, .ui-widget-content .ui-state-error-text, .ui-widget-header .ui-state-error-text { color: #cd0a0a/*{fcError}*/; }\r\n.ui-priority-primary, .ui-widget-content .ui-priority-primary, .ui-widget-header .ui-priority-primary { font-weight: bold; }\r\n.ui-priority-secondary, .ui-widget-content .ui-priority-secondary,  .ui-widget-header .ui-priority-secondary { opacity: .7; filter:Alpha(Opacity=70); font-weight: normal; }\r\n.ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled { opacity: .35; filter:Alpha(Opacity=35); background-image: none; }\r\n.ui-state-disabled .ui-icon { filter:Alpha(Opacity=35); } /* For IE8 - See #6059 */\r\n\r\n/* Icons\r\n----------------------------------*/\r\n\r\n/* states and images */\r\n.ui-icon { width: 16px; height: 16px; background-image: url(/images/ui-icons_222222_256x240.png)/*{iconsContent}*/; }\r\n.ui-widget-content .ui-icon {background-image: url(/images/ui-icons_222222_256x240.png)/*{iconsContent}*/; }\r\n.ui-widget-header .ui-icon {background-image: url(/images/ui-icons_222222_256x240.png)/*{iconsHeader}*/; }\r\n.ui-state-default .ui-icon { background-image: url(/images/ui-icons_888888_256x240.png)/*{iconsDefault}*/; }\r\n.ui-state-hover .ui-icon, .ui-state-focus .ui-icon {background-image: url(/images/ui-icons_454545_256x240.png)/*{iconsHover}*/; }\r\n.ui-state-active .ui-icon {background-image: url(/images/ui-icons_454545_256x240.png)/*{iconsActive}*/; }\r\n.ui-state-highlight .ui-icon {background-image: url(/images/ui-icons_2e83ff_256x240.png)/*{iconsHighlight}*/; }\r\n.ui-state-error .ui-icon, .ui-state-error-text .ui-icon {background-image: url(/images/ui-icons_cd0a0a_256x240.png)/*{iconsError}*/; }\r\n\r\n/* positioning */\r\n.ui-icon-carat-1-n { background-position: 0 0; }\r\n.ui-icon-carat-1-ne { background-position: -16px 0; }\r\n.ui-icon-carat-1-e { background-position: -32px 0; }\r\n.ui-icon-carat-1-se { background-position: -48px 0; }\r\n.ui-icon-carat-1-s { background-position: -64px 0; }\r\n.ui-icon-carat-1-sw { background-position: -80px 0; }\r\n.ui-icon-carat-1-w { background-position: -96px 0; }\r\n.ui-icon-carat-1-nw { background-position: -112px 0; }\r\n.ui-icon-carat-2-n-s { background-position: -128px 0; }\r\n.ui-icon-carat-2-e-w { background-position: -144px 0; }\r\n.ui-icon-triangle-1-n { background-position: 0 -16px; }\r\n.ui-icon-triangle-1-ne { background-position: -16px -16px; }\r\n.ui-icon-triangle-1-e { background-position: -32px -16px; }\r\n.ui-icon-triangle-1-se { background-position: -48px -16px; }\r\n.ui-icon-triangle-1-s { background-position: -64px -16px; }\r\n.ui-icon-triangle-1-sw { background-position: -80px -16px; }\r\n.ui-icon-triangle-1-w { background-position: -96px -16px; }\r\n.ui-icon-triangle-1-nw { background-position: -112px -16px; }\r\n.ui-icon-triangle-2-n-s { background-position: -128px -16px; }\r\n.ui-icon-triangle-2-e-w { background-position: -144px -16px; }\r\n.ui-icon-arrow-1-n { background-position: 0 -32px; }\r\n.ui-icon-arrow-1-ne { background-position: -16px -32px; }\r\n.ui-icon-arrow-1-e { background-position: -32px -32px; }\r\n.ui-icon-arrow-1-se { background-position: -48px -32px; }\r\n.ui-icon-arrow-1-s { background-position: -64px -32px; }\r\n.ui-icon-arrow-1-sw { background-position: -80px -32px; }\r\n.ui-icon-arrow-1-w { background-position: -96px -32px; }\r\n.ui-icon-arrow-1-nw { background-position: -112px -32px; }\r\n.ui-icon-arrow-2-n-s { background-position: -128px -32px; }\r\n.ui-icon-arrow-2-ne-sw { background-position: -144px -32px; }\r\n.ui-icon-arrow-2-e-w { background-position: -160px -32px; }\r\n.ui-icon-arrow-2-se-nw { background-position: -176px -32px; }\r\n.ui-icon-arrowstop-1-n { background-position: -192px -32px; }\r\n.ui-icon-arrowstop-1-e { background-position: -208px -32px; }\r\n.ui-icon-arrowstop-1-s { background-position: -224px -32px; }\r\n.ui-icon-arrowstop-1-w { background-position: -240px -32px; }\r\n.ui-icon-arrowthick-1-n { background-position: 0 -48px; }\r\n.ui-icon-arrowthick-1-ne { background-position: -16px -48px; }\r\n.ui-icon-arrowthick-1-e { background-position: -32px -48px; }\r\n.ui-icon-arrowthick-1-se { background-position: -48px -48px; }\r\n.ui-icon-arrowthick-1-s { background-position: -64px -48px; }\r\n.ui-icon-arrowthick-1-sw { background-position: -80px -48px; }\r\n.ui-icon-arrowthick-1-w { background-position: -96px -48px; }\r\n.ui-icon-arrowthick-1-nw { background-position: -112px -48px; }\r\n.ui-icon-arrowthick-2-n-s { background-position: -128px -48px; }\r\n.ui-icon-arrowthick-2-ne-sw { background-position: -144px -48px; }\r\n.ui-icon-arrowthick-2-e-w { background-position: -160px -48px; }\r\n.ui-icon-arrowthick-2-se-nw { background-position: -176px -48px; }\r\n.ui-icon-arrowthickstop-1-n { background-position: -192px -48px; }\r\n.ui-icon-arrowthickstop-1-e { background-position: -208px -48px; }\r\n.ui-icon-arrowthickstop-1-s { background-position: -224px -48px; }\r\n.ui-icon-arrowthickstop-1-w { background-position: -240px -48px; }\r\n.ui-icon-arrowreturnthick-1-w { background-position: 0 -64px; }\r\n.ui-icon-arrowreturnthick-1-n { background-position: -16px -64px; }\r\n.ui-icon-arrowreturnthick-1-e { background-position: -32px -64px; }\r\n.ui-icon-arrowreturnthick-1-s { background-position: -48px -64px; }\r\n.ui-icon-arrowreturn-1-w { background-position: -64px -64px; }\r\n.ui-icon-arrowreturn-1-n { background-position: -80px -64px; }\r\n.ui-icon-arrowreturn-1-e { background-position: -96px -64px; }\r\n.ui-icon-arrowreturn-1-s { background-position: -112px -64px; }\r\n.ui-icon-arrowrefresh-1-w { background-position: -128px -64px; }\r\n.ui-icon-arrowrefresh-1-n { background-position: -144px -64px; }\r\n.ui-icon-arrowrefresh-1-e { background-position: -160px -64px; }\r\n.ui-icon-arrowrefresh-1-s { background-position: -176px -64px; }\r\n.ui-icon-arrow-4 { background-position: 0 -80px; }\r\n.ui-icon-arrow-4-diag { background-position: -16px -80px; }\r\n.ui-icon-extlink { background-position: -32px -80px; }\r\n.ui-icon-newwin { background-position: -48px -80px; }\r\n.ui-icon-refresh { background-position: -64px -80px; }\r\n.ui-icon-shuffle { background-position: -80px -80px; }\r\n.ui-icon-transfer-e-w { background-position: -96px -80px; }\r\n.ui-icon-transferthick-e-w { background-position: -112px -80px; }\r\n.ui-icon-folder-collapsed { background-position: 0 -96px; }\r\n.ui-icon-folder-open { background-position: -16px -96px; }\r\n.ui-icon-document { background-position: -32px -96px; }\r\n.ui-icon-document-b { background-position: -48px -96px; }\r\n.ui-icon-note { background-position: -64px -96px; }\r\n.ui-icon-mail-closed { background-position: -80px -96px; }\r\n.ui-icon-mail-open { background-position: -96px -96px; }\r\n.ui-icon-suitcase { background-position: -112px -96px; }\r\n.ui-icon-comment { background-position: -128px -96px; }\r\n.ui-icon-person { background-position: -144px -96px; }\r\n.ui-icon-print { background-position: -160px -96px; }\r\n.ui-icon-trash { background-position: -176px -96px; }\r\n.ui-icon-locked { background-position: -192px -96px; }\r\n.ui-icon-unlocked { background-position: -208px -96px; }\r\n.ui-icon-bookmark { background-position: -224px -96px; }\r\n.ui-icon-tag { background-position: -240px -96px; }\r\n.ui-icon-home { background-position: 0 -112px; }\r\n.ui-icon-flag { background-position: -16px -112px; }\r\n.ui-icon-calendar { background-position: -32px -112px; }\r\n.ui-icon-cart { background-position: -48px -112px; }\r\n.ui-icon-pencil { background-position: -64px -112px; }\r\n.ui-icon-clock { background-position: -80px -112px; }\r\n.ui-icon-disk { background-position: -96px -112px; }\r\n.ui-icon-calculator { background-position: -112px -112px; }\r\n.ui-icon-zoomin { background-position: -128px -112px; }\r\n.ui-icon-zoomout { background-position: -144px -112px; }\r\n.ui-icon-search { background-position: -160px -112px; }\r\n.ui-icon-wrench { background-position: -176px -112px; }\r\n.ui-icon-gear { background-position: -192px -112px; }\r\n.ui-icon-heart { background-position: -208px -112px; }\r\n.ui-icon-star { background-position: -224px -112px; }\r\n.ui-icon-link { background-position: -240px -112px; }\r\n.ui-icon-cancel { background-position: 0 -128px; }\r\n.ui-icon-plus { background-position: -16px -128px; }\r\n.ui-icon-plusthick { background-position: -32px -128px; }\r\n.ui-icon-minus { background-position: -48px -128px; }\r\n.ui-icon-minusthick { background-position: -64px -128px; }\r\n.ui-icon-close { background-position: -80px -128px; }\r\n.ui-icon-closethick { background-position: -96px -128px; }\r\n.ui-icon-key { background-position: -112px -128px; }\r\n.ui-icon-lightbulb { background-position: -128px -128px; }\r\n.ui-icon-scissors { background-position: -144px -128px; }\r\n.ui-icon-clipboard { background-position: -160px -128px; }\r\n.ui-icon-copy { background-position: -176px -128px; }\r\n.ui-icon-contact { background-position: -192px -128px; }\r\n.ui-icon-image { background-position: -208px -128px; }\r\n.ui-icon-video { background-position: -224px -128px; }\r\n.ui-icon-script { background-position: -240px -128px; }\r\n.ui-icon-alert { background-position: 0 -144px; }\r\n.ui-icon-info { background-position: -16px -144px; }\r\n.ui-icon-notice { background-position: -32px -144px; }\r\n.ui-icon-help { background-position: -48px -144px; }\r\n.ui-icon-check { background-position: -64px -144px; }\r\n.ui-icon-bullet { background-position: -80px -144px; }\r\n.ui-icon-radio-on { background-position: -96px -144px; }\r\n.ui-icon-radio-off { background-position: -112px -144px; }\r\n.ui-icon-pin-w { background-position: -128px -144px; }\r\n.ui-icon-pin-s { background-position: -144px -144px; }\r\n.ui-icon-play { background-position: 0 -160px; }\r\n.ui-icon-pause { background-position: -16px -160px; }\r\n.ui-icon-seek-next { background-position: -32px -160px; }\r\n.ui-icon-seek-prev { background-position: -48px -160px; }\r\n.ui-icon-seek-end { background-position: -64px -160px; }\r\n.ui-icon-seek-start { background-position: -80px -160px; }\r\n/* ui-icon-seek-first is deprecated, use ui-icon-seek-start instead */\r\n.ui-icon-seek-first { background-position: -80px -160px; }\r\n.ui-icon-stop { background-position: -96px -160px; }\r\n.ui-icon-eject { background-position: -112px -160px; }\r\n.ui-icon-volume-off { background-position: -128px -160px; }\r\n.ui-icon-volume-on { background-position: -144px -160px; }\r\n.ui-icon-power { background-position: 0 -176px; }\r\n.ui-icon-signal-diag { background-position: -16px -176px; }\r\n.ui-icon-signal { background-position: -32px -176px; }\r\n.ui-icon-battery-0 { background-position: -48px -176px; }\r\n.ui-icon-battery-1 { background-position: -64px -176px; }\r\n.ui-icon-battery-2 { background-position: -80px -176px; }\r\n.ui-icon-battery-3 { background-position: -96px -176px; }\r\n.ui-icon-circle-plus { background-position: 0 -192px; }\r\n.ui-icon-circle-minus { background-position: -16px -192px; }\r\n.ui-icon-circle-close { background-position: -32px -192px; }\r\n.ui-icon-circle-triangle-e { background-position: -48px -192px; }\r\n.ui-icon-circle-triangle-s { background-position: -64px -192px; }\r\n.ui-icon-circle-triangle-w { background-position: -80px -192px; }\r\n.ui-icon-circle-triangle-n { background-position: -96px -192px; }\r\n.ui-icon-circle-arrow-e { background-position: -112px -192px; }\r\n.ui-icon-circle-arrow-s { background-position: -128px -192px; }\r\n.ui-icon-circle-arrow-w { background-position: -144px -192px; }\r\n.ui-icon-circle-arrow-n { background-position: -160px -192px; }\r\n.ui-icon-circle-zoomin { background-position: -176px -192px; }\r\n.ui-icon-circle-zoomout { background-position: -192px -192px; }\r\n.ui-icon-circle-check { background-position: -208px -192px; }\r\n.ui-icon-circlesmall-plus { background-position: 0 -208px; }\r\n.ui-icon-circlesmall-minus { background-position: -16px -208px; }\r\n.ui-icon-circlesmall-close { background-position: -32px -208px; }\r\n.ui-icon-squaresmall-plus { background-position: -48px -208px; }\r\n.ui-icon-squaresmall-minus { background-position: -64px -208px; }\r\n.ui-icon-squaresmall-close { background-position: -80px -208px; }\r\n.ui-icon-grip-dotted-vertical { background-position: 0 -224px; }\r\n.ui-icon-grip-dotted-horizontal { background-position: -16px -224px; }\r\n.ui-icon-grip-solid-vertical { background-position: -32px -224px; }\r\n.ui-icon-grip-solid-horizontal { background-position: -48px -224px; }\r\n.ui-icon-gripsmall-diagonal-se { background-position: -64px -224px; }\r\n.ui-icon-grip-diagonal-se { background-position: -80px -224px; }\r\n\r\n\r\n/* Misc visuals\r\n----------------------------------*/\r\n\r\n/* Corner radius */\r\n.ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl { border-top-left-radius: 4px/*{cornerRadius}*/; }\r\n.ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-tr { border-top-right-radius: 4px/*{cornerRadius}*/; }\r\n.ui-corner-all, .ui-corner-bottom, .ui-corner-left, .ui-corner-bl { border-bottom-left-radius: 4px/*{cornerRadius}*/; }\r\n.ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br { border-bottom-right-radius: 4px/*{cornerRadius}*/; }\r\n\r\n/* Overlays */\r\n.ui-widget-overlay { background: #aaaaaa/*{bgColorOverlay}*/ url(/images/ui-bg_flat_0_aaaaaa_40x100.png)/*{bgImgUrlOverlay}*/ 50%/*{bgOverlayXPos}*/ 50%/*{bgOverlayYPos}*/ repeat-x/*{bgOverlayRepeat}*/; opacity: .3;filter:Alpha(Opacity=30)/*{opacityOverlay}*/; }\r\n.ui-widget-shadow { margin: -8px/*{offsetTopShadow}*/ 0 0 -8px/*{offsetLeftShadow}*/; padding: 8px/*{thicknessShadow}*/; background: #aaaaaa/*{bgColorShadow}*/ url(/images/ui-bg_flat_0_aaaaaa_40x100.png)/*{bgImgUrlShadow}*/ 50%/*{bgShadowXPos}*/ 50%/*{bgShadowYPos}*/ repeat-x/*{bgShadowRepeat}*/; opacity: .3;filter:Alpha(Opacity=30)/*{opacityShadow}*/; border-radius: 8px/*{cornerRadiusShadow}*/; }\r\n\r\n\r\n\r\n\r\n\r\nbody\r\n{\r\n    background-color: #F6F6F6;\r\n}\r\n\r\n#header-wrapper\r\n{\r\n    width:100%;\r\n    border-top:10px #3c3c3c solid;\r\n    background-color: #F6F6F6;\r\n}\r\n\r\n.header\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    position: relative;\r\n}\r\n\r\n/* menu start */\r\n.header #menu\r\n{\r\n    background:#3c3c3c;\r\n    height:40px;\r\n    width:980px;\r\n    border-top-right-radius:20px;\r\n    border-top-left-radius:20px;\r\n    float:left;\r\n    /* background-color: #FFCE00 ; */\r\n\r\n}\r\n\r\n#menu ul\r\n{\r\n    list-style:none;\r\n    /* background-color: #FFCE00 ; */\r\n}\r\n\r\n#menu ul li\r\n{\r\n    list-style:none;\r\n    float:left;\r\n    padding:14px 12px 5px 12px;\r\n    color:#FFF;\r\n    text-transform:uppercase;\r\n}\r\n\r\n#menu ul li a\r\n{\r\n    color:#fff;\r\n}\r\n\r\n#menu ul li a:hover\r\n{\r\n    color:#999;\r\n}\r\n\r\n.nav-bar\r\n{\r\n    display:inline-block;list-style:none;\r\n}\r\n\r\n.header ul.nav-bar\r\n{\r\n    margin-top: 0;\r\n    background:#3c3c3c;\r\n    -webkit-border-radius-topright:20px;\r\n    border-top-right-radius:20px;\r\n    -moz-border-radius-topleft:20px;\r\n    -webkit-border-radius-topright:20px;\r\n    border-top-left-radius:20px;\r\n    margin-bottom: 0;\r\n}\r\n\r\n.header ul.nav-bar li\r\n{\r\n    border:none;\r\n    box-shadow:none;\r\n    text-transform:uppercase;\r\n    padding:12px 28px 6px 28px;\r\n    line-height:22px;\r\n}\r\n\r\n.header ul.nav-bar li:hover\r\n{\r\n    background:none;\r\n}\r\n\r\n.header ul.nav-bar li a\r\n{\r\n    font-size:12px;\r\n    padding:0;\r\n}\r\n\r\n.menud\r\n{\r\n    width:100px;text-align: left;\r\n}\r\n\r\n.flyout\r\n{\r\n    display: none;\r\n}\r\n\r\n.header ul.nav-bar li a:hover,.header ul.nav-bar ul.flyout a:hover\r\n{\r\n    color:#999;\r\n}\r\n\r\n.header ul.nav-bar li.has-flyout > a:first-child\r\n{\r\n    padding-right:0;\r\n}\r\n\r\n.header ul.nav-bar li.has-flyout > a:first-child:after\r\n{\r\n    border:none;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout\r\n{\r\n    background:#3c3c3c;\r\n    border:none;\r\n    width:178px;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout li\r\n{\r\n    padding:8px 20px 8px 25px;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout a\r\n{\r\n    background:none;\r\n    border:none;\r\n    box-shadow:none;\r\n    color:#E6E6E6;\r\n}\r\n\r\n#logo\r\n{\r\n    margin-top:35px;\r\n    margin-bottom:15px;\r\n    background-image:url('/images/logo.png');\r\n    /* background-image: url(); */\r\n    width:204px;\r\n    height:51px;\r\n    display:block;\r\n\r\n}\r\n\r\n#header-text\r\n{\r\n\r\n    width:500px;\r\n    text-align:right;\r\n    color:#0c2849;\r\n    /*position: absolute;\r\n\tright: 0;*/\r\n    bottom: 60px;\r\n}\r\n#top-logo\r\n{\r\n    width:100%;\r\n\r\n}\r\n\r\n#top-logo #div1\r\n{\r\n    float: left;\r\n    width: 50%;\r\n\r\n}\r\n\r\n#top-logo #div2\r\n{\r\n    float: left;\r\n    padding-top: 70px;\r\n    text-align: right;\r\n    width: 50%;\r\n\r\n}\r\n\r\n#top-logo #div2 .phone\r\n{\r\n    margin-top:0;\r\n    margin-bottom:20px;\r\n    font-size:23px;\r\n    font-weight:400;\r\n    color:#0c2849;\r\n}\r\n\r\n#menu-wrapper\r\n{\r\n    width:100%;\r\n}\r\n\r\n.header clear\r\n{\r\n    float:left;\r\n}\r\n\r\n\r\n\r\n/* ------------------------------------------------------------------------------------------\r\n------------------------------------------------------------------------------------------\r\n------------------------------------------------------------------------------------------\r\n------------------------------------------------------------------------------------------ */\r\n\r\n\r\n\r\nhtml\r\n{\r\n    overflow:0;\r\n    margin:0;\r\n    padding:0;\r\n}\r\n\r\nhtml,body\r\n{\r\n    height:100%;\r\n    margin:0;\r\n    width:100%;\r\n}\r\n\r\nbody\r\n{\r\n    font-family:Arial, Helvetica, sans-serif, \"Arial Narrow\";\r\n    margin:0;\r\n    padding:0;\r\n    background:#f6f6f6;\r\n}\r\n\r\n/*body,td,th,input,textarea,select,a*/\r\nbody,td,th,input,select\r\n{\r\n    font-size:12px;\r\n    color:#666;\r\n}\r\n\r\na\r\n{\r\n    color:#909090;\r\n}\r\n\r\nh1,.welcome\r\n{\r\n    margin-top:0;\r\n    margin-bottom:20px;\r\n    font-size:21px;\r\n    font-weight:400;\r\n    text-shadow:0 0 1px rgba(0,0,0,.01);\r\n}\r\n\r\nh1,.body-text h2, .get-a-quote h2, .phone\r\n{\r\n    margin-top:0;\r\n    margin-bottom:20px;\r\n    font-size:23px;\r\n    font-weight:400;\r\n    color:#0c2849;\r\n}\r\n\r\nh2\r\n{\r\n    font-size:18px;\r\n    font-weight:400;\r\n    margin-bottom:10px;\r\n    margin-top:0;\r\n    padding-top:20px;\r\n    color:#FFF;\r\n}\r\n\r\nh3\r\n{\r\n    font-size:18px;\r\n    font-weight:400;\r\n    margin-bottom:10px;\r\n    margin-top:10px;\r\n}\r\n\r\np\r\n{\r\n    margin-top:0;\r\n    margin-bottom:20px;\r\n}\r\n\r\na,a:visited,a b\r\n{\r\n    text-decoration:none;\r\n    cursor:pointer;\r\n}\r\n\r\na:hover\r\n{\r\n    text-decoration:none;\r\n}\r\n\r\na img\r\n{\r\n    border:none;\r\n}\r\n\r\n.blue\r\n{\r\n    color:#0069b5;\r\n}\r\n\r\nform\r\n{\r\n    margin:0;\r\n}\r\n\r\n/* For modern browsers */\r\n.clearfix:before,.clearfix:after\r\n{\r\n    content:\"\";\r\n    display:table;\r\n}\r\n\r\n.clearfix:after\r\n{\r\n    clear:both;\r\n}\r\n\r\n/* For IE 6/7 (trigger hasLayout) */\r\n.clearfix\r\n{\r\n    zoom:1;\r\n}\r\n\r\n/*  class start */\r\n.clear:after\r\n{\r\n    clear:both;\r\n    content:\"\";\r\n    display:block;\r\n}\r\n\r\n/* -------------------------------------Header--------------------------------------------- */\r\n\r\n#header-wrapper\r\n{\r\n    width:100%;\r\n    border-top:10px #3c3c3c solid;\r\n}\r\n\r\n.header\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    position: relative;\r\n}\r\n\r\n/* menu start */\r\n\r\n\r\n#menu ul li\r\n{\r\n    list-style:none;\r\n    float:left;\r\n    padding:14px 12px 5px 12px;\r\n    color:#FFF;\r\n    text-transform:uppercase;\r\n}\r\n\r\n\r\n\r\n.header ul.nav-bar\r\n{\r\n    margin-top: 0;\r\n    background:#3c3c3c;\r\n    -webkit-border-radius-topright:20px;\r\n    border-top-right-radius:20px;\r\n    -moz-border-radius-topleft:20px;\r\n    -webkit-border-radius-topright:20px;\r\n    border-top-left-radius:20px;\r\n    margin-bottom: 0;\r\n}\r\n\r\n.header ul.nav-bar li\r\n{\r\n    border:none;\r\n    box-shadow:none;\r\n    text-transform:uppercase;\r\n    padding:12px 28px 6px 28px;\r\n    line-height:22px;\r\n}\r\n\r\n.header ul.nav-bar li:hover\r\n{\r\n    background:none;\r\n}\r\n\r\n.header ul.nav-bar li a\r\n{\r\n    font-size:12px;\r\n    padding:0;\r\n}\r\n\r\n.header ul.nav-bar li a:hover,.header ul.nav-bar ul.flyout a:hover\r\n{\r\n    color:#999;\r\n}\r\n\r\n.header ul.nav-bar li.has-flyout > a:first-child\r\n{\r\n    padding-right:0;\r\n}\r\n\r\n.header ul.nav-bar li.has-flyout > a:first-child:after\r\n{\r\n    border:none;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout\r\n{\r\n    background:#3c3c3c;\r\n    border:none;\r\n    width:178px;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout li\r\n{\r\n    padding:8px 20px 8px 25px;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout a\r\n{\r\n    background:none;\r\n    border:none;\r\n    box-shadow:none;\r\n    color:#E6E6E6;\r\n}\r\n\r\n#logo\r\n{\r\n    margin-top:35px;\r\n    margin-bottom:15px;\r\n    /* background-image:url(/images/logo-new-1.svg); */\r\n    width:204px;\r\n    height:51px;\r\n    display:block;\r\n\r\n}\r\n\r\n#header-text\r\n{\r\n\r\n    width:500px;\r\n    text-align:right;\r\n    color:#0c2849;\r\n    /*position: absolute;\r\n\tright: 0;*/\r\n    bottom: 60px;\r\n}\r\n\r\n#banner\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    position:relative;\r\n    /*background:#17416f;*/\r\n    background:#0e2743;\r\n}\r\n\r\n.banner-top\r\n{\r\n    background:#0069b5;\r\n    text-align:center;\r\n    padding:15px;\r\n}\r\n\r\n.banner-bottom\r\n{\r\n    height:273px;\r\n}\r\n\r\n.banner-bottomin\r\n{\r\n    height:128px;\r\n    background:#09213b;\r\n}\r\n\r\n.banner-top span\r\n{\r\n    font-size:20px;\r\n    color:#FFF;\r\n}\r\n\r\n.banner-image\r\n{\r\n    height:273px;\r\n    background:#0e2b4e;\r\n    width:500px;\r\n    position:absolute;\r\n    float:left;\r\n}\r\n\r\n.banner-imagein\r\n{\r\n    height:120px;\r\n    background:#0e2b4e;\r\n    width:980px;\r\n    float:left;\r\n}\r\n\r\n.testimonial\r\n{\r\n    background:transparent;\r\n    width:560px;\r\n    height:273px;\r\n    float:right;\r\n    text-align:center;\r\n    padding:0 20px;\r\n    position:absolute;\r\n    right:0;\r\n    /*background-image: url('../testimonials/brooke - nedlands.jpg');\r\n\r\n\tbackground-repeat: no-repeat;\r\n\r\n\tbackground-position: 10px 0;*/\r\n}\r\n\r\n.testimonial .testimonial-wrapper\r\n{\r\n    width:560px;\r\n    height:100%;\r\n    float:right;\r\n    position:relative;\r\n    top:-50px;\r\n}\r\n\r\n.orbit-slide \r\n{\r\n    z-index: 3; opacity: 1; display: block;\r\n}\r\n\r\n.orbit-slide2\r\n{\r\n    display: block; opacity: 0; z-index: 1;\r\n}\r\n\r\n.testimonial .orbit-slide .orbit-slide2 h3\r\n{\r\n    margin-top:50px;\r\n}\r\n\r\n.testimonial-image\r\n{\r\n    width:283px; height:273px;\r\n}\r\n\r\n.testimonial .orbit-slide .orbit-slide2 .testimonial-image\r\n{\r\n    float:left;\r\n    background:transparent;\r\n    margin-right:-5px;\r\n}\r\n\r\n.testimonial .gradient-right\r\n{\r\n    position:absolute;\r\n    /* background-image:url(..///images/gradient-right.png); */\r\n    background-size:100%;\r\n    width:110px;\r\n    height:273px;\r\n    right:300px;\r\n    z-index:5;\r\n}\r\n\r\n.testimonial .gradient-left\r\n{\r\n    position:absolute;\r\n    /* background-image:url(..///images/gradient-left.png); */\r\n    background-size:100%;\r\n    width:90px;\r\n    height:273px;\r\n    left:-20px;\r\n    z-index:5;\r\n}\r\n\r\n.testimonial h2\r\n{\r\n    width:280px;\r\n    float:right;\r\n}\r\n\r\n.testimonial-text\r\n{\r\n    padding:23px;\r\n    color:#9ebcdd;\r\n    line-height:19px;\r\n}\r\n\r\n.testimonial-text span\r\n{\r\n    color:#51abd5;\r\n    margin:0;\r\n    padding:0;\r\n}\r\n\r\n.testimonial .timer\r\n{\r\n    display:none;\r\n}\r\n\r\n.testimonial h3\r\n{\r\n    font-weight:400;\r\n    font-style:italic;\r\n    font-size:12px;\r\n    line-height:18px;\r\n    color:#4ca6d0;\r\n    float:right;\r\n    width:50%;\r\n}\r\n\r\n.testimonial p\r\n{\r\n    font-weight:400;\r\n    font-style:italic;\r\n    font-size:12px;\r\n    line-height:20px;\r\n    color:#9ebcdd;\r\n    float:right;\r\n    width:50%;\r\n\t\r\n}\r\n\r\n.readmore\r\n{\r\n    color:#51abd5;\r\n    text-decoration:underline;\r\n    text-align:right;\r\n    padding:0 23px 5px 5px;\r\n    font-size:11px;\r\n}\r\n\r\n#home-body\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    /*height: 500px;*/\r\n    background:#FFF;\r\n    display: block;\r\n}\r\n\r\n.body-text\r\n{\r\n    padding:30px;\r\n}\r\n\r\n/* Home box 1 */\r\n.home-box1\r\n{\r\n    padding:39px;\r\n    padding-left:40px;\r\n    /*width:521px;*/\r\n    float:left;\r\n    background:#FFF;\r\n}\r\n\r\n.box1-heading\r\n{\r\n    width:521px;\r\n}\r\n\r\n.grey-text\r\n{\r\n    font-size:17px;\r\n    color:#A3A3A3;\r\n    text-align:center;\r\n    padding:10px 0 0 10px;\r\n}\r\n\r\n.homebox1-quote\r\n{\r\n    font-size:22px;\r\n    color:#3c3c3c;\r\n    text-align:center;\r\n    padding:20px 0 0 10px;\r\n    text-transform:uppercase;\r\n    font-weight:700;\r\n}\r\n\r\n.box1-image\r\n{\r\n    text-align:center;\r\n    padding:25px 0 0 20px;\r\n}\r\n\r\n.box1-amount\r\n{\r\n    height:110px;\r\n    width:499px;\r\n    background-image:url(/images/index/amount-background.png);\r\n}\r\n\r\n.enter-amount\r\n{\r\n    float:left;\r\n    padding:30px 17px 7px 80px;\r\n    position:relative;\r\n}\r\n\r\n.enter-amount .dollar-sign\r\n{\r\n    position:absolute;\r\n    font-size:28px;\r\n    color:#222;\r\n    top:38px;\r\n    left:90px;\r\n}\r\n\r\n.box1-button\r\n{\r\n    padding:28px;\r\n}\r\n\r\ninput.box1-field\r\n{\r\n    border:#F5F5F5 1px solid;\r\n    padding:9px;\r\n    padding-left:30px;\r\n    width:160px;\r\n    font-size:18px;\r\n    height:auto;\r\n    color:#999;\r\n}\r\n\r\n/* Home box 2 */\r\n.home-box2\r\n{\r\n    padding:10px;\r\n    float:left;\r\n    background:#FFF;\r\n    float:left;\r\n}\r\n\r\n.loan-calculatorbg h1\r\n{\r\n    font-size:24px;\r\n    color:#666;\r\n    font-weight:700;\r\n    text-align:center;\r\n    padding:34px 30px 0 0;\r\n    margin-bottom:8px;\r\n}\r\n\r\n.box2-wrapper\r\n{\r\n    padding:5px 70px 40px 47px;\r\n}\r\n\r\n.box2-repayment\r\n{\r\n    background:#163f6f;\r\n    padding:12px 5px 13px;\r\n    text-align:center;\r\n    color:#FFF;\r\n    font-size:14px;\r\n}\r\n\r\n.box2-sliderbg\r\n{\r\n    /* background-image:url(..///images/index/slider-bg.png); */\r\n    background-position:center;\r\n    background-repeat:no-repeat;\r\n    padding:7px;\r\n}\r\n\r\n.loan-calculatorbg\r\n{\r\n    width:360px;\r\n    /*height:450px;*/\r\n    background-image:url(/images/index/calculator-bg.png);\r\n    background-position:top left;\r\n    background-repeat:no-repeat;\r\n}\r\n\r\n#services\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    padding:35px 0 0;\r\n}\r\n\r\n#services img\r\n{\r\n    width:127px;\r\n}\r\n\r\n#services table\r\n{\r\n    background:none;\r\n    border:none;\r\n    color:#707070;\r\n}\r\n\r\n#services table td\r\n{\r\n    text-align:center;\r\n}\r\n\r\n#services table tr.pictures td\r\n{\r\n    border-left:1px dotted #a6a6a6;\r\n}\r\n\r\n#services table tr.pictures td:first-child\r\n{\r\n    border:none;\r\n}\r\n\r\n#homebottom-text\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    padding-bottom:30px;\r\n}\r\n\r\n.bottom-text\r\n{\r\n    padding-top:10px;\r\n    padding-bottom:10px;\r\n    text-align:center;\r\n}\r\n\r\n.bottom-text h3\r\n{\r\n    font-size:12px;\r\n    font-weight:700;\r\n    text-transform:uppercase;\r\n    letter-spacing:.6px;\r\n}\r\n\r\n.thumbs\r\n{\r\n    width:141px;\r\n    height:85px;\r\n    margin-left:20px;\r\n}\r\n\r\n.thumbs-first\r\n{\r\n    width:141px;\r\n    height:85px;\r\n}\r\n\r\n.thumbs-text\r\n{\r\n    padding-top:10px;\r\n    padding-bottom:10px;\r\n    text-align:center;\r\n}\r\n\r\n.thumbs-last\r\n{\r\n    width:141px;\r\n    height:85px;\r\n    float:none;\r\n}\r\n\r\n.thumb-divider\r\n{\r\n    width:20px;\r\n}\r\n\r\n#footer-wrapper\r\n{\r\n    width:100%;\r\n    background:#565656;\r\n    font-size:12px;\r\n    color:#909090;\r\n}\r\n\r\n#footer-wrapper h2\r\n{\r\n    text-transform:uppercase;\r\n    border-bottom:1px dashed grey;\r\n    font-size:16px;\r\n    line-height:44px;\r\n    color:#fff;\r\n    font-weight:700;\r\n}\r\n\r\n#footer-wrapper h2 .dollar-sign\r\n{\r\n    color:#EBEBEB;\r\n}\r\n\r\n#footer-wrapper ul\r\n{\r\n    list-style:none;\r\n    list-style-position:inside;\r\n}\r\n\r\n#footer-wrapper ul.with-bullet\r\n{\r\n    /* list-style-image:url(..///images/footer-bullet.png); */\r\n}\r\n\r\n#footer-wrapper p\r\n{\r\n    font-size:12px;\r\n}\r\n\r\n#footer-wrapper li\r\n{\r\n    font-size:12px;\r\n    padding:2px 0;\r\n}\r\n\r\n#footer-wrapper .addthis_toolbox\r\n{\r\n    padding-top:4px;\r\n    display:inline;\r\n}\r\n\r\n#footer-wrapper .columns\r\n{\r\n    padding:0 5px;\r\n}\r\n\r\n#footer-wrapper .footer-icon\r\n{\r\n    float:left;\r\n    margin-right:2px;\r\n}\r\n\r\n.footer\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n}\r\n\r\n.footer-box1\r\n{\r\n    width:280px;\r\n    padding-bottom:20px;\r\n    background:#565656;\r\n}\r\n\r\n.footer-box1 ul\r\n{\r\n    list-style:none;\r\n    margin-left:-40px;\r\n}\r\n\r\n.footer-box1 ul li\r\n{\r\n    list-style:none;\r\n    margin-left:0;\r\n    color:#999;\r\n    padding:0 0 10px;\r\n}\r\n\r\n.footer-box\r\n{\r\n    width:207px;\r\n    padding-bottom:20px;\r\n    background:#565656;\r\n}\r\n\r\n.footer-box ul\r\n{\r\n    list-style:none;\r\n    margin-left:-40px;\r\n}\r\n\r\n.footer-box ul li\r\n{\r\n    list-style:none;\r\n    margin-left:0;\r\n    color:#999;\r\n    padding:0 0 10px;\r\n}\r\n\r\n.copyright\r\n{\r\n    padding:20px;\r\n    color:#999;\r\n    text-align:center;\r\n}\r\n\r\n\r\n\r\n#footer-bottom\r\n{\r\n    width:100%;\r\n    background:#404040;\r\n}\r\n\r\n/**********************************/\r\n/********** HOME ******************/\r\n/**********************************/\r\n.box2-wrapper\r\n{\r\n    padding-top:0;\r\n}\r\n\r\n.box2-wrapper ul\r\n{\r\n    padding:0;\r\n    list-style:none;\r\n}\r\n\r\n.box2-wrapper ul li\r\n{\r\n    margin:13px 0;\r\n}\r\n\r\n.box2-wrapper .slider-label,.box2-wrapper .slider-value\r\n{\r\n    line-height:30px;\r\n}\r\n\r\n.box2-wrapper .slider-value\r\n{\r\n    float:right;\r\n}\r\n\r\n#content .ui-state-default\r\n{\r\n    background-image:url(/images/index/car-icon.png);\r\n    background-color:transparent;\r\n    border:none;\r\n    width:22px;\r\n    height:18px;\r\n    top:-9px;\r\n}\r\n\r\n#content .ui-slider-horizontal\r\n{\r\n    border:1px solid #bdcede;\r\n    height:0;\r\n    margin:6px 0;\r\n}\r\n\r\n#content .box2-repayment\r\n{\r\n    margin-top:30px;\r\n}\r\n\r\n/*.contact {\r\n\r\n\tbackground: #ffffff;\r\n\r\n\twidth: 980px;\r\n\r\n\tmargin: auto;\r\n\r\n}*/\r\n/* new code -- */\r\n.contact\r\n{\r\n    height:220px;\r\n    width:40px;\r\n    position:fixed;\r\n    right:0;\r\n    left:auto;\r\n    top:40%;\r\n    bottom:auto;\r\n    overflow:hidden;\r\n    z-index:1;\r\n}\r\n\r\n.contact button\r\n{\r\n    /* background-image:url(/images/buttons/quick_submit.png); */\r\n    border:none;\r\n    color:#FFF;\r\n    font-size:12px;\r\n    font-weight:700;\r\n    height:220px;\r\n    text-transform:uppercase;\r\n    width:40px;\r\n    margin-bottom:15px;\r\n    cursor:pointer;\r\n}\r\n\r\n/* end of new code */\r\n/*\r\n.contact button {\r\n\r\n\t/* background-image: url(\"..///images/buttons/submit.png\"); */\r\n\r\n    /* border: medium none;\r\n\r\n    color: #FFFFFF;\r\n\r\n    font-size: 14px;\r\n\r\n    font-weight: bold;\r\n\r\n    height: 43px;\r\n\r\n    text-transform: uppercase;\r\n\r\n\twidth: 160px;\r\n\r\n\tmargin-bottom: 15px;\r\n\r\n} */\r\n*/\r\n.contact form\r\n{\r\n    display:none;\r\n}\r\n\r\n/* Contact form */\r\n.ui-dialog\r\n{\r\n    font-family:Arial,Helvetica,sans-serif,\"Arial Narrow\";\r\n}\r\n\r\n#contact-form .msg.success\r\n{\r\n    color:green;\r\n}\r\n\r\n#contact-form .msg.error\r\n{\r\n    color:red;\r\n}\r\n\r\n.ui-widget-content\r\n{\r\n    border:none;\r\n    border-radius:0;\r\n    padding:0;\r\n    background:#fff;\r\n    border:1px solid #EBEBEB;\r\n}\r\n\r\n.ui-dialog .ui-dialog-titlebar\r\n{\r\n    border:none;\r\n    border-radius:0;\r\n    background-color:#0069b5;\r\n    background-image:none;\r\n    color:#FFF;\r\n    line-height:50px;\r\n    padding:0 0 0 14px;\r\n    cursor:auto;\r\n}\r\n\r\n.ui-dialog-titlebar .ui-dialog-titlebar-close.ui-state-hover\r\n{\r\n    background-color:transparent;\r\n    background-image:none;\r\n    background-repeat:no-repeat;\r\n    background-position:0 0;\r\n    border:none;\r\n    width:19px;\r\n    height:18px;\r\n    padding:1px;\r\n}\r\n\r\n.ui-dialog-titlebar .ui-icon-closethick\r\n{\r\n    background-color:transparent;\r\n    /* background-image:url(..///images/icon-cross.png); */\r\n    background-repeat:no-repeat;\r\n    background-position:0 0;\r\n    border:none;\r\n}\r\n\r\n.ui-dialog input\r\n{\r\n    background-color:#F7F7F7;\r\n    border:1px solid #EEE;\r\n    box-shadow:none;\r\n    height:30px;\r\n    margin-bottom:0;\r\n    margin-right:0;\r\n    margin-top:2%;\r\n    padding:0 5px;\r\n    width:70%;\r\n}\r\n\r\n.ui-dialog input[type=submit]\r\n{\r\n    /* background-image:url(..///images/buttons/submit.png); */\r\n    border:medium none;\r\n    color:#FFF;\r\n    display:block;\r\n    font-size:14px;\r\n    font-weight:700;\r\n    height:53px;\r\n    margin:24px auto auto;\r\n    text-transform:uppercase;\r\n    width:200px;\r\n}\r\n\r\n.ui-dialog label\r\n{\r\n    color:#565656;\r\n    display:block;\r\n    float:left;\r\n    line-height:28px;\r\n    width:30%;\r\n}\r\n\r\n.box2-wrapper input\r\n{\r\n    display:block;\r\n    margin:auto;\r\n    margin-top:10px;\r\n}\r\n\r\n.banner-image\r\n{\r\n    /* background-image:url(..///images/banner-background.png); */\r\n    position:relative;\r\n}\r\n\r\n.banner-image .banner-car\r\n{\r\n    width:357px;\r\n    height:126px;\r\n    background-image:url(/images/banner-car.png);\r\n    position:absolute;\r\n    top:10%;\r\n    left:6%;\r\n}\r\n\r\n.banner-image .banner-text\r\n{\r\n    position:absolute;\r\n    top:20%;\r\n    left:150px;\r\n    margin:auto;\r\n    text-align:center;\r\n}\r\n\r\n.banner-image > a\r\n{\r\n    position:absolute;\r\n    left:100px;\r\n    bottom:10%;\r\n}\r\n\r\n.banner-image .blue\r\n{\r\n    color:#6385af;\r\n}\r\n\r\n.banner-image .finance-from\r\n{\r\n    font-weight:700;\r\n    font-size:14px;\r\n    line-height:18px;\r\n    color:#fff;\r\n    text-transform:uppercase;\r\n}\r\n\r\n.banner-image .interest-rate\r\n{\r\n    font-size:66px;\r\n    color:#fff;\r\n}\r\n\r\n.banner-image .interest-rate .percentage-sign\r\n{\r\n    font-size:20px;\r\n}\r\n\r\n.banner-image .conditions\r\n{\r\n    font-weight:700;\r\n    font-size:12px;\r\n}\r\n\r\n/*****************************************/\r\n/********** GET A QUOTE ******************/\r\n/*****************************************/\r\n#content .get-a-quote\r\n{\r\n    padding:30px 20px;\r\n}\r\n\r\n.get-a-quote h1\r\n{\r\n    font-size:24px;\r\n    color:#10345e;\r\n}\r\n\r\n.get-a-quote h1 strong\r\n{\r\n    color:#0069b5;\r\n}\r\n\r\n.get-a-quote > p,\r\nul.light\r\n{\r\n    color:#7f7f7f;\r\n}\r\n\r\n.get-a-quote form legend\r\n{\r\n    font-weight:700;\r\n    font-size:14px;\r\n}\r\n\r\n.get-a-quote form fieldset\r\n{\r\n    border:none;\r\n    padding:0;\r\n    margin-bottom:0;\r\n}\r\n\r\n.get-a-quote form fieldset legend\r\n{\r\n    background-color:#0f71b8;\r\n    color:#FFF;\r\n    height:50px;\r\n    line-height:50px;\r\n    padding:0;\r\n    padding-left:20px;\r\n    width:940px;\r\n}\r\n\r\n.get-a-quote form fieldset ul\r\n{\r\n    list-style:none;\r\n    padding:0;\r\n    margin:0;\r\n\r\n}\r\n\r\n.get-a-quote form fieldset ul li\r\n{\r\n    background-color:#f7f7f7;\r\n    margin-bottom:3px;\r\n    padding-left:10px;\r\n    clear:both;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .label\r\n{\r\n    float:left;\r\n    width:33%;\r\n    font-size:16px;\r\n    font-weight:700;\r\n    color:#636363;\r\n    line-height:48px;\r\n    background:none;\r\n    text-align:left;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .label .item-counter\r\n{\r\n    display:block;\r\n    font-size:36px;\r\n    font-weight:700;\r\n    color:#ebebeb;\r\n    text-align:left;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper\r\n{\r\n    width:67%;\r\n    height:100%;\r\n    margin-left:33%;\r\n    background-color:#ebebeb;\r\n    position: relative;\r\n    overflow:hidden;\r\n    padding: 10px 0 10px 50px;\r\n}\r\n\r\n/* New Code */\r\n\r\n/* /*.options-wrapper {\r\n\twidth:67%;\r\n\tmargin-left:33%;\r\n\tbackground-color:#ebebeb;\r\n\tposition:relative;\r\n\tpadding:24px 0;\r\n}\r\n\r\n.options-wrapper .arrow\r\n{\r\n\t/* background-image:url(..///images/arrow.png); */\r\n\t/* width:37px;\r\n\theight:39px;\r\n\tposition:absolute;\r\n\tleft:-19px;\r\n\ttop:43%; */\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper .halfColumn .input,\r\n.get-a-quote form fieldset ul li .options-wrapper .halfColumn2 .input,\r\n.get-a-quote form fieldset ul li .options-wrapper .fullColumn .input {\r\n    padding: 4px 0;\r\n    padding-right: 20px;\r\n    /*margin-left:50px;*/\r\n}\r\n\r\n/* End of New Code */\r\n\r\n.get-a-quote form fieldset ul li .loantrmsselect,\r\n.get-a-quote form fieldset ul li input[type=\"radio\"]\r\n{\r\n    display:none;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper .arrow\r\n{\r\n    /* background-image:url(..///images/arrow.png); */\r\n    width:37px;\r\n    height:39px;\r\n    position:absolute;\r\n    left:-19px;\r\n    top:30%;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul\r\n{\r\n    margin:auto;\r\n    text-align:center;\r\n    padding: 12px 0 24px 0;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul li\r\n{\r\n    display:inline-block;\r\n    background-color:#ebebeb;\r\n    padding:0;\r\n    padding-top:10px;\r\n    margin-right: 5px;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper p\r\n{\r\n    margin:auto;\r\n    text-align:center;\r\n    padding-top:10px;\r\n    padding-bottom:20px;\r\n    font-weight:700;\r\n    color:#515151;\r\n}\r\n.get-a-quote form fieldset input[name=\"repayradio\"] {\r\n    display: none;\r\n}\r\n\r\n.get-a-quote form button\r\n{\r\n    /* background-image:url(..///images/buttons/button-black.png); */\r\n    border:none;\r\n    color:#fff;\r\n    text-transform:uppercase;\r\n    width:174px;\r\n    height:43px;\r\n    font-family:Arial, Helvetica, sans-serif, \"Arial Narrow\";\r\n    font-size:12px;\r\n    font-weight:700;\r\n}\r\n\r\n.get-a-quote form button.two-line {\r\n    position: relative;\r\n    top: 8px;\r\n}\r\n\r\n.get-a-quote form button:hover\r\n{\r\n    cursor:pointer;\r\n}\r\n\r\n.get-a-quote form button.checked\r\n{\r\n    /* background-image:url(..///images/buttons/button-blue.png); */\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul.sub-options\r\n{\r\n    border-top:1px dashed #c3c3c3;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul.sub-options.hidden\r\n{\r\n    display:none;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul.sub-options button\r\n{\r\n    /* background-image:url(..///images/buttons/button-grey.png); */\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul.sub-options button.checked\r\n{\r\n    /* background-image:url(..///images/buttons/button-blue.png); */\r\n}\r\n\r\n.get-a-quote form .halfColumn,\r\n.get-a-quote form .halfColumn2\r\n{\r\n    width:50%;\r\n    float:left;\r\n    margin: 0;\r\n}\r\n\r\n.get-a-quote form .halfColumn\r\n{\r\n    clear: both;\r\n}\r\n\r\n.get-a-quote form .fullColumn\r\n{\r\n    width:100%;\r\n    clear: both;\r\n    margin:5px 0;\r\n}\r\n\r\n.get-a-quote form .input\r\n{\r\n    clear:both;\r\n    margin-top: 2%;\r\n\r\n\r\n}\r\n\r\n.get-a-quote form .input label\r\n{\r\n    width:40%;\r\n    display:block;\r\n    color:#565656;\r\n    float:left;\r\n    line-height:20px;\r\n    padding-right: 5px;\r\n    padding-top: 4px;\r\n}\r\n\r\n.get-a-quote form .input label.error\r\n{\r\n    margin-left:40%;\r\n    padding-bottom:2%;\r\n    width:70%;\r\n    color:red;\r\n    display:block;\r\n}\r\n\r\n.get-a-quote form .input input,\r\n.get-a-quote form .input select,\r\n.get-a-quote form .input textarea\r\n{\r\n    width:50%;\r\n    height:30px;\r\n    margin-right:0;\r\n    /*margin-top:2%;*/\r\n    margin-bottom:0;\r\n    padding:0 5px;\r\n    /*background-color:#f7f7f7;\r\n\tbackground-color:#ebebeb;*/\r\n    background-color:#FFF;\r\n    border:1px solid #eee;\r\n    box-shadow:none;\r\n}\r\n\r\n.get-a-quote form .input select {\r\n    padding: 0;\r\n    line-height: 30px;\r\n    font-size: 14px;\r\n}\r\n\r\n.get-a-quote form select#genderselect {\r\n    width: 60px;\r\n    float: left;\r\n    margin-right: 5px;\r\n}\r\n\r\n.get-a-quote form input#usrfnametxt {\r\n    width: 36.2%;\r\n}\r\n\r\n.get-a-quote form .tickbox\r\n{\r\n    padding-top:20px;\r\n}\r\n\r\n.get-a-quote form .tickbox\r\n{\r\n    font-size:13px;\r\n    font-weight:700;\r\n    color:#707070;\r\n    display:block;\r\n}\r\n\r\n.get-a-quote form .tickbox label.error\r\n{\r\n    color:red;\r\n}\r\n\r\n.get-a-quote form .tickbox strong\r\n{\r\n    color:#1d1d1d;\r\n}\r\n\r\n.get-a-quote form .information {\r\n    width: 100%;\r\n    clear: both;\r\n\r\n}\r\n.get-a-quote form .information span {\r\n    width: 25%;\r\n    display: block;\r\n    float: left;\r\n    margin: 10px 0;\r\n}\r\n\r\n.get-a-quote form .income input {\r\n    width: 25%;\r\n    display: inline;\r\n    margin-right: 4px;\r\n}\r\n\r\n.get-a-quote form .income select {\r\n    width: 10%;\r\n    vertical-align: top;\r\n}\r\n\r\n/*.quote-details,\r\n.finance-approval {\r\n\tdisplay: none;\r\n}*/\r\n\r\n.quote-details {\r\n    display: none;\r\n}\r\n\r\n.get-a-quote form .finance-approval .input label {\r\n    width: 100%;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn .input {\r\n    margin-top: 0;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn .input.no-margin {\r\n    margin: 0;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn .input.no-margin input,\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn .input.no-margin select {\r\n    display: inline;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn .input.no-margin select {\r\n    width: 35%;\r\n    position: relative;\r\n    top: -4px;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper {\r\n    height: 80px;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn {\r\n    margin-top: 14px;\r\n}\r\n\r\n.get-a-quote form input[type=submit]\r\n{\r\n    margin:auto;\r\n    display:block;\r\n    text-transform:uppercase;\r\n    font-size:14px;\r\n    font-weight:700;\r\n    color:#fff;\r\n    /* background-image:url(..///images/buttons/submit.png); */\r\n    width:246px;\r\n    height:53px;\r\n    border:none;\r\n    margin-top:24px;\r\n}\r\n\r\n.get-a-quote form input[type=submit]:hover\r\n{\r\n    cursor:pointer;\r\n}\r\n\r\n/* INNER PAGE */\r\n.body-content\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    /*height: 500px;*/\r\n    background:#FFF;\r\n}\r\n\r\n.body-content ul\r\n{\r\n    margin-left:30px;\r\n}\r\n\r\n.body-content .row\r\n{\r\n    padding-left:0;\r\n}\r\n\r\n.body-content .loan-calculatorbg ul\r\n{\r\n    margin-left:0;\r\n}\r\n\r\n/*.body-text ul {list-style: none;}*/\r\n#sitemap-body ul\r\n{\r\n    margin:0;\r\n}\r\n\r\n#contact-us-body form label\r\n{\r\n    padding-left:0;\r\n}\r\n\r\n#contact-us-body form .form-textarea\r\n{\r\n    padding:0;\r\n}\r\n\r\n#testimonial-body h3\r\n{\r\n    font-size:14px;\r\n    margin-top:20px;\r\n}\r\n\r\n#testimonial-body p\r\n{\r\n    margin:0;\r\n}\r\n\r\n#testimonial-body p.date\r\n{\r\n    font-style:italic;\r\n    border-bottom:1px dotted #777;\r\n    padding:10px 0 20px;\r\n}\r\n\r\n#testimonial-body p.date:last-child\r\n{\r\n    border:none;\r\n}\r\n\r\n#sitemap-body .columns\r\n{\r\n    padding-left:0;\r\n}\r\n\r\n#faq-body h1\r\n{\r\n    text-align:center;\r\n    font-size:28px;\r\n    font-weight:700;\r\n}\r\n\r\n#faq-body h2\r\n{\r\n    font-size:18px;\r\n    padding:0;\r\n    margin-bottom:10px;\r\n}\r\n\r\nbutton.complete-application {\r\n    /* background-image: url(\"..///images/buttons/button-black.png\"); */\r\n    border: medium none;\r\n    color: #FFFFFF;\r\n    font-family: Arial,Helvetica,sans-serif,\"Arial Narrow\";\r\n    font-size: 12px;\r\n    font-weight: 700;\r\n    height: 43px;\r\n    text-transform: uppercase;\r\n    width: 200px;\r\n    position: relative;\r\n    left: 50%;\r\n    margin-left: -83px;\r\n}\r\nbutton.complete-application:hover {cursor: pointer;}\r\n\r\n.fieldset-apply select {display: none;}\r\n\r\n.gender select,\r\n.marital-status select,\r\n.licence-state select {display: none;}\r\n\r\n.get-a-quote form select#title,\r\n.get-a-quote form .first-name select {\r\n    float: left;\r\n    margin-right: 5px;\r\n    width: 21.5%;\r\n}\r\n.get-a-quote form input#fnametxt,\r\n.get-a-quote form .first-name input  {\r\n    width: 36.2%;\r\n}\r\n\r\n\r\n.get-a-quote .msg {\r\n    color: #ff0000;\r\n    margin-left: 40%;\r\n    display: block;\r\n}\r\n\r\n.random-links:first-child a,\r\n.random-links:first-child {\r\n    font-size: 14px;\r\n}\r\n.random-links:first-child {\r\n    margin: 10px 0;\r\n}\r\n\r\n.random-links {\r\n    text-transform: uppercase;\r\n    margin: 10px 0;\r\n    text-align: center;\r\n    margin-bottom: 30px;\r\n}\r\n.random-links a {\r\n    margin: 0 10px;\r\n}\r\n.random-links a.amenui {\r\n    color: #279161;\r\n}\r\n.random-links a.selmenui {\r\n    /*text-decoration: underline;*/\r\n    color: #0F71B8;\r\n}\r\n.random-links a.dismenui {\r\n    cursor: text;\r\n    text-decoration: none;\r\n}\r\n.random-links a.dismenui:hover {\r\n    color: #666666;\r\n}\r\n\r\n.time-at-address div,\r\n.time-employed div {\r\n    float: right;\r\n    width: 60%;\r\n    margin-bottom: 6px;\r\n}\r\n.get-a-quote form fieldset .time-at-address div select,\r\n.get-a-quote form fieldset .time-employed div select {\r\n    float: right;\r\n    width: 58%;\r\n    margin-right: 0px;\r\n}\r\n\r\n.get-a-quote .input {text-align: left;}\r\n\r\n.get-a-quote  form fieldset .income {\r\n    height: 76px;\r\n    overflow: hidden;\r\n}\r\n.get-a-quote  form fieldset .income input {\r\n    width: 38%;\r\n}\r\n.get-a-quote  form fieldset .income select {\r\n    margin-top: 4px;\r\n    margin-left: 38%;\r\n    width: 38%;\r\n    display: block;\r\n}\r\n\r\n.get-a-quote form fieldset .full-width input {\r\n    width: 90%;\r\n}\r\n\r\nselect.hidden {display: none;}\r\n.get-a-quote form .fullColumn .input textarea {width: 96%; min-height: 100px; padding: 5px;}\r\n\r\n.get-a-quote-nav .back {float: left;}\r\n.get-a-quote-nav .next {float: right;}\r\n\r\n.get-a-quote .terms-conditions {\r\n    width: 67%;\r\n    margin: 20px 0 20px 320px;\r\n}\r\n\r\n.get-a-quote .options-wrapper .privacy-act {\r\n    height: 300px;\r\n    overflow-y: scroll;\r\n    padding-right: 24px;\r\n    font-size: 12px;\r\n}\r\n\r\n\r\n.get-a-quote .options-wrapper .fullColumn .input.income {\r\n    padding-top: 6px;\r\n}\r\n.get-a-quote .options-wrapper .fullColumn .input.income label {\r\n    width: 40%;\r\n}\r\n.get-a-quote .options-wrapper .input.income input {\r\n    width: 20%;\r\n}\r\n.get-a-quote .options-wrapper .input.income select {\r\n    width: 28%;\r\n    display: inline;\r\n    margin: 0;\r\n}\r\n\r\n.get-a-quote form .input textarea {\r\n    min-height: 60px;\r\n    padding: 5px;\r\n}\r\n\r\n.get-a-quote form select#title {\r\n    width: 21.5%;\r\n}\r\n\r\n.privacy-box {\r\n    display: none;\r\n    position: absolute;\r\n    height: 400px;\r\n    bottom: 30px;\r\n    overflow-y: scroll;\r\n    background-color: #ffffff;\r\n    z-index: 2;\r\n    width: 600px;\r\n    border: 1px solid #EBEBEB;\r\n    padding: 20px;\r\n    font-weight: normal;\r\n}\r\n\r\n.tickbox {position: relative;}\r\n.tickbox label {display: inline;}\r\n\r\n.submit-text p {margin-top: 10px; margin-bottom: 10px;}\r\n.submit-text h3 {margin-bottom: 20px;}\r\n.submit-text ul {padding-left: 16px;}\r\n\r\n.body-text ul {padding-left: 16px;}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper p.msg {color: #ff0000;}\r\n\r\na.ie8-apply-link {\r\n    /* background-image: url(\"..///images/buttons/button-black.png\"); */\r\n    border: medium none;\r\n    color: #FFFFFF;\r\n    font-family: Arial,Helvetica,sans-serif,\"Arial Narrow\";\r\n    font-size: 12px;\r\n    text-align: center;\r\n    line-height: 43px;\r\n    font-weight: 700;\r\n    height: 43px;\r\n    text-transform: uppercase;\r\n    width: 166px;\r\n    position: relative;\r\n    left: 50%;\r\n    margin-left: -83px;\r\n    display: block;\r\n}\r\n\r\nul.no-deco {\r\n    padding: 0;\r\n    list-style-type: none;\r\n}\r\n\r\n#top-logo\r\n{\r\n    width:100%;\r\n\r\n}\r\n\r\n#top-logo #div1\r\n{\r\n    float: left;\r\n    width: 50%;\r\n\r\n}\r\n\r\n#top-logo #div2\r\n{\r\n    float: left;\r\n    padding-top: 70px;\r\n    text-align: right;\r\n    width: 50%;\r\n\r\n}\r\n\r\n#top-logo #div2 .phone\r\n{\r\n    margin-top:0;\r\n    margin-bottom:20px;\r\n    font-size:23px;\r\n    font-weight:400;\r\n    color:#0c2849;\r\n}\r\n\r\n#menu-wrapper\r\n{\r\n    width:100%;\r\n}\r\n\r\n.header clear\r\n{\r\n    float:left;\r\n}\r\n\r\n.get-a-quote .accountant {display: none;}\r\n\r\n.get-a-quote form button.owned-with-mortgage {font-size: 11px;}\r\n\r\n.ui-slider-horizontal .ui-slider-handle {\r\n    cursor: pointer;\r\n\r\n}\r\n\r\n.get-a-quote form .input .lable-dollor\r\n{\r\n    width:15px;\r\n}\r\n\r\n\r\n.paddingnone {\r\n    padding-top: 0px;\r\n    padding-bottom: 0px;\r\n}\r\n\r\n.bloghr{\r\n    margin-bottom: 0px;\r\n    border-bottom: 1px gray dashed;\r\n    border-top: 0px;\r\n}\r\n\r\n.view-more{\r\n    background-color:#12335A;\r\n    color:#ffffff;\r\n    padding:5px;\r\n    font-size:12px;\r\n}\r\n\r\n.view-more:hover{\r\n    background-color:#12335A;\r\n    color:#ffffff;\r\n    padding:5px;\r\n\r\n}\r\n\r\n.clear{\r\n    clear:both;\r\n}\r\n\r\n.citylist{\r\n    float: left;\r\n    line-height: 20px;\r\n    font-size: 12px;\r\n}\r\n\r\nselect\r\n{\r\n    border:#CCCCCC 1px solid;\r\n    padding:3px;\r\n    padding-left:5px;\r\n    font-size:18px;\r\n    height:auto;\r\n    color:#999;\r\n}\r\n\r\n.vedapay{\r\n    border: 1px #CCCCCC solid;\r\n    padding: 10px;\r\n    color: #33689B;\r\n}\r\n\r\n\r\n\r\n\r\n.ui-slider .ui-slider-horizontal .ui-widget .ui-widget-content .ui-corner-all\r\n{\r\n    left: 0%;\r\n}\r\n\r\n#services table\r\n{\r\n    width:980px;padding-top:20px;\r\n}\r\n\r\n.testimonial .orbit-slide h3 {\r\n    margin-top: 50px;\r\n\tmargin-right:0px;\r\n}\r\n\r\n.testimonial p\r\n{\r\n\tmargin-top: -200px;\r\n    margin-right: 0px;\r\n    margin-left: -30px;\r\n}\r\n.testimonial h2\r\n{\r\n\tmargin-right:0px;\r\n}\r\n.testimonial-image\r\n{\r\n\tmargin-left :-25px;\r\n\tz-index:100;\r\n    margin-top: 1px;\r\n}\r\n\r\n#menu\r\n{\r\n    width: 100%;text-align:center; margin:0 auto;\r\n}\r\n\r\n.orbit-wrapper\r\n{\r\n    height:300px;\r\n}\r\n\r\n.footer-city\r\n{\r\n    margin-right: 10px;\r\n    width: 160px;\r\n}\r\n\r\n.footer-city a\r\n{\r\n    font-size: 12px;\r\n    text-decoration: underline;\r\n    width:100px;\r\n    text-align: left;\r\n}\r\n\r\n.underLine a\r\n{\r\n    font-size: 12px;\r\n    text-decoration: underline;\r\n}\r\n\r\n.cities_padding\r\n{\r\n    padding:10px;\r\n}\r\n\r\n.citylist2{\r\n    margin-right: 60px;\r\n    line-height: 13px;\r\n}\r\n.citylist3\r\n{\r\n    margin-right: 20px;\r\n    line-height: 13px;\r\n}\r\n\r\n.faq\r\n{\r\n    color: rgb(0, 0, 102);\r\n}\r\n\r\n.f20\r\n{\r\n    font-size:20px;\r\n}\r\n\r\n.f24\r\n{\r\n    font-size:24px;\r\n}\r\n\r\n.f26\r\n{\r\n    font-size:26px;\r\n}\r\n\r\n.ml25\r\n{\r\n    margin-left: 25px;\r\n}\r\n\r\n.mt30\r\n{\r\n    margin-top: 30px;\r\n}\r\n\r\n.color-red\r\n{\r\n    color:red;\r\n}\r\n\r\n.total-amount\r\n{\r\n    float: left;\r\n    margin-top: 6px;\r\n    margin-right: 5px;\r\n}\r\n\r\n.val-29\r\n{\r\n    width: 430px!important;\r\n    margin-top: -1px;\r\n    float: left;\r\n}\r\n\r\n\r\n\r\n.morebg{\r\n    cursor:pointer;\r\n    font-weight:bold;\r\n    background:#E6F0F9;\r\n    color:#3B5997;\r\n    text-align:center;\r\n\r\n}\r\n.nomore{\r\n    font-weight:bold;\r\n    background:#E6F0F9;\r\n    color:#3B5997;\r\n    text-align:center;\r\n}\r\n\r\n\r\n.blog-back\r\n{\r\n    background: none;\r\n}\r\n\r\n.blog-pad-bot\r\n{\r\n    padding-bottom: 0;\r\n}\r\n\r\n.blog-fam\r\n{\r\n    font-family: Verdana,Geneva,sans-serif;\r\n}\r\n\r\n.blog-pad-top-bot\r\n{\r\n    padding-top: 0px;\r\n    padding-bottom: 0px;\r\n}\r\n\r\n.blog-mar-bor\r\n{\r\n    margin-bottom: 0px;\r\n    border-bottom: 1px gray dashed;\r\n    border-top: 0px;\r\n}\r\n\r\n#hide-load\r\n{\r\n    -webkit-animation: hideAnimation 0s ease-in 0.2s;\r\n            animation: hideAnimation 0s ease-in 0.2s;\r\n\t-webkit-animation-fill-mode: forwards;\r\n\t        animation-fill-mode: forwards;\r\n}\r\n@-webkit-keyframes hideAnimation\r\n{\r\n    to\r\n    {\r\n        visibility: hidden;\r\n        width: 0;\r\n        height:0;\r\n        margin:0;\r\n        padding:0;\r\n        /* background-color: red; */\r\n    }\r\n}\r\n@keyframes hideAnimation\r\n{\r\n    to\r\n    {\r\n        visibility: hidden;\r\n        width: 0;\r\n        height:0;\r\n        margin:0;\r\n        padding:0;\r\n        /* background-color: red; */\r\n    }\r\n}\r\n\r\n#hidden-content\r\n{\r\n    -webkit-animation-name: hideAnimatio;\r\n            animation-name: hideAnimatio;\r\n    -webkit-animation-duration: 0s;\r\n            animation-duration: 0s;\r\n    -webkit-animation-timing-function: linear;\r\n            animation-timing-function: linear;\r\n    -webkit-animation-delay: 0.2s;\r\n            animation-delay: 0.2s;\r\n    -webkit-animation-iteration-count: 1;\r\n            animation-iteration-count: 1;\r\n    -webkit-animation-fill-mode: forwards;\r\n            animation-fill-mode: forwards;\r\n    /* transition: display 2s  ; */\r\n}\r\n@-webkit-keyframes hideAnimatio\r\n{\r\n    from{\r\n        visibility: hidden;\r\n        opacity:0;\r\n        display: none;\r\n    }\r\n    to\r\n    {\r\n        visibility: visible;\r\n        opacity:1;\r\n        height:auto;\r\n        /* width: 0;\r\n        height:0;\r\n        margin:0;\r\n        padding:0; */\r\n        /* background-color: red; */\r\n    }\r\n}\r\n@keyframes hideAnimatio\r\n{\r\n    from{\r\n        visibility: hidden;\r\n        opacity:0;\r\n        display: none;\r\n    }\r\n    to\r\n    {\r\n        visibility: visible;\r\n        opacity:1;\r\n        height:auto;\r\n        /* width: 0;\r\n        height:0;\r\n        margin:0;\r\n        padding:0; */\r\n        /* background-color: red; */\r\n    }\r\n}\r\n\r\n#hidden-content\r\n{\r\n    display: none;\r\n}\r\n\r\n#hide-load\r\n{\r\n    display: none;\r\n}\r\n\r\n.p10\r\n{\r\n    padding:10px;\r\n}\r\n\r\n\r\n/* ---------------------Styling to Yellow------------------------------ */\r\n\r\n.header #menu\r\n{\r\n    background-color:#000;\r\n}\r\n\r\n#menu ul\r\n{\r\n    list-style:none;\r\n    background-color:#000;\r\n}\r\n\r\n#footer-wrapper\r\n{\r\n    background:#000;\r\n    /* #FECF05 */\r\n}\r\n\r\n#footer-wrapper h2\r\n{\r\n    color:rgb(254, 207, 5);\r\n}\r\n\r\n#footer-bottom\r\n{\r\n    background: rgb(15, 15, 15);\r\n}\r\n\r\n.copyright\r\n{\r\n    color:#dadada;\r\n}\r\n\r\n#header-wrapper\r\n{\r\n    \r\n    border-top:10px #000 solid;\r\n    background-color: #F6F6F6;\r\n}\r\n\r\n.banner-top\r\n{\r\n    background:#FECF05;\r\n    color:#000;\r\n}\r\n\r\n.banner-top span\r\n{\r\n    color:#000;\r\n}\r\n\r\n.loan-calculatorbg\r\n{\r\n   /* background-color:#FECF05 ; */\r\n}\r\n\r\n@media only screen and(max-width:1280px)\r\n{\r\n    .flyout-toggle\r\n    {\r\n        margin-right:-36px!important;\r\n    }\r\n}\r\n\r\n#menu ul li a\r\n{\r\n    color:#fff;\r\n}\r\n\r\n#menu ul li a:hover\r\n{\r\n    color:#FECF05;\r\n}\r\n\r\n.flyout\r\n{\r\n    background: #000!important;\r\n}\r\n\r\n#menu ul li ul li a:hover\r\n{\r\n    color:#FECF05;\r\n}\r\n\r\n.blue\r\n{\r\n    color:#FECF05;\r\n}\r\n\r\n.box2-repayment\r\n{\r\n    background:#FECF05;\r\n    color:#000;\r\n}\r\n.contact button\r\n{\r\n    /* There is a backgroung-image which we commented   */\r\n    background-color:#ffd728 ;\r\n    color:rgb(192, 18, 18);\r\n    /* color:#000; */\r\n    /* Changing the font size */\r\n    font-size : 14px;\r\n    /* border-radius: 10px; */\r\n}\r\n\r\n/* -------------------Changing Heading Color----------------- */\r\n\r\nh1,.body-text h2, .get-a-quote h2, .phone\r\n{\r\n    color:#000000;\r\n}", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "/*! jQuery UI - v1.9.1 - 2012-10-25\r\n* http://jqueryui.com\r\n* Includes: jquery.ui.core.css, jquery.ui.accordion.css, jquery.ui.autocomplete.css, jquery.ui.button.css, jquery.ui.datepicker.css, jquery.ui.dialog.css, jquery.ui.menu.css, jquery.ui.progressbar.css, jquery.ui.resizable.css, jquery.ui.selectable.css, jquery.ui.slider.css, jquery.ui.spinner.css, jquery.ui.tabs.css, jquery.ui.tooltip.css, jquery.ui.theme.css\r\n* Copyright 2012 jQuery Foundation and other contributors; Licensed MIT */\r\n\r\n/* Layout helpers\r\n----------------------------------*/\r\n.ui-helper-hidden { display: none; }\r\n.ui-helper-hidden-accessible { position: absolute !important; clip: rect(1px 1px 1px 1px); clip: rect(1px,1px,1px,1px); }\r\n.ui-helper-reset { margin: 0; padding: 0; border: 0; outline: 0; line-height: 1.3; text-decoration: none; font-size: 100%; list-style: none; }\r\n.ui-helper-clearfix:before, .ui-helper-clearfix:after { content: \"\"; display: table; }\r\n.ui-helper-clearfix:after { clear: both; }\r\n.ui-helper-clearfix { zoom: 1; }\r\n.ui-helper-zfix { width: 100%; height: 100%; top: 0; left: 0; position: absolute; opacity: 0; filter:Alpha(Opacity=0); }\r\n\r\n\r\n/* Interaction Cues\r\n----------------------------------*/\r\n.ui-state-disabled { cursor: default !important; }\r\n\r\n\r\n/* Icons\r\n----------------------------------*/\r\n\r\n/* states and images */\r\n.ui-icon { display: block; text-indent: -99999px; overflow: hidden; background-repeat: no-repeat; }\r\n\r\n\r\n/* Misc visuals\r\n----------------------------------*/\r\n\r\n/* Overlays */\r\n.ui-widget-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }\r\n\r\n.ui-accordion .ui-accordion-header { display: block; cursor: pointer; position: relative; margin-top: 2px; padding: .5em .5em .5em .7em; zoom: 1; }\r\n.ui-accordion .ui-accordion-icons { padding-left: 2.2em; }\r\n.ui-accordion .ui-accordion-noicons { padding-left: .7em; }\r\n.ui-accordion .ui-accordion-icons .ui-accordion-icons { padding-left: 2.2em; }\r\n.ui-accordion .ui-accordion-header .ui-accordion-header-icon { position: absolute; left: .5em; top: 50%; margin-top: -8px; }\r\n.ui-accordion .ui-accordion-content { padding: 1em 2.2em; border-top: 0; overflow: auto; zoom: 1; }\r\n\r\n.ui-autocomplete {\r\n\tposition: absolute;\r\n\ttop: 0; /* #8656 */\r\n\tcursor: default;\r\n}\r\n\r\n/* workarounds */\r\n* html .ui-autocomplete { width:1px; } /* without this, the menu expands to 100% in IE6 */\r\n\r\n.ui-button { display: inline-block; position: relative; padding: 0; margin-right: .1em; cursor: pointer; text-align: center; zoom: 1; overflow: visible; } /* the overflow property removes extra width in IE */\r\n.ui-button, .ui-button:link, .ui-button:visited, .ui-button:hover, .ui-button:active { text-decoration: none; }\r\n.ui-button-icon-only { width: 2.2em; } /* to make room for the icon, a width needs to be set here */\r\nbutton.ui-button-icon-only { width: 2.4em; } /* button elements seem to need a little more width */\r\n.ui-button-icons-only { width: 3.4em; } \r\nbutton.ui-button-icons-only { width: 3.7em; } \r\n\r\n/*button text element */\r\n.ui-button .ui-button-text { display: block; line-height: 1.4;  }\r\n.ui-button-text-only .ui-button-text { padding: .4em 1em; }\r\n.ui-button-icon-only .ui-button-text, .ui-button-icons-only .ui-button-text { padding: .4em; text-indent: -9999999px; }\r\n.ui-button-text-icon-primary .ui-button-text, .ui-button-text-icons .ui-button-text { padding: .4em 1em .4em 2.1em; }\r\n.ui-button-text-icon-secondary .ui-button-text, .ui-button-text-icons .ui-button-text { padding: .4em 2.1em .4em 1em; }\r\n.ui-button-text-icons .ui-button-text { padding-left: 2.1em; padding-right: 2.1em; }\r\n/* no icon support for input elements, provide padding by default */\r\ninput.ui-button { padding: .4em 1em; }\r\n\r\n/*button icon element(s) */\r\n.ui-button-icon-only .ui-icon, .ui-button-text-icon-primary .ui-icon, .ui-button-text-icon-secondary .ui-icon, .ui-button-text-icons .ui-icon, .ui-button-icons-only .ui-icon { position: absolute; top: 50%; margin-top: -8px; }\r\n.ui-button-icon-only .ui-icon { left: 50%; margin-left: -8px; }\r\n.ui-button-text-icon-primary .ui-button-icon-primary, .ui-button-text-icons .ui-button-icon-primary, .ui-button-icons-only .ui-button-icon-primary { left: .5em; }\r\n.ui-button-text-icon-secondary .ui-button-icon-secondary, .ui-button-text-icons .ui-button-icon-secondary, .ui-button-icons-only .ui-button-icon-secondary { right: .5em; }\r\n.ui-button-text-icons .ui-button-icon-secondary, .ui-button-icons-only .ui-button-icon-secondary { right: .5em; }\r\n\r\n/*button sets*/\r\n.ui-buttonset { margin-right: 7px; }\r\n.ui-buttonset .ui-button { margin-left: 0; margin-right: -.3em; }\r\n\r\n/* workarounds */\r\nbutton.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra padding in Firefox */\r\n\r\n.ui-datepicker { width: 17em; padding: .2em .2em 0; display: none; }\r\n.ui-datepicker .ui-datepicker-header { position:relative; padding:.2em 0; }\r\n.ui-datepicker .ui-datepicker-prev, .ui-datepicker .ui-datepicker-next { position:absolute; top: 2px; width: 1.8em; height: 1.8em; }\r\n.ui-datepicker .ui-datepicker-prev-hover, .ui-datepicker .ui-datepicker-next-hover { top: 1px; }\r\n.ui-datepicker .ui-datepicker-prev { left:2px; }\r\n.ui-datepicker .ui-datepicker-next { right:2px; }\r\n.ui-datepicker .ui-datepicker-prev-hover { left:1px; }\r\n.ui-datepicker .ui-datepicker-next-hover { right:1px; }\r\n.ui-datepicker .ui-datepicker-prev span, .ui-datepicker .ui-datepicker-next span { display: block; position: absolute; left: 50%; margin-left: -8px; top: 50%; margin-top: -8px;  }\r\n.ui-datepicker .ui-datepicker-title { margin: 0 2.3em; line-height: 1.8em; text-align: center; }\r\n.ui-datepicker .ui-datepicker-title select { font-size:1em; margin:1px 0; }\r\n.ui-datepicker select.ui-datepicker-month-year {width: 100%;}\r\n.ui-datepicker select.ui-datepicker-month, \r\n.ui-datepicker select.ui-datepicker-year { width: 49%;}\r\n.ui-datepicker table {width: 100%; font-size: .9em; border-collapse: collapse; margin:0 0 .4em; }\r\n.ui-datepicker th { padding: .7em .3em; text-align: center; font-weight: bold; border: 0;  }\r\n.ui-datepicker td { border: 0; padding: 1px; }\r\n.ui-datepicker td span, .ui-datepicker td a { display: block; padding: .2em; text-align: right; text-decoration: none; }\r\n.ui-datepicker .ui-datepicker-buttonpane { background-image: none; margin: .7em 0 0 0; padding:0 .2em; border-left: 0; border-right: 0; border-bottom: 0; }\r\n.ui-datepicker .ui-datepicker-buttonpane button { float: right; margin: .5em .2em .4em; cursor: pointer; padding: .2em .6em .3em .6em; width:auto; overflow:visible; }\r\n.ui-datepicker .ui-datepicker-buttonpane button.ui-datepicker-current { float:left; }\r\n\r\n/* with multiple calendars */\r\n.ui-datepicker.ui-datepicker-multi { width:auto; }\r\n.ui-datepicker-multi .ui-datepicker-group { float:left; }\r\n.ui-datepicker-multi .ui-datepicker-group table { width:95%; margin:0 auto .4em; }\r\n.ui-datepicker-multi-2 .ui-datepicker-group { width:50%; }\r\n.ui-datepicker-multi-3 .ui-datepicker-group { width:33.3%; }\r\n.ui-datepicker-multi-4 .ui-datepicker-group { width:25%; }\r\n.ui-datepicker-multi .ui-datepicker-group-last .ui-datepicker-header { border-left-width:0; }\r\n.ui-datepicker-multi .ui-datepicker-group-middle .ui-datepicker-header { border-left-width:0; }\r\n.ui-datepicker-multi .ui-datepicker-buttonpane { clear:left; }\r\n.ui-datepicker-row-break { clear:both; width:100%; font-size:0em; }\r\n\r\n/* RTL support */\r\n.ui-datepicker-rtl { direction: rtl; }\r\n.ui-datepicker-rtl .ui-datepicker-prev { right: 2px; left: auto; }\r\n.ui-datepicker-rtl .ui-datepicker-next { left: 2px; right: auto; }\r\n.ui-datepicker-rtl .ui-datepicker-prev:hover { right: 1px; left: auto; }\r\n.ui-datepicker-rtl .ui-datepicker-next:hover { left: 1px; right: auto; }\r\n.ui-datepicker-rtl .ui-datepicker-buttonpane { clear:right; }\r\n.ui-datepicker-rtl .ui-datepicker-buttonpane button { float: left; }\r\n.ui-datepicker-rtl .ui-datepicker-buttonpane button.ui-datepicker-current { float:right; }\r\n.ui-datepicker-rtl .ui-datepicker-group { float:right; }\r\n.ui-datepicker-rtl .ui-datepicker-group-last .ui-datepicker-header { border-right-width:0; border-left-width:1px; }\r\n.ui-datepicker-rtl .ui-datepicker-group-middle .ui-datepicker-header { border-right-width:0; border-left-width:1px; }\r\n\r\n/* IE6 IFRAME FIX (taken from datepicker 1.5.3 */\r\n.ui-datepicker-cover {\r\n    position: absolute; /*must have*/\r\n    z-index: -1; /*must have*/\r\n    filter: mask(); /*must have*/\r\n    top: -4px; /*must have*/\r\n    left: -4px; /*must have*/\r\n    width: 200px; /*must have*/\r\n    height: 200px; /*must have*/\r\n}\r\n.ui-dialog { position: absolute; padding: .2em; width: 300px; overflow: hidden; }\r\n.ui-dialog .ui-dialog-titlebar { padding: .4em 1em; position: relative;  }\r\n.ui-dialog .ui-dialog-title { float: left; margin: .1em 16px .1em 0; }\r\n.ui-dialog .ui-dialog-titlebar-close { position: absolute; right: .3em; top: 50%; width: 19px; margin: -10px 0 0 0; padding: 1px; height: 18px; }\r\n.ui-dialog .ui-dialog-titlebar-close span { display: block; margin: 1px; }\r\n.ui-dialog .ui-dialog-titlebar-close:hover, .ui-dialog .ui-dialog-titlebar-close:focus { padding: 0; }\r\n.ui-dialog .ui-dialog-content { position: relative; border: 0; padding: .5em 1em; background: none; overflow: auto; zoom: 1; }\r\n.ui-dialog .ui-dialog-buttonpane { text-align: left; border-width: 1px 0 0 0; background-image: none; margin: .5em 0 0 0; padding: .3em 1em .5em .4em; }\r\n.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset { float: right; }\r\n.ui-dialog .ui-dialog-buttonpane button { margin: .5em .4em .5em 0; cursor: pointer; }\r\n.ui-dialog .ui-resizable-se { width: 14px; height: 14px; right: 3px; bottom: 3px; }\r\n.ui-draggable .ui-dialog-titlebar { cursor: move; }\r\n\r\n.ui-menu { list-style:none; padding: 2px; margin: 0; display:block; outline: none; }\r\n.ui-menu .ui-menu { margin-top: -3px; position: absolute; }\r\n.ui-menu .ui-menu-item { margin: 0; padding: 0; zoom: 1; width: 100%; }\r\n.ui-menu .ui-menu-divider { margin: 5px -2px 5px -2px; height: 0; font-size: 0; line-height: 0; border-width: 1px 0 0 0; }\r\n.ui-menu .ui-menu-item a { text-decoration: none; display: block; padding: 2px .4em; line-height: 1.5; zoom: 1; font-weight: normal; }\r\n.ui-menu .ui-menu-item a.ui-state-focus,\r\n.ui-menu .ui-menu-item a.ui-state-active { font-weight: normal; margin: -1px; }\r\n\r\n.ui-menu .ui-state-disabled { font-weight: normal; margin: .4em 0 .2em; line-height: 1.5; }\r\n.ui-menu .ui-state-disabled a { cursor: default; }\r\n\r\n/* icon support */\r\n.ui-menu-icons { position: relative; }\r\n.ui-menu-icons .ui-menu-item a { position: relative; padding-left: 2em; }\r\n\r\n/* left-aligned */\r\n.ui-menu .ui-icon { position: absolute; top: .2em; left: .2em; }\r\n\r\n/* right-aligned */\r\n.ui-menu .ui-menu-icon { position: static; float: right; }\r\n\r\n.ui-progressbar { height:2em; text-align: left; overflow: hidden; }\r\n.ui-progressbar .ui-progressbar-value {margin: -1px; height:100%; }\r\n.ui-resizable { position: relative;}\r\n.ui-resizable-handle { position: absolute;font-size: 0.1px; display: block; }\r\n.ui-resizable-disabled .ui-resizable-handle, .ui-resizable-autohide .ui-resizable-handle { display: none; }\r\n.ui-resizable-n { cursor: n-resize; height: 7px; width: 100%; top: -5px; left: 0; }\r\n.ui-resizable-s { cursor: s-resize; height: 7px; width: 100%; bottom: -5px; left: 0; }\r\n.ui-resizable-e { cursor: e-resize; width: 7px; right: -5px; top: 0; height: 100%; }\r\n.ui-resizable-w { cursor: w-resize; width: 7px; left: -5px; top: 0; height: 100%; }\r\n.ui-resizable-se { cursor: se-resize; width: 12px; height: 12px; right: 1px; bottom: 1px; }\r\n.ui-resizable-sw { cursor: sw-resize; width: 9px; height: 9px; left: -5px; bottom: -5px; }\r\n.ui-resizable-nw { cursor: nw-resize; width: 9px; height: 9px; left: -5px; top: -5px; }\r\n.ui-resizable-ne { cursor: ne-resize; width: 9px; height: 9px; right: -5px; top: -5px;}\r\n.ui-selectable-helper { position: absolute; z-index: 100; border:1px dotted black; }\r\n\r\n.ui-slider { position: relative; text-align: left; }\r\n.ui-slider .ui-slider-handle { position: absolute; z-index: 2; width: 1.2em; height: 1.2em; cursor: default; }\r\n.ui-slider .ui-slider-range { position: absolute; z-index: 1; font-size: .7em; display: block; border: 0; background-position: 0 0; }\r\n\r\n.ui-slider-horizontal { height: .8em; }\r\n.ui-slider-horizontal .ui-slider-handle { top: -.3em; margin-left: -.6em; }\r\n.ui-slider-horizontal .ui-slider-range { top: 0; height: 100%; }\r\n.ui-slider-horizontal .ui-slider-range-min { left: 0; }\r\n.ui-slider-horizontal .ui-slider-range-max { right: 0; }\r\n\r\n.ui-slider-vertical { width: .8em; height: 100px; }\r\n.ui-slider-vertical .ui-slider-handle { left: -.3em; margin-left: 0; margin-bottom: -.6em; }\r\n.ui-slider-vertical .ui-slider-range { left: 0; width: 100%; }\r\n.ui-slider-vertical .ui-slider-range-min { bottom: 0; }\r\n.ui-slider-vertical .ui-slider-range-max { top: 0; }\r\n.ui-spinner { position:relative; display: inline-block; overflow: hidden; padding: 0; vertical-align: middle; }\r\n.ui-spinner-input { border: none; background: none; padding: 0; margin: .2em 0; vertical-align: middle; margin-left: .4em; margin-right: 22px; }\r\n.ui-spinner-button { width: 16px; height: 50%; font-size: .5em; padding: 0; margin: 0; text-align: center; position: absolute; cursor: default; display: block; overflow: hidden; right: 0; }\r\n.ui-spinner a.ui-spinner-button { border-top: none; border-bottom: none; border-right: none; } /* more specificity required here to overide default borders */\r\n.ui-spinner .ui-icon { position: absolute; margin-top: -8px; top: 50%; left: 0; } /* vertical centre icon */\r\n.ui-spinner-up { top: 0; }\r\n.ui-spinner-down { bottom: 0; }\r\n\r\n/* TR overrides */\r\n.ui-spinner .ui-icon-triangle-1-s {\r\n\t/* need to fix icons sprite */\r\n\tbackground-position:-65px -16px;\r\n}\r\n\r\n.ui-tabs { position: relative; padding: .2em; zoom: 1; } /* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as \"fixed\") */\r\n.ui-tabs .ui-tabs-nav { margin: 0; padding: .2em .2em 0; }\r\n.ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relative; top: 0; margin: 1px .2em 0 0; border-bottom: 0; padding: 0; white-space: nowrap; }\r\n.ui-tabs .ui-tabs-nav li a { float: left; padding: .5em 1em; text-decoration: none; }\r\n.ui-tabs .ui-tabs-nav li.ui-tabs-active { margin-bottom: -1px; padding-bottom: 1px; }\r\n.ui-tabs .ui-tabs-nav li.ui-tabs-active a, .ui-tabs .ui-tabs-nav li.ui-state-disabled a, .ui-tabs .ui-tabs-nav li.ui-tabs-loading a { cursor: text; }\r\n.ui-tabs .ui-tabs-nav li a, .ui-tabs-collapsible .ui-tabs-nav li.ui-tabs-active a { cursor: pointer; } /* first selector in group seems obsolete, but required to overcome bug in Opera applying cursor: text overall if defined elsewhere... */\r\n.ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 1em 1.4em; background: none; }\r\n\r\n.ui-tooltip {\r\n\tpadding: 8px;\r\n\tposition: absolute;\r\n\tz-index: 9999;\r\n\tmax-width: 300px;\r\n\tbox-shadow: 0 0 5px #aaa;\r\n}\r\n/* Fades and background-images don't work well together in IE6, drop the image */\r\n* html .ui-tooltip {\r\n\tbackground-image: none;\r\n}\r\nbody .ui-tooltip { border-width: 2px; }\r\n\r\n/* Component containers\r\n----------------------------------*/\r\n.ui-widget { font-family: Verdana,Arial,sans-serif/*{ffDefault}*/; font-size: 1.1em/*{fsDefault}*/; }\r\n.ui-widget .ui-widget { font-size: 1em; }\r\n.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Verdana,Arial,sans-serif/*{ffDefault}*/; font-size: 1em; }\r\n.ui-widget-content { border: 1px solid #aaaaaa/*{borderColorContent}*/; background: #ffffff/*{bgColorContent}*/ url(/images/ui-bg_flat_75_ffffff_40x100.png)/*{bgImgUrlContent}*/ 50%/*{bgContentXPos}*/ 50%/*{bgContentYPos}*/ repeat-x/*{bgContentRepeat}*/; color: #222222/*{fcContent}*/; }\r\n.ui-widget-content a { color: #222222/*{fcContent}*/; }\r\n.ui-widget-header { border: 1px solid #aaaaaa/*{borderColorHeader}*/; background: #cccccc/*{bgColorHeader}*/ url(/images/ui-bg_highlight-soft_75_cccccc_1x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/; color: #222222/*{fcHeader}*/; font-weight: bold; }\r\n.ui-widget-header a { color: #222222/*{fcHeader}*/; }\r\n\r\n/* Interaction states\r\n----------------------------------*/\r\n.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { border: 1px solid #d3d3d3/*{borderColorDefault}*/; background: #e6e6e6/*{bgColorDefault}*/ url(/images/ui-bg_glass_75_e6e6e6_1x400.png)/*{bgImgUrlDefault}*/ 50%/*{bgDefaultXPos}*/ 50%/*{bgDefaultYPos}*/ repeat-x/*{bgDefaultRepeat}*/; font-weight: normal/*{fwDefault}*/; color: #555555/*{fcDefault}*/; }\r\n.ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited { color: #555555/*{fcDefault}*/; text-decoration: none; }\r\n.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: 1px solid #999999/*{borderColorHover}*/; background: #dadada/*{bgColorHover}*/ url(/images/ui-bg_glass_75_dadada_1x400.png)/*{bgImgUrlHover}*/ 50%/*{bgHoverXPos}*/ 50%/*{bgHoverYPos}*/ repeat-x/*{bgHoverRepeat}*/; font-weight: normal/*{fwDefault}*/; color: #212121/*{fcHover}*/; }\r\n.ui-state-hover a, .ui-state-hover a:hover, .ui-state-hover a:link, .ui-state-hover a:visited { color: #212121/*{fcHover}*/; text-decoration: none; }\r\n.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active { border: 1px solid #aaaaaa/*{borderColorActive}*/; background: #ffffff/*{bgColorActive}*/ url(/images/ui-bg_glass_65_ffffff_1x400.png)/*{bgImgUrlActive}*/ 50%/*{bgActiveXPos}*/ 50%/*{bgActiveYPos}*/ repeat-x/*{bgActiveRepeat}*/; font-weight: normal/*{fwDefault}*/; color: #212121/*{fcActive}*/; }\r\n.ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited { color: #212121/*{fcActive}*/; text-decoration: none; }\r\n\r\n/* Interaction Cues\r\n----------------------------------*/\r\n.ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {border: 1px solid #fcefa1/*{borderColorHighlight}*/; background: #fbf9ee/*{bgColorHighlight}*/ url(/images/ui-bg_glass_55_fbf9ee_1x400.png)/*{bgImgUrlHighlight}*/ 50%/*{bgHighlightXPos}*/ 50%/*{bgHighlightYPos}*/ repeat-x/*{bgHighlightRepeat}*/; color: #363636/*{fcHighlight}*/; }\r\n.ui-state-highlight a, .ui-widget-content .ui-state-highlight a,.ui-widget-header .ui-state-highlight a { color: #363636/*{fcHighlight}*/; }\r\n.ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {border: 1px solid #cd0a0a/*{borderColorError}*/; background: #fef1ec/*{bgColorError}*/ url(/images/ui-bg_glass_95_fef1ec_1x400.png)/*{bgImgUrlError}*/ 50%/*{bgErrorXPos}*/ 50%/*{bgErrorYPos}*/ repeat-x/*{bgErrorRepeat}*/; color: #cd0a0a/*{fcError}*/; }\r\n.ui-state-error a, .ui-widget-content .ui-state-error a, .ui-widget-header .ui-state-error a { color: #cd0a0a/*{fcError}*/; }\r\n.ui-state-error-text, .ui-widget-content .ui-state-error-text, .ui-widget-header .ui-state-error-text { color: #cd0a0a/*{fcError}*/; }\r\n.ui-priority-primary, .ui-widget-content .ui-priority-primary, .ui-widget-header .ui-priority-primary { font-weight: bold; }\r\n.ui-priority-secondary, .ui-widget-content .ui-priority-secondary,  .ui-widget-header .ui-priority-secondary { opacity: .7; filter:Alpha(Opacity=70); font-weight: normal; }\r\n.ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled { opacity: .35; filter:Alpha(Opacity=35); background-image: none; }\r\n.ui-state-disabled .ui-icon { filter:Alpha(Opacity=35); } /* For IE8 - See #6059 */\r\n\r\n/* Icons\r\n----------------------------------*/\r\n\r\n/* states and images */\r\n.ui-icon { width: 16px; height: 16px; background-image: url(/images/ui-icons_222222_256x240.png)/*{iconsContent}*/; }\r\n.ui-widget-content .ui-icon {background-image: url(/images/ui-icons_222222_256x240.png)/*{iconsContent}*/; }\r\n.ui-widget-header .ui-icon {background-image: url(/images/ui-icons_222222_256x240.png)/*{iconsHeader}*/; }\r\n.ui-state-default .ui-icon { background-image: url(/images/ui-icons_888888_256x240.png)/*{iconsDefault}*/; }\r\n.ui-state-hover .ui-icon, .ui-state-focus .ui-icon {background-image: url(/images/ui-icons_454545_256x240.png)/*{iconsHover}*/; }\r\n.ui-state-active .ui-icon {background-image: url(/images/ui-icons_454545_256x240.png)/*{iconsActive}*/; }\r\n.ui-state-highlight .ui-icon {background-image: url(/images/ui-icons_2e83ff_256x240.png)/*{iconsHighlight}*/; }\r\n.ui-state-error .ui-icon, .ui-state-error-text .ui-icon {background-image: url(/images/ui-icons_cd0a0a_256x240.png)/*{iconsError}*/; }\r\n\r\n/* positioning */\r\n.ui-icon-carat-1-n { background-position: 0 0; }\r\n.ui-icon-carat-1-ne { background-position: -16px 0; }\r\n.ui-icon-carat-1-e { background-position: -32px 0; }\r\n.ui-icon-carat-1-se { background-position: -48px 0; }\r\n.ui-icon-carat-1-s { background-position: -64px 0; }\r\n.ui-icon-carat-1-sw { background-position: -80px 0; }\r\n.ui-icon-carat-1-w { background-position: -96px 0; }\r\n.ui-icon-carat-1-nw { background-position: -112px 0; }\r\n.ui-icon-carat-2-n-s { background-position: -128px 0; }\r\n.ui-icon-carat-2-e-w { background-position: -144px 0; }\r\n.ui-icon-triangle-1-n { background-position: 0 -16px; }\r\n.ui-icon-triangle-1-ne { background-position: -16px -16px; }\r\n.ui-icon-triangle-1-e { background-position: -32px -16px; }\r\n.ui-icon-triangle-1-se { background-position: -48px -16px; }\r\n.ui-icon-triangle-1-s { background-position: -64px -16px; }\r\n.ui-icon-triangle-1-sw { background-position: -80px -16px; }\r\n.ui-icon-triangle-1-w { background-position: -96px -16px; }\r\n.ui-icon-triangle-1-nw { background-position: -112px -16px; }\r\n.ui-icon-triangle-2-n-s { background-position: -128px -16px; }\r\n.ui-icon-triangle-2-e-w { background-position: -144px -16px; }\r\n.ui-icon-arrow-1-n { background-position: 0 -32px; }\r\n.ui-icon-arrow-1-ne { background-position: -16px -32px; }\r\n.ui-icon-arrow-1-e { background-position: -32px -32px; }\r\n.ui-icon-arrow-1-se { background-position: -48px -32px; }\r\n.ui-icon-arrow-1-s { background-position: -64px -32px; }\r\n.ui-icon-arrow-1-sw { background-position: -80px -32px; }\r\n.ui-icon-arrow-1-w { background-position: -96px -32px; }\r\n.ui-icon-arrow-1-nw { background-position: -112px -32px; }\r\n.ui-icon-arrow-2-n-s { background-position: -128px -32px; }\r\n.ui-icon-arrow-2-ne-sw { background-position: -144px -32px; }\r\n.ui-icon-arrow-2-e-w { background-position: -160px -32px; }\r\n.ui-icon-arrow-2-se-nw { background-position: -176px -32px; }\r\n.ui-icon-arrowstop-1-n { background-position: -192px -32px; }\r\n.ui-icon-arrowstop-1-e { background-position: -208px -32px; }\r\n.ui-icon-arrowstop-1-s { background-position: -224px -32px; }\r\n.ui-icon-arrowstop-1-w { background-position: -240px -32px; }\r\n.ui-icon-arrowthick-1-n { background-position: 0 -48px; }\r\n.ui-icon-arrowthick-1-ne { background-position: -16px -48px; }\r\n.ui-icon-arrowthick-1-e { background-position: -32px -48px; }\r\n.ui-icon-arrowthick-1-se { background-position: -48px -48px; }\r\n.ui-icon-arrowthick-1-s { background-position: -64px -48px; }\r\n.ui-icon-arrowthick-1-sw { background-position: -80px -48px; }\r\n.ui-icon-arrowthick-1-w { background-position: -96px -48px; }\r\n.ui-icon-arrowthick-1-nw { background-position: -112px -48px; }\r\n.ui-icon-arrowthick-2-n-s { background-position: -128px -48px; }\r\n.ui-icon-arrowthick-2-ne-sw { background-position: -144px -48px; }\r\n.ui-icon-arrowthick-2-e-w { background-position: -160px -48px; }\r\n.ui-icon-arrowthick-2-se-nw { background-position: -176px -48px; }\r\n.ui-icon-arrowthickstop-1-n { background-position: -192px -48px; }\r\n.ui-icon-arrowthickstop-1-e { background-position: -208px -48px; }\r\n.ui-icon-arrowthickstop-1-s { background-position: -224px -48px; }\r\n.ui-icon-arrowthickstop-1-w { background-position: -240px -48px; }\r\n.ui-icon-arrowreturnthick-1-w { background-position: 0 -64px; }\r\n.ui-icon-arrowreturnthick-1-n { background-position: -16px -64px; }\r\n.ui-icon-arrowreturnthick-1-e { background-position: -32px -64px; }\r\n.ui-icon-arrowreturnthick-1-s { background-position: -48px -64px; }\r\n.ui-icon-arrowreturn-1-w { background-position: -64px -64px; }\r\n.ui-icon-arrowreturn-1-n { background-position: -80px -64px; }\r\n.ui-icon-arrowreturn-1-e { background-position: -96px -64px; }\r\n.ui-icon-arrowreturn-1-s { background-position: -112px -64px; }\r\n.ui-icon-arrowrefresh-1-w { background-position: -128px -64px; }\r\n.ui-icon-arrowrefresh-1-n { background-position: -144px -64px; }\r\n.ui-icon-arrowrefresh-1-e { background-position: -160px -64px; }\r\n.ui-icon-arrowrefresh-1-s { background-position: -176px -64px; }\r\n.ui-icon-arrow-4 { background-position: 0 -80px; }\r\n.ui-icon-arrow-4-diag { background-position: -16px -80px; }\r\n.ui-icon-extlink { background-position: -32px -80px; }\r\n.ui-icon-newwin { background-position: -48px -80px; }\r\n.ui-icon-refresh { background-position: -64px -80px; }\r\n.ui-icon-shuffle { background-position: -80px -80px; }\r\n.ui-icon-transfer-e-w { background-position: -96px -80px; }\r\n.ui-icon-transferthick-e-w { background-position: -112px -80px; }\r\n.ui-icon-folder-collapsed { background-position: 0 -96px; }\r\n.ui-icon-folder-open { background-position: -16px -96px; }\r\n.ui-icon-document { background-position: -32px -96px; }\r\n.ui-icon-document-b { background-position: -48px -96px; }\r\n.ui-icon-note { background-position: -64px -96px; }\r\n.ui-icon-mail-closed { background-position: -80px -96px; }\r\n.ui-icon-mail-open { background-position: -96px -96px; }\r\n.ui-icon-suitcase { background-position: -112px -96px; }\r\n.ui-icon-comment { background-position: -128px -96px; }\r\n.ui-icon-person { background-position: -144px -96px; }\r\n.ui-icon-print { background-position: -160px -96px; }\r\n.ui-icon-trash { background-position: -176px -96px; }\r\n.ui-icon-locked { background-position: -192px -96px; }\r\n.ui-icon-unlocked { background-position: -208px -96px; }\r\n.ui-icon-bookmark { background-position: -224px -96px; }\r\n.ui-icon-tag { background-position: -240px -96px; }\r\n.ui-icon-home { background-position: 0 -112px; }\r\n.ui-icon-flag { background-position: -16px -112px; }\r\n.ui-icon-calendar { background-position: -32px -112px; }\r\n.ui-icon-cart { background-position: -48px -112px; }\r\n.ui-icon-pencil { background-position: -64px -112px; }\r\n.ui-icon-clock { background-position: -80px -112px; }\r\n.ui-icon-disk { background-position: -96px -112px; }\r\n.ui-icon-calculator { background-position: -112px -112px; }\r\n.ui-icon-zoomin { background-position: -128px -112px; }\r\n.ui-icon-zoomout { background-position: -144px -112px; }\r\n.ui-icon-search { background-position: -160px -112px; }\r\n.ui-icon-wrench { background-position: -176px -112px; }\r\n.ui-icon-gear { background-position: -192px -112px; }\r\n.ui-icon-heart { background-position: -208px -112px; }\r\n.ui-icon-star { background-position: -224px -112px; }\r\n.ui-icon-link { background-position: -240px -112px; }\r\n.ui-icon-cancel { background-position: 0 -128px; }\r\n.ui-icon-plus { background-position: -16px -128px; }\r\n.ui-icon-plusthick { background-position: -32px -128px; }\r\n.ui-icon-minus { background-position: -48px -128px; }\r\n.ui-icon-minusthick { background-position: -64px -128px; }\r\n.ui-icon-close { background-position: -80px -128px; }\r\n.ui-icon-closethick { background-position: -96px -128px; }\r\n.ui-icon-key { background-position: -112px -128px; }\r\n.ui-icon-lightbulb { background-position: -128px -128px; }\r\n.ui-icon-scissors { background-position: -144px -128px; }\r\n.ui-icon-clipboard { background-position: -160px -128px; }\r\n.ui-icon-copy { background-position: -176px -128px; }\r\n.ui-icon-contact { background-position: -192px -128px; }\r\n.ui-icon-image { background-position: -208px -128px; }\r\n.ui-icon-video { background-position: -224px -128px; }\r\n.ui-icon-script { background-position: -240px -128px; }\r\n.ui-icon-alert { background-position: 0 -144px; }\r\n.ui-icon-info { background-position: -16px -144px; }\r\n.ui-icon-notice { background-position: -32px -144px; }\r\n.ui-icon-help { background-position: -48px -144px; }\r\n.ui-icon-check { background-position: -64px -144px; }\r\n.ui-icon-bullet { background-position: -80px -144px; }\r\n.ui-icon-radio-on { background-position: -96px -144px; }\r\n.ui-icon-radio-off { background-position: -112px -144px; }\r\n.ui-icon-pin-w { background-position: -128px -144px; }\r\n.ui-icon-pin-s { background-position: -144px -144px; }\r\n.ui-icon-play { background-position: 0 -160px; }\r\n.ui-icon-pause { background-position: -16px -160px; }\r\n.ui-icon-seek-next { background-position: -32px -160px; }\r\n.ui-icon-seek-prev { background-position: -48px -160px; }\r\n.ui-icon-seek-end { background-position: -64px -160px; }\r\n.ui-icon-seek-start { background-position: -80px -160px; }\r\n/* ui-icon-seek-first is deprecated, use ui-icon-seek-start instead */\r\n.ui-icon-seek-first { background-position: -80px -160px; }\r\n.ui-icon-stop { background-position: -96px -160px; }\r\n.ui-icon-eject { background-position: -112px -160px; }\r\n.ui-icon-volume-off { background-position: -128px -160px; }\r\n.ui-icon-volume-on { background-position: -144px -160px; }\r\n.ui-icon-power { background-position: 0 -176px; }\r\n.ui-icon-signal-diag { background-position: -16px -176px; }\r\n.ui-icon-signal { background-position: -32px -176px; }\r\n.ui-icon-battery-0 { background-position: -48px -176px; }\r\n.ui-icon-battery-1 { background-position: -64px -176px; }\r\n.ui-icon-battery-2 { background-position: -80px -176px; }\r\n.ui-icon-battery-3 { background-position: -96px -176px; }\r\n.ui-icon-circle-plus { background-position: 0 -192px; }\r\n.ui-icon-circle-minus { background-position: -16px -192px; }\r\n.ui-icon-circle-close { background-position: -32px -192px; }\r\n.ui-icon-circle-triangle-e { background-position: -48px -192px; }\r\n.ui-icon-circle-triangle-s { background-position: -64px -192px; }\r\n.ui-icon-circle-triangle-w { background-position: -80px -192px; }\r\n.ui-icon-circle-triangle-n { background-position: -96px -192px; }\r\n.ui-icon-circle-arrow-e { background-position: -112px -192px; }\r\n.ui-icon-circle-arrow-s { background-position: -128px -192px; }\r\n.ui-icon-circle-arrow-w { background-position: -144px -192px; }\r\n.ui-icon-circle-arrow-n { background-position: -160px -192px; }\r\n.ui-icon-circle-zoomin { background-position: -176px -192px; }\r\n.ui-icon-circle-zoomout { background-position: -192px -192px; }\r\n.ui-icon-circle-check { background-position: -208px -192px; }\r\n.ui-icon-circlesmall-plus { background-position: 0 -208px; }\r\n.ui-icon-circlesmall-minus { background-position: -16px -208px; }\r\n.ui-icon-circlesmall-close { background-position: -32px -208px; }\r\n.ui-icon-squaresmall-plus { background-position: -48px -208px; }\r\n.ui-icon-squaresmall-minus { background-position: -64px -208px; }\r\n.ui-icon-squaresmall-close { background-position: -80px -208px; }\r\n.ui-icon-grip-dotted-vertical { background-position: 0 -224px; }\r\n.ui-icon-grip-dotted-horizontal { background-position: -16px -224px; }\r\n.ui-icon-grip-solid-vertical { background-position: -32px -224px; }\r\n.ui-icon-grip-solid-horizontal { background-position: -48px -224px; }\r\n.ui-icon-gripsmall-diagonal-se { background-position: -64px -224px; }\r\n.ui-icon-grip-diagonal-se { background-position: -80px -224px; }\r\n\r\n\r\n/* Misc visuals\r\n----------------------------------*/\r\n\r\n/* Corner radius */\r\n.ui-corner-all, .ui-corner-top, .ui-corner-left, .ui-corner-tl { border-top-left-radius: 4px/*{cornerRadius}*/; }\r\n.ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-tr { border-top-right-radius: 4px/*{cornerRadius}*/; }\r\n.ui-corner-all, .ui-corner-bottom, .ui-corner-left, .ui-corner-bl { border-bottom-left-radius: 4px/*{cornerRadius}*/; }\r\n.ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br { border-bottom-right-radius: 4px/*{cornerRadius}*/; }\r\n\r\n/* Overlays */\r\n.ui-widget-overlay { background: #aaaaaa/*{bgColorOverlay}*/ url(/images/ui-bg_flat_0_aaaaaa_40x100.png)/*{bgImgUrlOverlay}*/ 50%/*{bgOverlayXPos}*/ 50%/*{bgOverlayYPos}*/ repeat-x/*{bgOverlayRepeat}*/; opacity: .3;filter:Alpha(Opacity=30)/*{opacityOverlay}*/; }\r\n.ui-widget-shadow { margin: -8px/*{offsetTopShadow}*/ 0 0 -8px/*{offsetLeftShadow}*/; padding: 8px/*{thicknessShadow}*/; background: #aaaaaa/*{bgColorShadow}*/ url(/images/ui-bg_flat_0_aaaaaa_40x100.png)/*{bgImgUrlShadow}*/ 50%/*{bgShadowXPos}*/ 50%/*{bgShadowYPos}*/ repeat-x/*{bgShadowRepeat}*/; opacity: .3;filter:Alpha(Opacity=30)/*{opacityShadow}*/; border-radius: 8px/*{cornerRadiusShadow}*/; }\r\n\r\n\r\n\r\n\r\n\r\nbody\r\n{\r\n    background-color: #F6F6F6;\r\n}\r\n\r\n#header-wrapper\r\n{\r\n    width:100%;\r\n    border-top:10px #3c3c3c solid;\r\n    background-color: #F6F6F6;\r\n}\r\n\r\n.header\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    position: relative;\r\n}\r\n\r\n/* menu start */\r\n.header #menu\r\n{\r\n    background:#3c3c3c;\r\n    height:40px;\r\n    width:980px;\r\n    border-top-right-radius:20px;\r\n    border-top-left-radius:20px;\r\n    float:left;\r\n    /* background-color: #FFCE00 ; */\r\n\r\n}\r\n\r\n#menu ul\r\n{\r\n    list-style:none;\r\n    /* background-color: #FFCE00 ; */\r\n}\r\n\r\n#menu ul li\r\n{\r\n    list-style:none;\r\n    float:left;\r\n    padding:14px 12px 5px 12px;\r\n    color:#FFF;\r\n    text-transform:uppercase;\r\n}\r\n\r\n#menu ul li a\r\n{\r\n    color:#fff;\r\n}\r\n\r\n#menu ul li a:hover\r\n{\r\n    color:#999;\r\n}\r\n\r\n.nav-bar\r\n{\r\n    display:inline-block;list-style:none;\r\n}\r\n\r\n.header ul.nav-bar\r\n{\r\n    margin-top: 0;\r\n    background:#3c3c3c;\r\n    -webkit-border-radius-topright:20px;\r\n    border-top-right-radius:20px;\r\n    -moz-border-radius-topleft:20px;\r\n    -webkit-border-radius-topright:20px;\r\n    border-top-left-radius:20px;\r\n    margin-bottom: 0;\r\n}\r\n\r\n.header ul.nav-bar li\r\n{\r\n    border:none;\r\n    box-shadow:none;\r\n    text-transform:uppercase;\r\n    padding:12px 28px 6px 28px;\r\n    line-height:22px;\r\n}\r\n\r\n.header ul.nav-bar li:hover\r\n{\r\n    background:none;\r\n}\r\n\r\n.header ul.nav-bar li a\r\n{\r\n    font-size:12px;\r\n    padding:0;\r\n}\r\n\r\n.menud\r\n{\r\n    width:100px;text-align: left;\r\n}\r\n\r\n.flyout\r\n{\r\n    display: none;\r\n}\r\n\r\n.header ul.nav-bar li a:hover,.header ul.nav-bar ul.flyout a:hover\r\n{\r\n    color:#999;\r\n}\r\n\r\n.header ul.nav-bar li.has-flyout > a:first-child\r\n{\r\n    padding-right:0;\r\n}\r\n\r\n.header ul.nav-bar li.has-flyout > a:first-child:after\r\n{\r\n    border:none;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout\r\n{\r\n    background:#3c3c3c;\r\n    border:none;\r\n    width:178px;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout li\r\n{\r\n    padding:8px 20px 8px 25px;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout a\r\n{\r\n    background:none;\r\n    border:none;\r\n    box-shadow:none;\r\n    color:#E6E6E6;\r\n}\r\n\r\n#logo\r\n{\r\n    margin-top:35px;\r\n    margin-bottom:15px;\r\n    background-image:url('/images/logo.png');\r\n    /* background-image: url(); */\r\n    width:204px;\r\n    height:51px;\r\n    display:block;\r\n\r\n}\r\n\r\n#header-text\r\n{\r\n\r\n    width:500px;\r\n    text-align:right;\r\n    color:#0c2849;\r\n    /*position: absolute;\r\n\tright: 0;*/\r\n    bottom: 60px;\r\n}\r\n#top-logo\r\n{\r\n    width:100%;\r\n\r\n}\r\n\r\n#top-logo #div1\r\n{\r\n    float: left;\r\n    width: 50%;\r\n\r\n}\r\n\r\n#top-logo #div2\r\n{\r\n    float: left;\r\n    padding-top: 70px;\r\n    text-align: right;\r\n    width: 50%;\r\n\r\n}\r\n\r\n#top-logo #div2 .phone\r\n{\r\n    margin-top:0;\r\n    margin-bottom:20px;\r\n    font-size:23px;\r\n    font-weight:400;\r\n    color:#0c2849;\r\n}\r\n\r\n#menu-wrapper\r\n{\r\n    width:100%;\r\n}\r\n\r\n.header clear\r\n{\r\n    float:left;\r\n}\r\n\r\n\r\n\r\n/* ------------------------------------------------------------------------------------------\r\n------------------------------------------------------------------------------------------\r\n------------------------------------------------------------------------------------------\r\n------------------------------------------------------------------------------------------ */\r\n\r\n\r\n\r\nhtml\r\n{\r\n    overflow:0;\r\n    margin:0;\r\n    padding:0;\r\n}\r\n\r\nhtml,body\r\n{\r\n    height:100%;\r\n    margin:0;\r\n    width:100%;\r\n}\r\n\r\nbody\r\n{\r\n    font-family:Arial, Helvetica, sans-serif, \"Arial Narrow\";\r\n    margin:0;\r\n    padding:0;\r\n    background:#f6f6f6;\r\n}\r\n\r\n/*body,td,th,input,textarea,select,a*/\r\nbody,td,th,input,select\r\n{\r\n    font-size:12px;\r\n    color:#666;\r\n}\r\n\r\na\r\n{\r\n    color:#909090;\r\n}\r\n\r\nh1,.welcome\r\n{\r\n    margin-top:0;\r\n    margin-bottom:20px;\r\n    font-size:21px;\r\n    font-weight:400;\r\n    text-shadow:0 0 1px rgba(0,0,0,.01);\r\n}\r\n\r\nh1,.body-text h2, .get-a-quote h2, .phone\r\n{\r\n    margin-top:0;\r\n    margin-bottom:20px;\r\n    font-size:23px;\r\n    font-weight:400;\r\n    color:#0c2849;\r\n}\r\n\r\nh2\r\n{\r\n    font-size:18px;\r\n    font-weight:400;\r\n    margin-bottom:10px;\r\n    margin-top:0;\r\n    padding-top:20px;\r\n    color:#FFF;\r\n}\r\n\r\nh3\r\n{\r\n    font-size:18px;\r\n    font-weight:400;\r\n    margin-bottom:10px;\r\n    margin-top:10px;\r\n}\r\n\r\np\r\n{\r\n    margin-top:0;\r\n    margin-bottom:20px;\r\n}\r\n\r\na,a:visited,a b\r\n{\r\n    text-decoration:none;\r\n    cursor:pointer;\r\n}\r\n\r\na:hover\r\n{\r\n    text-decoration:none;\r\n}\r\n\r\na img\r\n{\r\n    border:none;\r\n}\r\n\r\n.blue\r\n{\r\n    color:#0069b5;\r\n}\r\n\r\nform\r\n{\r\n    margin:0;\r\n}\r\n\r\n/* For modern browsers */\r\n.clearfix:before,.clearfix:after\r\n{\r\n    content:\"\";\r\n    display:table;\r\n}\r\n\r\n.clearfix:after\r\n{\r\n    clear:both;\r\n}\r\n\r\n/* For IE 6/7 (trigger hasLayout) */\r\n.clearfix\r\n{\r\n    zoom:1;\r\n}\r\n\r\n/*  class start */\r\n.clear:after\r\n{\r\n    clear:both;\r\n    content:\"\";\r\n    display:block;\r\n}\r\n\r\n/* -------------------------------------Header--------------------------------------------- */\r\n\r\n#header-wrapper\r\n{\r\n    width:100%;\r\n    border-top:10px #3c3c3c solid;\r\n}\r\n\r\n.header\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    position: relative;\r\n}\r\n\r\n/* menu start */\r\n\r\n\r\n#menu ul li\r\n{\r\n    list-style:none;\r\n    float:left;\r\n    padding:14px 12px 5px 12px;\r\n    color:#FFF;\r\n    text-transform:uppercase;\r\n}\r\n\r\n\r\n\r\n.header ul.nav-bar\r\n{\r\n    margin-top: 0;\r\n    background:#3c3c3c;\r\n    -webkit-border-radius-topright:20px;\r\n    border-top-right-radius:20px;\r\n    -moz-border-radius-topleft:20px;\r\n    -webkit-border-radius-topright:20px;\r\n    border-top-left-radius:20px;\r\n    margin-bottom: 0;\r\n}\r\n\r\n.header ul.nav-bar li\r\n{\r\n    border:none;\r\n    box-shadow:none;\r\n    text-transform:uppercase;\r\n    padding:12px 28px 6px 28px;\r\n    line-height:22px;\r\n}\r\n\r\n.header ul.nav-bar li:hover\r\n{\r\n    background:none;\r\n}\r\n\r\n.header ul.nav-bar li a\r\n{\r\n    font-size:12px;\r\n    padding:0;\r\n}\r\n\r\n.header ul.nav-bar li a:hover,.header ul.nav-bar ul.flyout a:hover\r\n{\r\n    color:#999;\r\n}\r\n\r\n.header ul.nav-bar li.has-flyout > a:first-child\r\n{\r\n    padding-right:0;\r\n}\r\n\r\n.header ul.nav-bar li.has-flyout > a:first-child:after\r\n{\r\n    border:none;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout\r\n{\r\n    background:#3c3c3c;\r\n    border:none;\r\n    width:178px;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout li\r\n{\r\n    padding:8px 20px 8px 25px;\r\n}\r\n\r\n.header ul.nav-bar ul.flyout a\r\n{\r\n    background:none;\r\n    border:none;\r\n    box-shadow:none;\r\n    color:#E6E6E6;\r\n}\r\n\r\n#logo\r\n{\r\n    margin-top:35px;\r\n    margin-bottom:15px;\r\n    /* background-image:url(/images/logo-new-1.svg); */\r\n    width:204px;\r\n    height:51px;\r\n    display:block;\r\n\r\n}\r\n\r\n#header-text\r\n{\r\n\r\n    width:500px;\r\n    text-align:right;\r\n    color:#0c2849;\r\n    /*position: absolute;\r\n\tright: 0;*/\r\n    bottom: 60px;\r\n}\r\n\r\n#banner\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    position:relative;\r\n    /*background:#17416f;*/\r\n    background:#0e2743;\r\n}\r\n\r\n.banner-top\r\n{\r\n    background:#0069b5;\r\n    text-align:center;\r\n    padding:15px;\r\n}\r\n\r\n.banner-bottom\r\n{\r\n    height:273px;\r\n}\r\n\r\n.banner-bottomin\r\n{\r\n    height:128px;\r\n    background:#09213b;\r\n}\r\n\r\n.banner-top span\r\n{\r\n    font-size:20px;\r\n    color:#FFF;\r\n}\r\n\r\n.banner-image\r\n{\r\n    height:273px;\r\n    background:#0e2b4e;\r\n    width:500px;\r\n    position:absolute;\r\n    float:left;\r\n}\r\n\r\n.banner-imagein\r\n{\r\n    height:120px;\r\n    background:#0e2b4e;\r\n    width:980px;\r\n    float:left;\r\n}\r\n\r\n.testimonial\r\n{\r\n    background:transparent;\r\n    width:560px;\r\n    height:273px;\r\n    float:right;\r\n    text-align:center;\r\n    padding:0 20px;\r\n    position:absolute;\r\n    right:0;\r\n    /*background-image: url('../testimonials/brooke - nedlands.jpg');\r\n\r\n\tbackground-repeat: no-repeat;\r\n\r\n\tbackground-position: 10px 0;*/\r\n}\r\n\r\n.testimonial .testimonial-wrapper\r\n{\r\n    width:560px;\r\n    height:100%;\r\n    float:right;\r\n    position:relative;\r\n    top:-50px;\r\n}\r\n\r\n.orbit-slide \r\n{\r\n    z-index: 3; opacity: 1; display: block;\r\n}\r\n\r\n.orbit-slide2\r\n{\r\n    display: block; opacity: 0; z-index: 1;\r\n}\r\n\r\n.testimonial .orbit-slide .orbit-slide2 h3\r\n{\r\n    margin-top:50px;\r\n}\r\n\r\n.testimonial-image\r\n{\r\n    width:283px; height:273px;\r\n}\r\n\r\n.testimonial .orbit-slide .orbit-slide2 .testimonial-image\r\n{\r\n    float:left;\r\n    background:transparent;\r\n    margin-right:-5px;\r\n}\r\n\r\n.testimonial .gradient-right\r\n{\r\n    position:absolute;\r\n    /* background-image:url(..///images/gradient-right.png); */\r\n    background-size:100%;\r\n    width:110px;\r\n    height:273px;\r\n    right:300px;\r\n    z-index:5;\r\n}\r\n\r\n.testimonial .gradient-left\r\n{\r\n    position:absolute;\r\n    /* background-image:url(..///images/gradient-left.png); */\r\n    background-size:100%;\r\n    width:90px;\r\n    height:273px;\r\n    left:-20px;\r\n    z-index:5;\r\n}\r\n\r\n.testimonial h2\r\n{\r\n    width:280px;\r\n    float:right;\r\n}\r\n\r\n.testimonial-text\r\n{\r\n    padding:23px;\r\n    color:#9ebcdd;\r\n    line-height:19px;\r\n}\r\n\r\n.testimonial-text span\r\n{\r\n    color:#51abd5;\r\n    margin:0;\r\n    padding:0;\r\n}\r\n\r\n.testimonial .timer\r\n{\r\n    display:none;\r\n}\r\n\r\n.testimonial h3\r\n{\r\n    font-weight:400;\r\n    font-style:italic;\r\n    font-size:12px;\r\n    line-height:18px;\r\n    color:#4ca6d0;\r\n    float:right;\r\n    width:50%;\r\n}\r\n\r\n.testimonial p\r\n{\r\n    font-weight:400;\r\n    font-style:italic;\r\n    font-size:12px;\r\n    line-height:20px;\r\n    color:#9ebcdd;\r\n    float:right;\r\n    width:50%;\r\n\t\r\n}\r\n\r\n.readmore\r\n{\r\n    color:#51abd5;\r\n    text-decoration:underline;\r\n    text-align:right;\r\n    padding:0 23px 5px 5px;\r\n    font-size:11px;\r\n}\r\n\r\n#home-body\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    /*height: 500px;*/\r\n    background:#FFF;\r\n    display: block;\r\n}\r\n\r\n.body-text\r\n{\r\n    padding:30px;\r\n}\r\n\r\n/* Home box 1 */\r\n.home-box1\r\n{\r\n    padding:39px;\r\n    padding-left:40px;\r\n    /*width:521px;*/\r\n    float:left;\r\n    background:#FFF;\r\n}\r\n\r\n.box1-heading\r\n{\r\n    width:521px;\r\n}\r\n\r\n.grey-text\r\n{\r\n    font-size:17px;\r\n    color:#A3A3A3;\r\n    text-align:center;\r\n    padding:10px 0 0 10px;\r\n}\r\n\r\n.homebox1-quote\r\n{\r\n    font-size:22px;\r\n    color:#3c3c3c;\r\n    text-align:center;\r\n    padding:20px 0 0 10px;\r\n    text-transform:uppercase;\r\n    font-weight:700;\r\n}\r\n\r\n.box1-image\r\n{\r\n    text-align:center;\r\n    padding:25px 0 0 20px;\r\n}\r\n\r\n.box1-amount\r\n{\r\n    height:110px;\r\n    width:499px;\r\n    background-image:url(/images/index/amount-background.png);\r\n}\r\n\r\n.enter-amount\r\n{\r\n    float:left;\r\n    padding:30px 17px 7px 80px;\r\n    position:relative;\r\n}\r\n\r\n.enter-amount .dollar-sign\r\n{\r\n    position:absolute;\r\n    font-size:28px;\r\n    color:#222;\r\n    top:38px;\r\n    left:90px;\r\n}\r\n\r\n.box1-button\r\n{\r\n    padding:28px;\r\n}\r\n\r\ninput.box1-field\r\n{\r\n    border:#F5F5F5 1px solid;\r\n    padding:9px;\r\n    padding-left:30px;\r\n    width:160px;\r\n    font-size:18px;\r\n    height:auto;\r\n    color:#999;\r\n}\r\n\r\n/* Home box 2 */\r\n.home-box2\r\n{\r\n    padding:10px;\r\n    float:left;\r\n    background:#FFF;\r\n    float:left;\r\n}\r\n\r\n.loan-calculatorbg h1\r\n{\r\n    font-size:24px;\r\n    color:#666;\r\n    font-weight:700;\r\n    text-align:center;\r\n    padding:34px 30px 0 0;\r\n    margin-bottom:8px;\r\n}\r\n\r\n.box2-wrapper\r\n{\r\n    padding:5px 70px 40px 47px;\r\n}\r\n\r\n.box2-repayment\r\n{\r\n    /* background:#163f6f; */\r\n    padding:12px 5px 13px;\r\n    text-align:center;\r\n    color:#FFF;\r\n    font-size:14px;\r\n}\r\n\r\n.box2-sliderbg\r\n{\r\n    /* background-image:url(..///images/index/slider-bg.png); */\r\n    background-position:center;\r\n    background-repeat:no-repeat;\r\n    padding:7px;\r\n}\r\n\r\n.loan-calculatorbg\r\n{\r\n    width:360px;\r\n    /*height:450px;*/\r\n    background-image:url(/images/index/calculator-bg.png);\r\n    background-position:top left;\r\n    background-repeat:no-repeat;\r\n}\r\n\r\n#services\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    padding:35px 0 0;\r\n}\r\n\r\n#services img\r\n{\r\n    width:127px;\r\n}\r\n\r\n#services table\r\n{\r\n    background:none;\r\n    border:none;\r\n    color:#707070;\r\n}\r\n\r\n#services table td\r\n{\r\n    text-align:center;\r\n}\r\n\r\n#services table tr.pictures td\r\n{\r\n    border-left:1px dotted #a6a6a6;\r\n}\r\n\r\n#services table tr.pictures td:first-child\r\n{\r\n    border:none;\r\n}\r\n\r\n#homebottom-text\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    padding-bottom:30px;\r\n}\r\n\r\n.bottom-text\r\n{\r\n    padding-top:10px;\r\n    padding-bottom:10px;\r\n    text-align:center;\r\n}\r\n\r\n.bottom-text h3\r\n{\r\n    font-size:12px;\r\n    font-weight:700;\r\n    text-transform:uppercase;\r\n    letter-spacing:.6px;\r\n}\r\n\r\n.thumbs\r\n{\r\n    width:141px;\r\n    height:85px;\r\n    margin-left:20px;\r\n}\r\n\r\n.thumbs-first\r\n{\r\n    width:141px;\r\n    height:85px;\r\n}\r\n\r\n.thumbs-text\r\n{\r\n    padding-top:10px;\r\n    padding-bottom:10px;\r\n    text-align:center;\r\n}\r\n\r\n.thumbs-last\r\n{\r\n    width:141px;\r\n    height:85px;\r\n    float:none;\r\n}\r\n\r\n.thumb-divider\r\n{\r\n    width:20px;\r\n}\r\n\r\n#footer-wrapper\r\n{\r\n    width:100%;\r\n    background:#565656;\r\n    font-size:12px;\r\n    color:#909090;\r\n}\r\n\r\n#footer-wrapper h2\r\n{\r\n    text-transform:uppercase;\r\n    border-bottom:1px dashed grey;\r\n    font-size:16px;\r\n    line-height:44px;\r\n    color:#fff;\r\n    font-weight:700;\r\n}\r\n\r\n#footer-wrapper h2 .dollar-sign\r\n{\r\n    color:#EBEBEB;\r\n}\r\n\r\n#footer-wrapper ul\r\n{\r\n    list-style:none;\r\n    list-style-position:inside;\r\n}\r\n\r\n#footer-wrapper ul.with-bullet\r\n{\r\n    /* list-style-image:url(..///images/footer-bullet.png); */\r\n}\r\n\r\n#footer-wrapper p\r\n{\r\n    font-size:12px;\r\n}\r\n\r\n#footer-wrapper li\r\n{\r\n    font-size:12px;\r\n    padding:2px 0;\r\n}\r\n\r\n#footer-wrapper .addthis_toolbox\r\n{\r\n    padding-top:4px;\r\n    display:inline;\r\n}\r\n\r\n#footer-wrapper .columns\r\n{\r\n    padding:0 5px;\r\n}\r\n\r\n#footer-wrapper .footer-icon\r\n{\r\n    float:left;\r\n    margin-right:2px;\r\n}\r\n\r\n.footer\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n}\r\n\r\n.footer-box1\r\n{\r\n    width:280px;\r\n    padding-bottom:20px;\r\n    background:#565656;\r\n}\r\n\r\n.footer-box1 ul\r\n{\r\n    list-style:none;\r\n    margin-left:-40px;\r\n}\r\n\r\n.footer-box1 ul li\r\n{\r\n    list-style:none;\r\n    margin-left:0;\r\n    color:#999;\r\n    padding:0 0 10px;\r\n}\r\n\r\n.footer-box\r\n{\r\n    width:207px;\r\n    padding-bottom:20px;\r\n    background:#565656;\r\n}\r\n\r\n.footer-box ul\r\n{\r\n    list-style:none;\r\n    margin-left:-40px;\r\n}\r\n\r\n.footer-box ul li\r\n{\r\n    list-style:none;\r\n    margin-left:0;\r\n    color:#999;\r\n    padding:0 0 10px;\r\n}\r\n\r\n.copyright\r\n{\r\n    padding:20px;\r\n    color:#999;\r\n    text-align:center;\r\n}\r\n\r\n\r\n\r\n#footer-bottom\r\n{\r\n    width:100%;\r\n    background:#404040;\r\n}\r\n\r\n/**********************************/\r\n/********** HOME ******************/\r\n/**********************************/\r\n.box2-wrapper\r\n{\r\n    padding-top:0;\r\n}\r\n\r\n.box2-wrapper ul\r\n{\r\n    padding:0;\r\n    list-style:none;\r\n}\r\n\r\n.box2-wrapper ul li\r\n{\r\n    margin:13px 0;\r\n}\r\n\r\n.box2-wrapper .slider-label,.box2-wrapper .slider-value\r\n{\r\n    line-height:30px;\r\n}\r\n\r\n.box2-wrapper .slider-value\r\n{\r\n    float:right;\r\n}\r\n\r\n#content .ui-state-default\r\n{\r\n    background-image:url(/images/index/car-icon.png);\r\n    background-color:transparent;\r\n    border:none;\r\n    width:22px;\r\n    height:18px;\r\n    top:-9px;\r\n}\r\n\r\n#content .ui-slider-horizontal\r\n{\r\n    border:1px solid #bdcede;\r\n    height:0;\r\n    margin:6px 0;\r\n}\r\n\r\n#content .box2-repayment\r\n{\r\n    margin-top:30px;\r\n}\r\n\r\n/*.contact {\r\n\r\n\tbackground: #ffffff;\r\n\r\n\twidth: 980px;\r\n\r\n\tmargin: auto;\r\n\r\n}*/\r\n/* new code -- */\r\n.contact\r\n{\r\n    height:220px;\r\n    width:40px;\r\n    position:fixed;\r\n    right:0;\r\n    left:auto;\r\n    top:40%;\r\n    bottom:auto;\r\n    overflow:hidden;\r\n    z-index:1;\r\n}\r\n\r\n.contact button\r\n{\r\n    /* background-image:url(/images/buttons/quick_submit.png); */\r\n    border:none;\r\n    color:#FFF;\r\n    font-size:12px;\r\n    font-weight:700;\r\n    height:220px;\r\n    text-transform:uppercase;\r\n    width:40px;\r\n    margin-bottom:15px;\r\n    cursor:pointer;\r\n}\r\n\r\n/* end of new code */\r\n/*\r\n.contact button {\r\n\r\n\t/* background-image: url(\"..///images/buttons/submit.png\"); */\r\n\r\n    /* border: medium none;\r\n\r\n    color: #FFFFFF;\r\n\r\n    font-size: 14px;\r\n\r\n    font-weight: bold;\r\n\r\n    height: 43px;\r\n\r\n    text-transform: uppercase;\r\n\r\n\twidth: 160px;\r\n\r\n\tmargin-bottom: 15px;\r\n\r\n} */\r\n*/\r\n.contact form\r\n{\r\n    display:none;\r\n}\r\n\r\n/* Contact form */\r\n.ui-dialog\r\n{\r\n    font-family:Arial,Helvetica,sans-serif,\"Arial Narrow\";\r\n}\r\n\r\n#contact-form .msg.success\r\n{\r\n    color:green;\r\n}\r\n\r\n#contact-form .msg.error\r\n{\r\n    color:red;\r\n}\r\n\r\n.ui-widget-content\r\n{\r\n    border:none;\r\n    border-radius:0;\r\n    padding:0;\r\n    background:#fff;\r\n    border:1px solid #EBEBEB;\r\n}\r\n\r\n.ui-dialog .ui-dialog-titlebar\r\n{\r\n    border:none;\r\n    border-radius:0;\r\n    background-color:#0069b5;\r\n    background-image:none;\r\n    color:#FFF;\r\n    line-height:50px;\r\n    padding:0 0 0 14px;\r\n    cursor:auto;\r\n}\r\n\r\n.ui-dialog-titlebar .ui-dialog-titlebar-close.ui-state-hover\r\n{\r\n    background-color:transparent;\r\n    background-image:none;\r\n    background-repeat:no-repeat;\r\n    background-position:0 0;\r\n    border:none;\r\n    width:19px;\r\n    height:18px;\r\n    padding:1px;\r\n}\r\n\r\n.ui-dialog-titlebar .ui-icon-closethick\r\n{\r\n    background-color:transparent;\r\n    /* background-image:url(..///images/icon-cross.png); */\r\n    background-repeat:no-repeat;\r\n    background-position:0 0;\r\n    border:none;\r\n}\r\n\r\n.ui-dialog input\r\n{\r\n    background-color:#F7F7F7;\r\n    border:1px solid #EEE;\r\n    box-shadow:none;\r\n    height:30px;\r\n    margin-bottom:0;\r\n    margin-right:0;\r\n    margin-top:2%;\r\n    padding:0 5px;\r\n    width:70%;\r\n}\r\n\r\n.ui-dialog input[type=submit]\r\n{\r\n    /* background-image:url(..///images/buttons/submit.png); */\r\n    border:medium none;\r\n    color:#FFF;\r\n    display:block;\r\n    font-size:14px;\r\n    font-weight:700;\r\n    height:53px;\r\n    margin:24px auto auto;\r\n    text-transform:uppercase;\r\n    width:200px;\r\n}\r\n\r\n.ui-dialog label\r\n{\r\n    color:#565656;\r\n    display:block;\r\n    float:left;\r\n    line-height:28px;\r\n    width:30%;\r\n}\r\n\r\n.box2-wrapper input\r\n{\r\n    display:block;\r\n    margin:auto;\r\n    margin-top:10px;\r\n}\r\n\r\n.banner-image\r\n{\r\n    /* background-image:url(..///images/banner-background.png); */\r\n    position:relative;\r\n}\r\n\r\n.banner-image .banner-car\r\n{\r\n    width:357px;\r\n    height:126px;\r\n    background-image:url(/images/banner-car.png);\r\n    position:absolute;\r\n    top:10%;\r\n    left:6%;\r\n}\r\n\r\n.banner-image .banner-text\r\n{\r\n    position:absolute;\r\n    top:20%;\r\n    left:150px;\r\n    margin:auto;\r\n    text-align:center;\r\n}\r\n\r\n.banner-image > a\r\n{\r\n    position:absolute;\r\n    left:100px;\r\n    bottom:10%;\r\n}\r\n\r\n.banner-image .blue\r\n{\r\n    color:#6385af;\r\n}\r\n\r\n.banner-image .finance-from\r\n{\r\n    font-weight:700;\r\n    font-size:14px;\r\n    line-height:18px;\r\n    color:#fff;\r\n    text-transform:uppercase;\r\n}\r\n\r\n.banner-image .interest-rate\r\n{\r\n    font-size:66px;\r\n    color:#fff;\r\n}\r\n\r\n.banner-image .interest-rate .percentage-sign\r\n{\r\n    font-size:20px;\r\n}\r\n\r\n.banner-image .conditions\r\n{\r\n    font-weight:700;\r\n    font-size:12px;\r\n}\r\n\r\n/*****************************************/\r\n/********** GET A QUOTE ******************/\r\n/*****************************************/\r\n#content .get-a-quote\r\n{\r\n    padding:30px 20px;\r\n}\r\n\r\n.get-a-quote h1\r\n{\r\n    font-size:24px;\r\n    color:#10345e;\r\n}\r\n\r\n.get-a-quote h1 strong\r\n{\r\n    color:#0069b5;\r\n}\r\n\r\n.get-a-quote > p,\r\nul.light\r\n{\r\n    color:#7f7f7f;\r\n}\r\n\r\n.get-a-quote form legend\r\n{\r\n    font-weight:700;\r\n    font-size:14px;\r\n}\r\n\r\n.get-a-quote form fieldset\r\n{\r\n    border:none;\r\n    padding:0;\r\n    margin-bottom:0;\r\n}\r\n\r\n.get-a-quote form fieldset legend\r\n{\r\n    background-color:#0f71b8;\r\n    color:#FFF;\r\n    height:50px;\r\n    line-height:50px;\r\n    padding:0;\r\n    padding-left:20px;\r\n    width:940px;\r\n}\r\n\r\n.get-a-quote form fieldset ul\r\n{\r\n    list-style:none;\r\n    padding:0;\r\n    margin:0;\r\n\r\n}\r\n\r\n.get-a-quote form fieldset ul li\r\n{\r\n    background-color:#f7f7f7;\r\n    margin-bottom:3px;\r\n    padding-left:10px;\r\n    clear:both;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .label\r\n{\r\n    float:left;\r\n    width:33%;\r\n    font-size:16px;\r\n    font-weight:700;\r\n    color:#636363;\r\n    line-height:48px;\r\n    background:none;\r\n    text-align:left;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .label .item-counter\r\n{\r\n    display:block;\r\n    font-size:36px;\r\n    font-weight:700;\r\n    color:#ebebeb;\r\n    text-align:left;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper\r\n{\r\n    width:67%;\r\n    height:100%;\r\n    margin-left:33%;\r\n    background-color:#ebebeb;\r\n    position: relative;\r\n    overflow:hidden;\r\n    padding: 10px 0 10px 50px;\r\n}\r\n\r\n/* New Code */\r\n\r\n/* /*.options-wrapper {\r\n\twidth:67%;\r\n\tmargin-left:33%;\r\n\tbackground-color:#ebebeb;\r\n\tposition:relative;\r\n\tpadding:24px 0;\r\n}\r\n\r\n.options-wrapper .arrow\r\n{\r\n\t/* background-image:url(..///images/arrow.png); */\r\n\t/* width:37px;\r\n\theight:39px;\r\n\tposition:absolute;\r\n\tleft:-19px;\r\n\ttop:43%; */\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper .halfColumn .input,\r\n.get-a-quote form fieldset ul li .options-wrapper .halfColumn2 .input,\r\n.get-a-quote form fieldset ul li .options-wrapper .fullColumn .input {\r\n    padding: 4px 0;\r\n    padding-right: 20px;\r\n    /*margin-left:50px;*/\r\n}\r\n\r\n/* End of New Code */\r\n\r\n.get-a-quote form fieldset ul li .loantrmsselect,\r\n.get-a-quote form fieldset ul li input[type=\"radio\"]\r\n{\r\n    display:none;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper .arrow\r\n{\r\n    /* background-image:url(..///images/arrow.png); */\r\n    width:37px;\r\n    height:39px;\r\n    position:absolute;\r\n    left:-19px;\r\n    top:30%;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul\r\n{\r\n    margin:auto;\r\n    text-align:center;\r\n    padding: 12px 0 24px 0;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul li\r\n{\r\n    display:inline-block;\r\n    background-color:#ebebeb;\r\n    padding:0;\r\n    padding-top:10px;\r\n    margin-right: 5px;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper p\r\n{\r\n    margin:auto;\r\n    text-align:center;\r\n    padding-top:10px;\r\n    padding-bottom:20px;\r\n    font-weight:700;\r\n    color:#515151;\r\n}\r\n.get-a-quote form fieldset input[name=\"repayradio\"] {\r\n    display: none;\r\n}\r\n\r\n.get-a-quote form button\r\n{\r\n    /* background-image:url(..///images/buttons/button-black.png); */\r\n    border:none;\r\n    color:#fff;\r\n    text-transform:uppercase;\r\n    width:174px;\r\n    height:43px;\r\n    font-family:Arial, Helvetica, sans-serif, \"Arial Narrow\";\r\n    font-size:12px;\r\n    font-weight:700;\r\n}\r\n\r\n.get-a-quote form button.two-line {\r\n    position: relative;\r\n    top: 8px;\r\n}\r\n\r\n.get-a-quote form button:hover\r\n{\r\n    cursor:pointer;\r\n}\r\n\r\n.get-a-quote form button.checked\r\n{\r\n    /* background-image:url(..///images/buttons/button-blue.png); */\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul.sub-options\r\n{\r\n    border-top:1px dashed #c3c3c3;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul.sub-options.hidden\r\n{\r\n    display:none;\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul.sub-options button\r\n{\r\n    /* background-image:url(..///images/buttons/button-grey.png); */\r\n}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper ul.sub-options button.checked\r\n{\r\n    /* background-image:url(..///images/buttons/button-blue.png); */\r\n}\r\n\r\n.get-a-quote form .halfColumn,\r\n.get-a-quote form .halfColumn2\r\n{\r\n    width:50%;\r\n    float:left;\r\n    margin: 0;\r\n}\r\n\r\n.get-a-quote form .halfColumn\r\n{\r\n    clear: both;\r\n}\r\n\r\n.get-a-quote form .fullColumn\r\n{\r\n    width:100%;\r\n    clear: both;\r\n    margin:5px 0;\r\n}\r\n\r\n.get-a-quote form .input\r\n{\r\n    clear:both;\r\n    margin-top: 2%;\r\n\r\n\r\n}\r\n\r\n.get-a-quote form .input label\r\n{\r\n    width:40%;\r\n    display:block;\r\n    color:#565656;\r\n    float:left;\r\n    line-height:20px;\r\n    padding-right: 5px;\r\n    padding-top: 4px;\r\n}\r\n\r\n.get-a-quote form .input label.error\r\n{\r\n    margin-left:40%;\r\n    padding-bottom:2%;\r\n    width:70%;\r\n    color:red;\r\n    display:block;\r\n}\r\n\r\n.get-a-quote form .input input,\r\n.get-a-quote form .input select,\r\n.get-a-quote form .input textarea\r\n{\r\n    width:50%;\r\n    height:30px;\r\n    margin-right:0;\r\n    /*margin-top:2%;*/\r\n    margin-bottom:0;\r\n    padding:0 5px;\r\n    /*background-color:#f7f7f7;\r\n\tbackground-color:#ebebeb;*/\r\n    background-color:#FFF;\r\n    border:1px solid #eee;\r\n    box-shadow:none;\r\n}\r\n\r\n.get-a-quote form .input select {\r\n    padding: 0;\r\n    line-height: 30px;\r\n    font-size: 14px;\r\n}\r\n\r\n.get-a-quote form select#genderselect {\r\n    width: 60px;\r\n    float: left;\r\n    margin-right: 5px;\r\n}\r\n\r\n.get-a-quote form input#usrfnametxt {\r\n    width: 36.2%;\r\n}\r\n\r\n.get-a-quote form .tickbox\r\n{\r\n    padding-top:20px;\r\n}\r\n\r\n.get-a-quote form .tickbox\r\n{\r\n    font-size:13px;\r\n    font-weight:700;\r\n    color:#707070;\r\n    display:block;\r\n}\r\n\r\n.get-a-quote form .tickbox label.error\r\n{\r\n    color:red;\r\n}\r\n\r\n.get-a-quote form .tickbox strong\r\n{\r\n    color:#1d1d1d;\r\n}\r\n\r\n.get-a-quote form .information {\r\n    width: 100%;\r\n    clear: both;\r\n\r\n}\r\n.get-a-quote form .information span {\r\n    width: 25%;\r\n    display: block;\r\n    float: left;\r\n    margin: 10px 0;\r\n}\r\n\r\n.get-a-quote form .income input {\r\n    width: 25%;\r\n    display: inline;\r\n    margin-right: 4px;\r\n}\r\n\r\n.get-a-quote form .income select {\r\n    width: 10%;\r\n    vertical-align: top;\r\n}\r\n\r\n/*.quote-details,\r\n.finance-approval {\r\n\tdisplay: none;\r\n}*/\r\n\r\n.quote-details {\r\n    display: none;\r\n}\r\n\r\n.get-a-quote form .finance-approval .input label {\r\n    width: 100%;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn .input {\r\n    margin-top: 0;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn .input.no-margin {\r\n    margin: 0;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn .input.no-margin input,\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn .input.no-margin select {\r\n    display: inline;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn .input.no-margin select {\r\n    width: 35%;\r\n    position: relative;\r\n    top: -4px;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper {\r\n    height: 80px;\r\n}\r\n.get-a-quote form fieldset.finance-approval ul li .options-wrapper .halfColumn {\r\n    margin-top: 14px;\r\n}\r\n\r\n.get-a-quote form input[type=submit]\r\n{\r\n    margin:auto;\r\n    display:block;\r\n    text-transform:uppercase;\r\n    font-size:14px;\r\n    font-weight:700;\r\n    color:#fff;\r\n    /* background-image:url(..///images/buttons/submit.png); */\r\n    width:246px;\r\n    height:53px;\r\n    border:none;\r\n    margin-top:24px;\r\n}\r\n\r\n.get-a-quote form input[type=submit]:hover\r\n{\r\n    cursor:pointer;\r\n}\r\n\r\n/* INNER PAGE */\r\n.body-content\r\n{\r\n    margin-left:auto;\r\n    margin-right:auto;\r\n    text-align:left;\r\n    width:980px;\r\n    /*height: 500px;*/\r\n    background:#FFF;\r\n}\r\n\r\n.body-content ul\r\n{\r\n    margin-left:30px;\r\n}\r\n\r\n.body-content .row\r\n{\r\n    padding-left:0;\r\n}\r\n\r\n.body-content .loan-calculatorbg ul\r\n{\r\n    margin-left:0;\r\n}\r\n\r\n/*.body-text ul {list-style: none;}*/\r\n#sitemap-body ul\r\n{\r\n    margin:0;\r\n}\r\n\r\n#contact-us-body form label\r\n{\r\n    padding-left:0;\r\n}\r\n\r\n#contact-us-body form .form-textarea\r\n{\r\n    padding:0;\r\n}\r\n\r\n#testimonial-body h3\r\n{\r\n    font-size:14px;\r\n    margin-top:20px;\r\n}\r\n\r\n#testimonial-body p\r\n{\r\n    margin:0;\r\n}\r\n\r\n#testimonial-body p.date\r\n{\r\n    font-style:italic;\r\n    border-bottom:1px dotted #777;\r\n    padding:10px 0 20px;\r\n}\r\n\r\n#testimonial-body p.date:last-child\r\n{\r\n    border:none;\r\n}\r\n\r\n#sitemap-body .columns\r\n{\r\n    padding-left:0;\r\n}\r\n\r\n#faq-body h1\r\n{\r\n    text-align:center;\r\n    font-size:28px;\r\n    font-weight:700;\r\n}\r\n\r\n#faq-body h2\r\n{\r\n    font-size:18px;\r\n    padding:0;\r\n    margin-bottom:10px;\r\n}\r\n\r\nbutton.complete-application {\r\n    /* background-image: url(\"..///images/buttons/button-black.png\"); */\r\n    border: medium none;\r\n    color: #FFFFFF;\r\n    font-family: Arial,Helvetica,sans-serif,\"Arial Narrow\";\r\n    font-size: 12px;\r\n    font-weight: 700;\r\n    height: 43px;\r\n    text-transform: uppercase;\r\n    width: 200px;\r\n    position: relative;\r\n    left: 50%;\r\n    margin-left: -83px;\r\n}\r\nbutton.complete-application:hover {cursor: pointer;}\r\n\r\n.fieldset-apply select {display: none;}\r\n\r\n.gender select,\r\n.marital-status select,\r\n.licence-state select {display: none;}\r\n\r\n.get-a-quote form select#title,\r\n.get-a-quote form .first-name select {\r\n    float: left;\r\n    margin-right: 5px;\r\n    width: 21.5%;\r\n}\r\n.get-a-quote form input#fnametxt,\r\n.get-a-quote form .first-name input  {\r\n    width: 36.2%;\r\n}\r\n\r\n\r\n.get-a-quote .msg {\r\n    color: #ff0000;\r\n    margin-left: 40%;\r\n    display: block;\r\n}\r\n\r\n.random-links:first-child a,\r\n.random-links:first-child {\r\n    font-size: 14px;\r\n}\r\n.random-links:first-child {\r\n    margin: 10px 0;\r\n}\r\n\r\n.random-links {\r\n    text-transform: uppercase;\r\n    margin: 10px 0;\r\n    text-align: center;\r\n    margin-bottom: 30px;\r\n}\r\n.random-links a {\r\n    margin: 0 10px;\r\n}\r\n.random-links a.amenui {\r\n    color: #279161;\r\n}\r\n.random-links a.selmenui {\r\n    /*text-decoration: underline;*/\r\n    color: #0F71B8;\r\n}\r\n.random-links a.dismenui {\r\n    cursor: text;\r\n    text-decoration: none;\r\n}\r\n.random-links a.dismenui:hover {\r\n    color: #666666;\r\n}\r\n\r\n.time-at-address div,\r\n.time-employed div {\r\n    float: right;\r\n    width: 60%;\r\n    margin-bottom: 6px;\r\n}\r\n.get-a-quote form fieldset .time-at-address div select,\r\n.get-a-quote form fieldset .time-employed div select {\r\n    float: right;\r\n    width: 58%;\r\n    margin-right: 0px;\r\n}\r\n\r\n.get-a-quote .input {text-align: left;}\r\n\r\n.get-a-quote  form fieldset .income {\r\n    height: 76px;\r\n    overflow: hidden;\r\n}\r\n.get-a-quote  form fieldset .income input {\r\n    width: 38%;\r\n}\r\n.get-a-quote  form fieldset .income select {\r\n    margin-top: 4px;\r\n    margin-left: 38%;\r\n    width: 38%;\r\n    display: block;\r\n}\r\n\r\n.get-a-quote form fieldset .full-width input {\r\n    width: 90%;\r\n}\r\n\r\nselect.hidden {display: none;}\r\n.get-a-quote form .fullColumn .input textarea {width: 96%; min-height: 100px; padding: 5px;}\r\n\r\n.get-a-quote-nav .back {float: left;}\r\n.get-a-quote-nav .next {float: right;}\r\n\r\n.get-a-quote .terms-conditions {\r\n    width: 67%;\r\n    margin: 20px 0 20px 320px;\r\n}\r\n\r\n.get-a-quote .options-wrapper .privacy-act {\r\n    height: 300px;\r\n    overflow-y: scroll;\r\n    padding-right: 24px;\r\n    font-size: 12px;\r\n}\r\n\r\n\r\n.get-a-quote .options-wrapper .fullColumn .input.income {\r\n    padding-top: 6px;\r\n}\r\n.get-a-quote .options-wrapper .fullColumn .input.income label {\r\n    width: 40%;\r\n}\r\n.get-a-quote .options-wrapper .input.income input {\r\n    width: 20%;\r\n}\r\n.get-a-quote .options-wrapper .input.income select {\r\n    width: 28%;\r\n    display: inline;\r\n    margin: 0;\r\n}\r\n\r\n.get-a-quote form .input textarea {\r\n    min-height: 60px;\r\n    padding: 5px;\r\n}\r\n\r\n.get-a-quote form select#title {\r\n    width: 21.5%;\r\n}\r\n\r\n.privacy-box {\r\n    display: none;\r\n    position: absolute;\r\n    height: 400px;\r\n    bottom: 20px;\r\n    overflow-y: scroll;\r\n    background-color: #ffffff;\r\n    z-index: 2;\r\n    width: 600px;\r\n    border: 1px solid #EBEBEB;\r\n    padding: 20px;\r\n    font-weight: normal;\r\n}\r\n\r\n.tickbox {position: relative;}\r\n.tickbox label {display: inline;}\r\n\r\n.submit-text p {margin-top: 10px; margin-bottom: 10px;}\r\n.submit-text h3 {margin-bottom: 20px;}\r\n.submit-text ul {padding-left: 16px;}\r\n\r\n.body-text ul {padding-left: 16px;}\r\n\r\n.get-a-quote form fieldset ul li .options-wrapper p.msg {color: #ff0000;}\r\n\r\na.ie8-apply-link {\r\n    /* background-image: url(\"..///images/buttons/button-black.png\"); */\r\n    border: medium none;\r\n    color: #FFFFFF;\r\n    font-family: Arial,Helvetica,sans-serif,\"Arial Narrow\";\r\n    font-size: 12px;\r\n    text-align: center;\r\n    line-height: 43px;\r\n    font-weight: 700;\r\n    height: 43px;\r\n    text-transform: uppercase;\r\n    width: 166px;\r\n    position: relative;\r\n    left: 50%;\r\n    margin-left: -83px;\r\n    display: block;\r\n}\r\n\r\nul.no-deco {\r\n    padding: 0;\r\n    list-style-type: none;\r\n}\r\n\r\n#top-logo\r\n{\r\n    width:100%;\r\n\r\n}\r\n\r\n#top-logo #div1\r\n{\r\n    float: left;\r\n    width: 50%;\r\n\r\n}\r\n\r\n#top-logo #div2\r\n{\r\n    float: left;\r\n    padding-top: 70px;\r\n    text-align: right;\r\n    width: 50%;\r\n\r\n}\r\n\r\n#top-logo #div2 .phone\r\n{\r\n    margin-top:0;\r\n    margin-bottom:20px;\r\n    font-size:23px;\r\n    font-weight:400;\r\n    color:#0c2849;\r\n}\r\n\r\n#menu-wrapper\r\n{\r\n    width:100%;\r\n}\r\n\r\n.header clear\r\n{\r\n    float:left;\r\n}\r\n\r\n.get-a-quote .accountant {display: none;}\r\n\r\n.get-a-quote form button.owned-with-mortgage {font-size: 11px;}\r\n\r\n.ui-slider-horizontal .ui-slider-handle {\r\n    cursor: pointer;\r\n\r\n}\r\n\r\n.get-a-quote form .input .lable-dollor\r\n{\r\n    width:15px;\r\n}\r\n\r\n\r\n.paddingnone {\r\n    padding-top: 0px;\r\n    padding-bottom: 0px;\r\n}\r\n\r\n.bloghr{\r\n    margin-bottom: 0px;\r\n    border-bottom: 1px gray dashed;\r\n    border-top: 0px;\r\n}\r\n\r\n.view-more{\r\n    background-color:#12335A;\r\n    color:#ffffff;\r\n    padding:5px;\r\n    font-size:12px;\r\n}\r\n\r\n.view-more:hover{\r\n    background-color:#12335A;\r\n    color:#ffffff;\r\n    padding:5px;\r\n\r\n}\r\n\r\n.clear{\r\n    clear:both;\r\n}\r\n\r\n.citylist{\r\n    float: left;\r\n    line-height: 20px;\r\n    font-size: 12px;\r\n}\r\n\r\nselect\r\n{\r\n    border:#CCCCCC 1px solid;\r\n    padding:3px;\r\n    padding-left:5px;\r\n    font-size:18px;\r\n    height:auto;\r\n    color:#999;\r\n}\r\n\r\n.vedapay{\r\n    border: 1px #CCCCCC solid;\r\n    padding: 10px;\r\n    color: #33689B;\r\n}\r\n\r\n\r\n\r\n\r\n.ui-slider .ui-slider-horizontal .ui-widget .ui-widget-content .ui-corner-all\r\n{\r\n    left: 0%;\r\n}\r\n\r\n#services table\r\n{\r\n    width:980px;padding-top:20px;\r\n}\r\n\r\n.testimonial .orbit-slide h3 {\r\n    margin-top: 50px;\r\n\tmargin-right:0px;\r\n}\r\n\r\n.testimonial p\r\n{\r\n\tmargin-top: -200px;\r\n    margin-right: 0px;\r\n    margin-left: -30px;\r\n}\r\n.testimonial h2\r\n{\r\n\tmargin-right:0px;\r\n}\r\n.testimonial-image\r\n{\r\n\tmargin-left :-25px;\r\n\tz-index:100;\r\n    margin-top: 1px;\r\n}\r\n\r\n#menu\r\n{\r\n    width: 100%;text-align:center; margin:0 auto;\r\n}\r\n\r\n.orbit-wrapper\r\n{\r\n    height:300px;\r\n}\r\n\r\n.footer-city\r\n{\r\n    margin-right: 10px;\r\n    width: 160px;\r\n}\r\n\r\n.footer-city a\r\n{\r\n    font-size: 12px;\r\n    text-decoration: underline;\r\n    width:100px;\r\n    text-align: left;\r\n}\r\n\r\n.underLine a\r\n{\r\n    font-size: 12px;\r\n    text-decoration: underline;\r\n}\r\n\r\n.cities_padding\r\n{\r\n    padding:10px;\r\n}\r\n\r\n.citylist2{\r\n    margin-right: 60px;\r\n    line-height: 13px;\r\n}\r\n.citylist3\r\n{\r\n    margin-right: 20px;\r\n    line-height: 13px;\r\n}\r\n\r\n.faq\r\n{\r\n    color: rgb(0, 0, 102);\r\n}\r\n\r\n.f20\r\n{\r\n    font-size:20px;\r\n}\r\n\r\n.f24\r\n{\r\n    font-size:24px;\r\n}\r\n\r\n.f26\r\n{\r\n    font-size:26px;\r\n}\r\n\r\n.ml25\r\n{\r\n    margin-left: 25px;\r\n}\r\n\r\n.mt30\r\n{\r\n    margin-top: 30px;\r\n}\r\n\r\n.color-red\r\n{\r\n    color:red;\r\n}\r\n\r\n.total-amount\r\n{\r\n    float: left;\r\n    margin-top: 6px;\r\n    margin-right: 5px;\r\n}\r\n\r\n.val-29\r\n{\r\n    width: 430px!important;\r\n    margin-top: -1px;\r\n    float: left;\r\n}\r\n\r\n\r\n\r\n.morebg{\r\n    cursor:pointer;\r\n    font-weight:bold;\r\n    background:#E6F0F9;\r\n    color:#3B5997;\r\n    text-align:center;\r\n\r\n}\r\n.nomore{\r\n    font-weight:bold;\r\n    background:#E6F0F9;\r\n    color:#3B5997;\r\n    text-align:center;\r\n}\r\n\r\n\r\n.blog-back\r\n{\r\n    background: none;\r\n}\r\n\r\n.blog-pad-bot\r\n{\r\n    padding-bottom: 0;\r\n}\r\n\r\n.blog-fam\r\n{\r\n    font-family: Verdana,Geneva,sans-serif;\r\n}\r\n\r\n.blog-pad-top-bot\r\n{\r\n    padding-top: 0px;\r\n    padding-bottom: 0px;\r\n}\r\n\r\n.blog-mar-bor\r\n{\r\n    margin-bottom: 0px;\r\n    border-bottom: 1px gray dashed;\r\n    border-top: 0px;\r\n}\r\n\r\n#hide-load\r\n{\r\n    -webkit-animation: hideAnimation 0s ease-in 0.2s;\r\n            animation: hideAnimation 0s ease-in 0.2s;\r\n\t-webkit-animation-fill-mode: forwards;\r\n\t        animation-fill-mode: forwards;\r\n}\r\n@-webkit-keyframes hideAnimation\r\n{\r\n    to\r\n    {\r\n        visibility: hidden;\r\n        width: 0;\r\n        height:0;\r\n        margin:0;\r\n        padding:0;\r\n        /* background-color: red; */\r\n    }\r\n}\r\n@keyframes hideAnimation\r\n{\r\n    to\r\n    {\r\n        visibility: hidden;\r\n        width: 0;\r\n        height:0;\r\n        margin:0;\r\n        padding:0;\r\n        /* background-color: red; */\r\n    }\r\n}\r\n\r\n#hidden-content\r\n{\r\n    -webkit-animation-name: hideAnimatio;\r\n            animation-name: hideAnimatio;\r\n    -webkit-animation-duration: 0s;\r\n            animation-duration: 0s;\r\n    -webkit-animation-timing-function: linear;\r\n            animation-timing-function: linear;\r\n    -webkit-animation-delay: 0.2s;\r\n            animation-delay: 0.2s;\r\n    -webkit-animation-iteration-count: 1;\r\n            animation-iteration-count: 1;\r\n    -webkit-animation-fill-mode: forwards;\r\n            animation-fill-mode: forwards;\r\n    /* transition: display 2s  ; */\r\n}\r\n@-webkit-keyframes hideAnimatio\r\n{\r\n    from{\r\n        visibility: hidden;\r\n        opacity:0;\r\n        display: none;\r\n    }\r\n    to\r\n    {\r\n        visibility: visible;\r\n        opacity:1;\r\n        height:auto;\r\n        /* width: 0;\r\n        height:0;\r\n        margin:0;\r\n        padding:0; */\r\n        /* background-color: red; */\r\n    }\r\n}\r\n@keyframes hideAnimatio\r\n{\r\n    from{\r\n        visibility: hidden;\r\n        opacity:0;\r\n        display: none;\r\n    }\r\n    to\r\n    {\r\n        visibility: visible;\r\n        opacity:1;\r\n        height:auto;\r\n        /* width: 0;\r\n        height:0;\r\n        margin:0;\r\n        padding:0; */\r\n        /* background-color: red; */\r\n    }\r\n}\r\n\r\n#hidden-content\r\n{\r\n    display: none;\r\n}\r\n\r\n#hide-load\r\n{\r\n    display: none;\r\n}\r\n\r\n.p10\r\n{\r\n    padding:10px;\r\n}\r\n\r\n\r\n/* ---------------------Styling to Yellow------------------------------ */\r\n\r\n.header #menu\r\n{\r\n    background-color:#000;\r\n}\r\n\r\n#menu ul\r\n{\r\n    list-style:none;\r\n    background-color:#000;\r\n}\r\n\r\n#footer-wrapper\r\n{\r\n    background:#000;\r\n    /* #FECF05 */\r\n}\r\n\r\n#footer-wrapper h2\r\n{\r\n    color:rgb(254, 207, 5);\r\n}\r\n\r\n#footer-bottom\r\n{\r\n    background: rgb(15, 15, 15);\r\n}\r\n\r\n.copyright\r\n{\r\n    color:#dadada;\r\n}\r\n\r\n#header-wrapper\r\n{\r\n    \r\n    border-top:10px #000 solid;\r\n    background-color: #F6F6F6;\r\n}\r\n\r\n.banner-top\r\n{\r\n    background:#FECF05;\r\n    color:#000;\r\n}\r\n\r\n.banner-top span\r\n{\r\n    color:#000;\r\n}\r\n\r\n.loan-calculatorbg\r\n{\r\n   /* background-color:#FECF05 ; */\r\n}\r\n\r\n@media only screen and(max-width:1280px)\r\n{\r\n    .flyout-toggle\r\n    {\r\n        margin-right:-36px!important;\r\n    }\r\n}\r\n\r\n#menu ul li a\r\n{\r\n    color:#fff;\r\n}\r\n\r\n#menu ul li a:hover\r\n{\r\n    color:#FECF05;\r\n}\r\n\r\n.flyout\r\n{\r\n    background: #000!important;\r\n}\r\n\r\n#menu ul li ul li a:hover\r\n{\r\n    color:#FECF05;\r\n}\r\n\r\n.blue\r\n{\r\n    color:#FECF05;\r\n}\r\n\r\n.box2-repayment\r\n{\r\n    /* background:#FECF05; */\r\n    color:#000;\r\n}\r\n.contact button\r\n{\r\n    /* There is a backgroung-image which we commented   */\r\n    background-color:#ffd728 ;\r\n    color:rgb(192, 18, 18);\r\n    /* color:#000; */\r\n    /* Changing the font size */\r\n    font-size : 14px;\r\n    /* border-radius: 10px; */\r\n}\r\n\r\n/* -------------------Changing Heading Color----------------- */\r\n\r\nh1,.body-text h2, .get-a-quote h2, .phone\r\n{\r\n    color:#000000;\r\n}\r\n\r\n\r\n\r\n.hide \r\n{\r\n    display: block;\r\n}\r\n\r\n.privacy-box\r\n{\r\n    display: block;\r\n}\r\n\r\n.privacy-box:hover\r\n{\r\n    display: flex;\r\n}\r\n\r\n.flex-col\r\n{\r\n    display: flex;\r\n    flex-direction: row;\r\n}", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[6].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[6].oneOf[1].use[2]!./resources/js/pages/form.css":
+/*!***********************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[6].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[6].oneOf[1].use[2]!./resources/js/pages/form.css ***!
+  \***********************************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, "/* --------Global CSS------ */\r\nbody{\r\n    background: none!important;\r\n}\r\n.sub-heading-text\r\n{\r\n    font-size: 16px;\r\n    font-weight: 500;\r\n    font-family: 'Abril Fatface', cursive;\r\n}\r\n\r\n.normal-text\r\n{\r\n    font-size: 16px;\r\n    font-family: \"Playfair Dispaly\";\r\n}\r\n\r\n.small-button-text\r\n{\r\n    font-size:16px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.big-button-text\r\n{\r\n    font-size:20px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.go-back\r\n{\r\n    font-family: \"Playfair Dispaly\";\r\n    font-size: 14px;\r\n}\r\n\r\n.form-container\r\n{\r\n    background-color: #e9e9e9;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\n.form-container-no-bg\r\n{\r\n    background-color: none;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\ninput[type=\"tel\"] ,input[type=\"email\"] ,input[type=\"number\"] ,input[type=\"date\"] ,input[type=\"time\"] ,textarea ,input[type=\"password\"],input[type=\"text\"]\r\n{\r\n    /* font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size);\r\n    color: var(--black); */\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 10px 12px;\r\n    border-radius: 4px;\r\n}\r\n\r\n.select\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 10px 12px;\r\n    border-radius: 4px; \r\n}\r\n\r\n.select-middle\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 4px 12px 5px 8px;\r\n    border-radius: 4px;\r\n}\r\n\r\nbutton\r\n{\r\n    /* background-color: var(--bright-blue);\r\n    font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size); */\r\n    border-radius: 4px!important;\r\n    padding: 8px 0px;\r\n    color: #ffffff;\r\n    border: none;\r\n    outline: none;\r\n    background-color: #c3c2c8;\r\n}\r\n\r\n/* button:active\r\n{\r\n    background-color:#4D4ACF;\r\n} */\r\n\r\nbutton:focus\r\n{\r\n    background-color:#4D4ACF;\r\n}\r\n\r\n.bg-dark\r\n{\r\n    background-color: black;\r\n}\r\n\r\n.bg-blue\r\n{\r\n    background-color: #4D4ACF;\r\n}\r\n\r\n.per-text\r\n{\r\n    margin-right: 20px;\r\n}\r\n\r\n.allow-text\r\n{\r\n    text-align: justify;\r\n    vertical-align: middle;\r\n    padding:auto;\r\n    align-items: center;\r\n    /* margin-left: -10px; */\r\n}\r\n\r\ninput[type=\"checkbox\"] {\r\n\t/* -webkit-appearance: none; */\r\n\tborder: 2px solid grey;\r\n\tpadding: 7px;\r\n\tborder-radius: 6px;\r\n\tdisplay: inline-block;\r\n    position: relative;\r\n    vertical-align:middle;\r\n    margin-left: 6px;\r\n    height:18px;\r\n   \r\n}\r\n\r\n/* -------Width-------- */\r\n\r\n.w2\r\n{\r\n    width:2.3333%!important;\r\n}\r\n\r\n.w50\r\n{\r\n    width:50%!important;\r\n}\r\n\r\n.w62\r\n{\r\n    width:62%!important;\r\n}\r\n\r\n.w60\r\n{\r\n    width:60%!important;\r\n}\r\n\r\n.w75\r\n{\r\n    width:75%;\r\n}\r\n\r\n.w30\r\n{\r\n    width:30%;\r\n}\r\n\r\n.w100\r\n{\r\n    width:100%;\r\n}\r\n\r\n.w99\r\n{\r\n    width:99%;\r\n}\r\n\r\n.w19\r\n{\r\n    width:19.666667%!important;\r\n}\r\n\r\n.w25\r\n{\r\n    width:25.666667%!important;\r\n}\r\n\r\n.w10\r\n{\r\n    width:10.666667%!important;\r\n}\r\n\r\n.w34\r\n{\r\n    width:34.666667%!important;\r\n}\r\n\r\n.w48\r\n{\r\n    width:48%!important;\r\n    max-width:48%!important;\r\n}\r\n\r\n/* -------Height-------- */\r\n\r\n.h100\r\n{\r\n    height:100vh;\r\n}\r\n.h52\r\n{\r\n    height:52px!important;\r\n}\r\n\r\n.h15\r\n{\r\n    height:15px;\r\n}\r\n\r\n/* -------Margin-------- */\r\n\r\n.mt15\r\n{\r\n    margin-top: 15px!important;\r\n}\r\n\r\n.-mt3\r\n{\r\n    margin-top: -3px;\r\n}\r\n\r\n.mt25\r\n{\r\n    margin-top: 25px!important;\r\n}\r\n\r\n.mt10\r\n{\r\n    margin-top: 10px!important;\r\n}\r\n\r\n.mt20\r\n{\r\n    margin-top: 20px!important;\r\n}\r\n\r\n.mt150\r\n{\r\n    margin-top: 150px;\r\n}\r\n\r\n.mt100\r\n{\r\n    margin-top: 100px;\r\n}\r\n\r\n.mt4\r\n{\r\n    margin-top: 4px;\r\n}\r\n\r\n.-ml3\r\n{\r\n    margin-left: -3px;\r\n}\r\n\r\n.-ml10\r\n{\r\n    margin-left: -10px;\r\n}\r\n\r\n.ml100\r\n{\r\n    margin-left:100px!important;\r\n}\r\n\r\n.ml62\r\n{\r\n    margin-left:62px!important;\r\n}\r\n\r\n.mb20\r\n{\r\n    margin-bottom: 20px;\r\n}\r\n\r\n.mr30\r\n{\r\n    margin-right:30px;\r\n}\r\n\r\n/* -------Padding-------- */\r\n\r\n.pt10\r\n{\r\n    padding-top: 10px;\r\n}\r\n\r\n.pl85\r\n{\r\n    padding-left: 85px;\r\n}\r\n\r\n.pl0\r\n{\r\n    padding-left: 0px!important;\r\n}\r\n\r\n.pr0\r\n{\r\n    padding-right: 0px!important;\r\n}\r\n\r\n.pl35\r\n{\r\n    padding-left: 35%!important;\r\n}\r\n\r\n.pl25\r\n{\r\n    padding-left: 25%!important;\r\n}\r\n\r\n.pl22\r\n{\r\n    padding-left: 22%!important;\r\n}\r\n\r\n.pl29p5\r\n{\r\n    padding-left: 29.5%!important;\r\n}\r\n\r\n.pl40p5\r\n{\r\n    padding-left: 40.5%!important;\r\n}\r\n\r\n.center {\r\n    display: flex;\r\n    justify-content: center;\r\n    align-items: center; \r\n}\r\n\r\n.dn\r\n{\r\n    display: none;\r\n}\r\n\r\n.o0\r\n{\r\n    opacity: 0;\r\n}\r\n\r\n.out\r\n{\r\n    outline: red;\r\n}\r\n\r\n/* -------Colors-------- */\r\n\r\n.color-white\r\n{\r\n    color: white !important;\r\n}\r\n\r\n.color-red\r\n{\r\n    color: red !important;\r\n}\r\n\r\n.color-black\r\n{\r\n    color:black !important;\r\n}\r\n\r\n.car-loan-calculator-title\r\n{\r\n    letter-spacing: 0px;\r\n}\r\n/* -----------------Changing the errors-------------------- */\r\n\r\n.row {\r\n    margin-right: 0px!important;\r\n    margin-left: 0px!important;\r\n}\r\n\r\n.mxw11\r\n{\r\n    max-width: 11.666667%!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider-horizontal {\r\n    border: 1px solid #bdcede;\r\n    height: 0;\r\n    margin: 6px 0px;\r\n}\r\n\r\n#car-loan-cal .ui-state-default {\r\n    background-image: url(/images/car-icon.png);\r\n    left: 5%;\r\n    top: -25px;\r\n    width: 33px!important;\r\n    height: 24px!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider {\r\n    position: relative;\r\n    text-align: left;\r\n    left: 0px;\r\n    top: 17px;\r\n}\r\n\r\n.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {\r\n    background-color:none!important;\r\n}\r\n\r\n.loan-calculatorbg {\r\n    background-image:none!important;\r\n    border:1px solid #C4C4C4!important;\r\n    border-radius:1px;\r\n    padding-top: 15px;\r\n}\r\n\r\n.btn:hover\r\n{\r\n    color:white!important;\r\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -8375,6 +15255,200 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 /***/ }),
 
+/***/ "./node_modules/process/browser.js":
+/*!*****************************************!*\
+  !*** ./node_modules/process/browser.js ***!
+  \*****************************************/
+/***/ ((module) => {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+
 /***/ "./node_modules/prop-types/checkPropTypes.js":
 /*!***************************************************!*\
   !*** ./node_modules/prop-types/checkPropTypes.js ***!
@@ -9135,6 +16209,229 @@ var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
 
 module.exports = ReactPropTypesSecret;
 
+
+/***/ }),
+
+/***/ "./node_modules/react-bootstrap/esm/Col.js":
+/*!*************************************************!*\
+  !*** ./node_modules/react-bootstrap/esm/Col.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "useCol": () => (/* binding */ useCol),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! classnames */ "./node_modules/classnames/index.js");
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var _ThemeProvider__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ThemeProvider */ "./node_modules/react-bootstrap/esm/ThemeProvider.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+
+
+const DEVICE_SIZES = ['xxl', 'xl', 'lg', 'md', 'sm', 'xs'];
+function useCol({
+  as,
+  bsPrefix,
+  className,
+  ...props
+}) {
+  bsPrefix = (0,_ThemeProvider__WEBPACK_IMPORTED_MODULE_3__.useBootstrapPrefix)(bsPrefix, 'col');
+  const spans = [];
+  const classes = [];
+  DEVICE_SIZES.forEach(brkPoint => {
+    const propValue = props[brkPoint];
+    delete props[brkPoint];
+    let span;
+    let offset;
+    let order;
+
+    if (typeof propValue === 'object' && propValue != null) {
+      ({
+        span,
+        offset,
+        order
+      } = propValue);
+    } else {
+      span = propValue;
+    }
+
+    const infix = brkPoint !== 'xs' ? `-${brkPoint}` : '';
+    if (span) spans.push(span === true ? `${bsPrefix}${infix}` : `${bsPrefix}${infix}-${span}`);
+    if (order != null) classes.push(`order${infix}-${order}`);
+    if (offset != null) classes.push(`offset${infix}-${offset}`);
+  });
+  return [{ ...props,
+    className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(className, ...spans, ...classes)
+  }, {
+    as,
+    bsPrefix,
+    spans
+  }];
+}
+const Col = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1__.forwardRef( // Need to define the default "as" during prop destructuring to be compatible with styled-components github.com/react-bootstrap/react-bootstrap/issues/3595
+(props, ref) => {
+  const [{
+    className,
+    ...colProps
+  }, {
+    as: Component = 'div',
+    bsPrefix,
+    spans
+  }] = useCol(props);
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(Component, { ...colProps,
+    ref: ref,
+    className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(className, !spans.length && bsPrefix)
+  });
+});
+Col.displayName = 'Col';
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Col);
+
+/***/ }),
+
+/***/ "./node_modules/react-bootstrap/esm/Row.js":
+/*!*************************************************!*\
+  !*** ./node_modules/react-bootstrap/esm/Row.js ***!
+  \*************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! classnames */ "./node_modules/classnames/index.js");
+/* harmony import */ var classnames__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(classnames__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var _ThemeProvider__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ThemeProvider */ "./node_modules/react-bootstrap/esm/ThemeProvider.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+
+
+const DEVICE_SIZES = ['xxl', 'xl', 'lg', 'md', 'sm', 'xs'];
+const Row = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1__.forwardRef(({
+  bsPrefix,
+  className,
+  // Need to define the default "as" during prop destructuring to be compatible with styled-components github.com/react-bootstrap/react-bootstrap/issues/3595
+  as: Component = 'div',
+  ...props
+}, ref) => {
+  const decoratedBsPrefix = (0,_ThemeProvider__WEBPACK_IMPORTED_MODULE_3__.useBootstrapPrefix)(bsPrefix, 'row');
+  const sizePrefix = `${decoratedBsPrefix}-cols`;
+  const classes = [];
+  DEVICE_SIZES.forEach(brkPoint => {
+    const propValue = props[brkPoint];
+    delete props[brkPoint];
+    let cols;
+
+    if (propValue != null && typeof propValue === 'object') {
+      ({
+        cols
+      } = propValue);
+    } else {
+      cols = propValue;
+    }
+
+    const infix = brkPoint !== 'xs' ? `-${brkPoint}` : '';
+    if (cols != null) classes.push(`${sizePrefix}${infix}-${cols}`);
+  });
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(Component, {
+    ref: ref,
+    ...props,
+    className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(className, decoratedBsPrefix, ...classes)
+  });
+});
+Row.displayName = 'Row';
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Row);
+
+/***/ }),
+
+/***/ "./node_modules/react-bootstrap/esm/ThemeProvider.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/react-bootstrap/esm/ThemeProvider.js ***!
+  \***********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "useBootstrapPrefix": () => (/* binding */ useBootstrapPrefix),
+/* harmony export */   "useIsRTL": () => (/* binding */ useIsRTL),
+/* harmony export */   "createBootstrapComponent": () => (/* binding */ createBootstrapComponent),
+/* harmony export */   "ThemeConsumer": () => (/* binding */ Consumer),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+
+
+
+const ThemeContext = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createContext({
+  prefixes: {}
+});
+const {
+  Consumer,
+  Provider
+} = ThemeContext;
+
+function ThemeProvider({
+  prefixes = {},
+  dir,
+  children
+}) {
+  const contextValue = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => ({
+    prefixes: { ...prefixes
+    },
+    dir
+  }), [prefixes, dir]);
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(Provider, {
+    value: contextValue,
+    children: children
+  });
+}
+
+function useBootstrapPrefix(prefix, defaultPrefix) {
+  const {
+    prefixes
+  } = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(ThemeContext);
+  return prefix || prefixes[defaultPrefix] || defaultPrefix;
+}
+function useIsRTL() {
+  const {
+    dir
+  } = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(ThemeContext);
+  return dir === 'rtl';
+}
+
+function createBootstrapComponent(Component, opts) {
+  if (typeof opts === 'string') opts = {
+    prefix: opts
+  };
+  const isClassy = Component.prototype && Component.prototype.isReactComponent; // If it's a functional component make sure we don't break it with a ref
+
+  const {
+    prefix,
+    forwardRefAs = isClassy ? 'ref' : 'innerRef'
+  } = opts;
+  const Wrapped = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.forwardRef(({ ...props
+  }, ref) => {
+    props[forwardRefAs] = ref;
+    const bsPrefix = useBootstrapPrefix(props.bsPrefix, prefix);
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(Component, { ...props,
+      bsPrefix: bsPrefix
+    });
+  });
+  Wrapped.displayName = `Bootstrap(${Component.displayName || Component.name})`;
+  return Wrapped;
+}
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ThemeProvider);
 
 /***/ }),
 
@@ -40871,6 +48168,770 @@ if (false) {} else {
 
 /***/ }),
 
+/***/ "./node_modules/regenerator-runtime/runtime.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/regenerator-runtime/runtime.js ***!
+  \*****************************************************/
+/***/ ((module) => {
+
+/**
+ * Copyright (c) 2014-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+var runtime = (function (exports) {
+  "use strict";
+
+  var Op = Object.prototype;
+  var hasOwn = Op.hasOwnProperty;
+  var undefined; // More compressible than void 0.
+  var $Symbol = typeof Symbol === "function" ? Symbol : {};
+  var iteratorSymbol = $Symbol.iterator || "@@iterator";
+  var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
+  var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
+
+  function define(obj, key, value) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+    return obj[key];
+  }
+  try {
+    // IE 8 has a broken Object.defineProperty that only works on DOM objects.
+    define({}, "");
+  } catch (err) {
+    define = function(obj, key, value) {
+      return obj[key] = value;
+    };
+  }
+
+  function wrap(innerFn, outerFn, self, tryLocsList) {
+    // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
+    var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator;
+    var generator = Object.create(protoGenerator.prototype);
+    var context = new Context(tryLocsList || []);
+
+    // The ._invoke method unifies the implementations of the .next,
+    // .throw, and .return methods.
+    generator._invoke = makeInvokeMethod(innerFn, self, context);
+
+    return generator;
+  }
+  exports.wrap = wrap;
+
+  // Try/catch helper to minimize deoptimizations. Returns a completion
+  // record like context.tryEntries[i].completion. This interface could
+  // have been (and was previously) designed to take a closure to be
+  // invoked without arguments, but in all the cases we care about we
+  // already have an existing method we want to call, so there's no need
+  // to create a new function object. We can even get away with assuming
+  // the method takes exactly one argument, since that happens to be true
+  // in every case, so we don't have to touch the arguments object. The
+  // only additional allocation required is the completion record, which
+  // has a stable shape and so hopefully should be cheap to allocate.
+  function tryCatch(fn, obj, arg) {
+    try {
+      return { type: "normal", arg: fn.call(obj, arg) };
+    } catch (err) {
+      return { type: "throw", arg: err };
+    }
+  }
+
+  var GenStateSuspendedStart = "suspendedStart";
+  var GenStateSuspendedYield = "suspendedYield";
+  var GenStateExecuting = "executing";
+  var GenStateCompleted = "completed";
+
+  // Returning this object from the innerFn has the same effect as
+  // breaking out of the dispatch switch statement.
+  var ContinueSentinel = {};
+
+  // Dummy constructor functions that we use as the .constructor and
+  // .constructor.prototype properties for functions that return Generator
+  // objects. For full spec compliance, you may wish to configure your
+  // minifier not to mangle the names of these two functions.
+  function Generator() {}
+  function GeneratorFunction() {}
+  function GeneratorFunctionPrototype() {}
+
+  // This is a polyfill for %IteratorPrototype% for environments that
+  // don't natively support it.
+  var IteratorPrototype = {};
+  define(IteratorPrototype, iteratorSymbol, function () {
+    return this;
+  });
+
+  var getProto = Object.getPrototypeOf;
+  var NativeIteratorPrototype = getProto && getProto(getProto(values([])));
+  if (NativeIteratorPrototype &&
+      NativeIteratorPrototype !== Op &&
+      hasOwn.call(NativeIteratorPrototype, iteratorSymbol)) {
+    // This environment has a native %IteratorPrototype%; use it instead
+    // of the polyfill.
+    IteratorPrototype = NativeIteratorPrototype;
+  }
+
+  var Gp = GeneratorFunctionPrototype.prototype =
+    Generator.prototype = Object.create(IteratorPrototype);
+  GeneratorFunction.prototype = GeneratorFunctionPrototype;
+  define(Gp, "constructor", GeneratorFunctionPrototype);
+  define(GeneratorFunctionPrototype, "constructor", GeneratorFunction);
+  GeneratorFunction.displayName = define(
+    GeneratorFunctionPrototype,
+    toStringTagSymbol,
+    "GeneratorFunction"
+  );
+
+  // Helper for defining the .next, .throw, and .return methods of the
+  // Iterator interface in terms of a single ._invoke method.
+  function defineIteratorMethods(prototype) {
+    ["next", "throw", "return"].forEach(function(method) {
+      define(prototype, method, function(arg) {
+        return this._invoke(method, arg);
+      });
+    });
+  }
+
+  exports.isGeneratorFunction = function(genFun) {
+    var ctor = typeof genFun === "function" && genFun.constructor;
+    return ctor
+      ? ctor === GeneratorFunction ||
+        // For the native GeneratorFunction constructor, the best we can
+        // do is to check its .name property.
+        (ctor.displayName || ctor.name) === "GeneratorFunction"
+      : false;
+  };
+
+  exports.mark = function(genFun) {
+    if (Object.setPrototypeOf) {
+      Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
+    } else {
+      genFun.__proto__ = GeneratorFunctionPrototype;
+      define(genFun, toStringTagSymbol, "GeneratorFunction");
+    }
+    genFun.prototype = Object.create(Gp);
+    return genFun;
+  };
+
+  // Within the body of any async function, `await x` is transformed to
+  // `yield regeneratorRuntime.awrap(x)`, so that the runtime can test
+  // `hasOwn.call(value, "__await")` to determine if the yielded value is
+  // meant to be awaited.
+  exports.awrap = function(arg) {
+    return { __await: arg };
+  };
+
+  function AsyncIterator(generator, PromiseImpl) {
+    function invoke(method, arg, resolve, reject) {
+      var record = tryCatch(generator[method], generator, arg);
+      if (record.type === "throw") {
+        reject(record.arg);
+      } else {
+        var result = record.arg;
+        var value = result.value;
+        if (value &&
+            typeof value === "object" &&
+            hasOwn.call(value, "__await")) {
+          return PromiseImpl.resolve(value.__await).then(function(value) {
+            invoke("next", value, resolve, reject);
+          }, function(err) {
+            invoke("throw", err, resolve, reject);
+          });
+        }
+
+        return PromiseImpl.resolve(value).then(function(unwrapped) {
+          // When a yielded Promise is resolved, its final value becomes
+          // the .value of the Promise<{value,done}> result for the
+          // current iteration.
+          result.value = unwrapped;
+          resolve(result);
+        }, function(error) {
+          // If a rejected Promise was yielded, throw the rejection back
+          // into the async generator function so it can be handled there.
+          return invoke("throw", error, resolve, reject);
+        });
+      }
+    }
+
+    var previousPromise;
+
+    function enqueue(method, arg) {
+      function callInvokeWithMethodAndArg() {
+        return new PromiseImpl(function(resolve, reject) {
+          invoke(method, arg, resolve, reject);
+        });
+      }
+
+      return previousPromise =
+        // If enqueue has been called before, then we want to wait until
+        // all previous Promises have been resolved before calling invoke,
+        // so that results are always delivered in the correct order. If
+        // enqueue has not been called before, then it is important to
+        // call invoke immediately, without waiting on a callback to fire,
+        // so that the async generator function has the opportunity to do
+        // any necessary setup in a predictable way. This predictability
+        // is why the Promise constructor synchronously invokes its
+        // executor callback, and why async functions synchronously
+        // execute code before the first await. Since we implement simple
+        // async functions in terms of async generators, it is especially
+        // important to get this right, even though it requires care.
+        previousPromise ? previousPromise.then(
+          callInvokeWithMethodAndArg,
+          // Avoid propagating failures to Promises returned by later
+          // invocations of the iterator.
+          callInvokeWithMethodAndArg
+        ) : callInvokeWithMethodAndArg();
+    }
+
+    // Define the unified helper method that is used to implement .next,
+    // .throw, and .return (see defineIteratorMethods).
+    this._invoke = enqueue;
+  }
+
+  defineIteratorMethods(AsyncIterator.prototype);
+  define(AsyncIterator.prototype, asyncIteratorSymbol, function () {
+    return this;
+  });
+  exports.AsyncIterator = AsyncIterator;
+
+  // Note that simple async functions are implemented on top of
+  // AsyncIterator objects; they just return a Promise for the value of
+  // the final result produced by the iterator.
+  exports.async = function(innerFn, outerFn, self, tryLocsList, PromiseImpl) {
+    if (PromiseImpl === void 0) PromiseImpl = Promise;
+
+    var iter = new AsyncIterator(
+      wrap(innerFn, outerFn, self, tryLocsList),
+      PromiseImpl
+    );
+
+    return exports.isGeneratorFunction(outerFn)
+      ? iter // If outerFn is a generator, return the full iterator.
+      : iter.next().then(function(result) {
+          return result.done ? result.value : iter.next();
+        });
+  };
+
+  function makeInvokeMethod(innerFn, self, context) {
+    var state = GenStateSuspendedStart;
+
+    return function invoke(method, arg) {
+      if (state === GenStateExecuting) {
+        throw new Error("Generator is already running");
+      }
+
+      if (state === GenStateCompleted) {
+        if (method === "throw") {
+          throw arg;
+        }
+
+        // Be forgiving, per 25.3.3.3.3 of the spec:
+        // https://people.mozilla.org/~jorendorff/es6-draft.html#sec-generatorresume
+        return doneResult();
+      }
+
+      context.method = method;
+      context.arg = arg;
+
+      while (true) {
+        var delegate = context.delegate;
+        if (delegate) {
+          var delegateResult = maybeInvokeDelegate(delegate, context);
+          if (delegateResult) {
+            if (delegateResult === ContinueSentinel) continue;
+            return delegateResult;
+          }
+        }
+
+        if (context.method === "next") {
+          // Setting context._sent for legacy support of Babel's
+          // function.sent implementation.
+          context.sent = context._sent = context.arg;
+
+        } else if (context.method === "throw") {
+          if (state === GenStateSuspendedStart) {
+            state = GenStateCompleted;
+            throw context.arg;
+          }
+
+          context.dispatchException(context.arg);
+
+        } else if (context.method === "return") {
+          context.abrupt("return", context.arg);
+        }
+
+        state = GenStateExecuting;
+
+        var record = tryCatch(innerFn, self, context);
+        if (record.type === "normal") {
+          // If an exception is thrown from innerFn, we leave state ===
+          // GenStateExecuting and loop back for another invocation.
+          state = context.done
+            ? GenStateCompleted
+            : GenStateSuspendedYield;
+
+          if (record.arg === ContinueSentinel) {
+            continue;
+          }
+
+          return {
+            value: record.arg,
+            done: context.done
+          };
+
+        } else if (record.type === "throw") {
+          state = GenStateCompleted;
+          // Dispatch the exception by looping back around to the
+          // context.dispatchException(context.arg) call above.
+          context.method = "throw";
+          context.arg = record.arg;
+        }
+      }
+    };
+  }
+
+  // Call delegate.iterator[context.method](context.arg) and handle the
+  // result, either by returning a { value, done } result from the
+  // delegate iterator, or by modifying context.method and context.arg,
+  // setting context.delegate to null, and returning the ContinueSentinel.
+  function maybeInvokeDelegate(delegate, context) {
+    var method = delegate.iterator[context.method];
+    if (method === undefined) {
+      // A .throw or .return when the delegate iterator has no .throw
+      // method always terminates the yield* loop.
+      context.delegate = null;
+
+      if (context.method === "throw") {
+        // Note: ["return"] must be used for ES3 parsing compatibility.
+        if (delegate.iterator["return"]) {
+          // If the delegate iterator has a return method, give it a
+          // chance to clean up.
+          context.method = "return";
+          context.arg = undefined;
+          maybeInvokeDelegate(delegate, context);
+
+          if (context.method === "throw") {
+            // If maybeInvokeDelegate(context) changed context.method from
+            // "return" to "throw", let that override the TypeError below.
+            return ContinueSentinel;
+          }
+        }
+
+        context.method = "throw";
+        context.arg = new TypeError(
+          "The iterator does not provide a 'throw' method");
+      }
+
+      return ContinueSentinel;
+    }
+
+    var record = tryCatch(method, delegate.iterator, context.arg);
+
+    if (record.type === "throw") {
+      context.method = "throw";
+      context.arg = record.arg;
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    var info = record.arg;
+
+    if (! info) {
+      context.method = "throw";
+      context.arg = new TypeError("iterator result is not an object");
+      context.delegate = null;
+      return ContinueSentinel;
+    }
+
+    if (info.done) {
+      // Assign the result of the finished delegate to the temporary
+      // variable specified by delegate.resultName (see delegateYield).
+      context[delegate.resultName] = info.value;
+
+      // Resume execution at the desired location (see delegateYield).
+      context.next = delegate.nextLoc;
+
+      // If context.method was "throw" but the delegate handled the
+      // exception, let the outer generator proceed normally. If
+      // context.method was "next", forget context.arg since it has been
+      // "consumed" by the delegate iterator. If context.method was
+      // "return", allow the original .return call to continue in the
+      // outer generator.
+      if (context.method !== "return") {
+        context.method = "next";
+        context.arg = undefined;
+      }
+
+    } else {
+      // Re-yield the result returned by the delegate method.
+      return info;
+    }
+
+    // The delegate iterator is finished, so forget it and continue with
+    // the outer generator.
+    context.delegate = null;
+    return ContinueSentinel;
+  }
+
+  // Define Generator.prototype.{next,throw,return} in terms of the
+  // unified ._invoke helper method.
+  defineIteratorMethods(Gp);
+
+  define(Gp, toStringTagSymbol, "Generator");
+
+  // A Generator should always return itself as the iterator object when the
+  // @@iterator function is called on it. Some browsers' implementations of the
+  // iterator prototype chain incorrectly implement this, causing the Generator
+  // object to not be returned from this call. This ensures that doesn't happen.
+  // See https://github.com/facebook/regenerator/issues/274 for more details.
+  define(Gp, iteratorSymbol, function() {
+    return this;
+  });
+
+  define(Gp, "toString", function() {
+    return "[object Generator]";
+  });
+
+  function pushTryEntry(locs) {
+    var entry = { tryLoc: locs[0] };
+
+    if (1 in locs) {
+      entry.catchLoc = locs[1];
+    }
+
+    if (2 in locs) {
+      entry.finallyLoc = locs[2];
+      entry.afterLoc = locs[3];
+    }
+
+    this.tryEntries.push(entry);
+  }
+
+  function resetTryEntry(entry) {
+    var record = entry.completion || {};
+    record.type = "normal";
+    delete record.arg;
+    entry.completion = record;
+  }
+
+  function Context(tryLocsList) {
+    // The root entry object (effectively a try statement without a catch
+    // or a finally block) gives us a place to store values thrown from
+    // locations where there is no enclosing try statement.
+    this.tryEntries = [{ tryLoc: "root" }];
+    tryLocsList.forEach(pushTryEntry, this);
+    this.reset(true);
+  }
+
+  exports.keys = function(object) {
+    var keys = [];
+    for (var key in object) {
+      keys.push(key);
+    }
+    keys.reverse();
+
+    // Rather than returning an object with a next method, we keep
+    // things simple and return the next function itself.
+    return function next() {
+      while (keys.length) {
+        var key = keys.pop();
+        if (key in object) {
+          next.value = key;
+          next.done = false;
+          return next;
+        }
+      }
+
+      // To avoid creating an additional object, we just hang the .value
+      // and .done properties off the next function object itself. This
+      // also ensures that the minifier will not anonymize the function.
+      next.done = true;
+      return next;
+    };
+  };
+
+  function values(iterable) {
+    if (iterable) {
+      var iteratorMethod = iterable[iteratorSymbol];
+      if (iteratorMethod) {
+        return iteratorMethod.call(iterable);
+      }
+
+      if (typeof iterable.next === "function") {
+        return iterable;
+      }
+
+      if (!isNaN(iterable.length)) {
+        var i = -1, next = function next() {
+          while (++i < iterable.length) {
+            if (hasOwn.call(iterable, i)) {
+              next.value = iterable[i];
+              next.done = false;
+              return next;
+            }
+          }
+
+          next.value = undefined;
+          next.done = true;
+
+          return next;
+        };
+
+        return next.next = next;
+      }
+    }
+
+    // Return an iterator with no values.
+    return { next: doneResult };
+  }
+  exports.values = values;
+
+  function doneResult() {
+    return { value: undefined, done: true };
+  }
+
+  Context.prototype = {
+    constructor: Context,
+
+    reset: function(skipTempReset) {
+      this.prev = 0;
+      this.next = 0;
+      // Resetting context._sent for legacy support of Babel's
+      // function.sent implementation.
+      this.sent = this._sent = undefined;
+      this.done = false;
+      this.delegate = null;
+
+      this.method = "next";
+      this.arg = undefined;
+
+      this.tryEntries.forEach(resetTryEntry);
+
+      if (!skipTempReset) {
+        for (var name in this) {
+          // Not sure about the optimal order of these conditions:
+          if (name.charAt(0) === "t" &&
+              hasOwn.call(this, name) &&
+              !isNaN(+name.slice(1))) {
+            this[name] = undefined;
+          }
+        }
+      }
+    },
+
+    stop: function() {
+      this.done = true;
+
+      var rootEntry = this.tryEntries[0];
+      var rootRecord = rootEntry.completion;
+      if (rootRecord.type === "throw") {
+        throw rootRecord.arg;
+      }
+
+      return this.rval;
+    },
+
+    dispatchException: function(exception) {
+      if (this.done) {
+        throw exception;
+      }
+
+      var context = this;
+      function handle(loc, caught) {
+        record.type = "throw";
+        record.arg = exception;
+        context.next = loc;
+
+        if (caught) {
+          // If the dispatched exception was caught by a catch block,
+          // then let that catch block handle the exception normally.
+          context.method = "next";
+          context.arg = undefined;
+        }
+
+        return !! caught;
+      }
+
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        var record = entry.completion;
+
+        if (entry.tryLoc === "root") {
+          // Exception thrown outside of any try block that could handle
+          // it, so set the completion value of the entire function to
+          // throw the exception.
+          return handle("end");
+        }
+
+        if (entry.tryLoc <= this.prev) {
+          var hasCatch = hasOwn.call(entry, "catchLoc");
+          var hasFinally = hasOwn.call(entry, "finallyLoc");
+
+          if (hasCatch && hasFinally) {
+            if (this.prev < entry.catchLoc) {
+              return handle(entry.catchLoc, true);
+            } else if (this.prev < entry.finallyLoc) {
+              return handle(entry.finallyLoc);
+            }
+
+          } else if (hasCatch) {
+            if (this.prev < entry.catchLoc) {
+              return handle(entry.catchLoc, true);
+            }
+
+          } else if (hasFinally) {
+            if (this.prev < entry.finallyLoc) {
+              return handle(entry.finallyLoc);
+            }
+
+          } else {
+            throw new Error("try statement without catch or finally");
+          }
+        }
+      }
+    },
+
+    abrupt: function(type, arg) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc <= this.prev &&
+            hasOwn.call(entry, "finallyLoc") &&
+            this.prev < entry.finallyLoc) {
+          var finallyEntry = entry;
+          break;
+        }
+      }
+
+      if (finallyEntry &&
+          (type === "break" ||
+           type === "continue") &&
+          finallyEntry.tryLoc <= arg &&
+          arg <= finallyEntry.finallyLoc) {
+        // Ignore the finally entry if control is not jumping to a
+        // location outside the try/catch block.
+        finallyEntry = null;
+      }
+
+      var record = finallyEntry ? finallyEntry.completion : {};
+      record.type = type;
+      record.arg = arg;
+
+      if (finallyEntry) {
+        this.method = "next";
+        this.next = finallyEntry.finallyLoc;
+        return ContinueSentinel;
+      }
+
+      return this.complete(record);
+    },
+
+    complete: function(record, afterLoc) {
+      if (record.type === "throw") {
+        throw record.arg;
+      }
+
+      if (record.type === "break" ||
+          record.type === "continue") {
+        this.next = record.arg;
+      } else if (record.type === "return") {
+        this.rval = this.arg = record.arg;
+        this.method = "return";
+        this.next = "end";
+      } else if (record.type === "normal" && afterLoc) {
+        this.next = afterLoc;
+      }
+
+      return ContinueSentinel;
+    },
+
+    finish: function(finallyLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.finallyLoc === finallyLoc) {
+          this.complete(entry.completion, entry.afterLoc);
+          resetTryEntry(entry);
+          return ContinueSentinel;
+        }
+      }
+    },
+
+    "catch": function(tryLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc === tryLoc) {
+          var record = entry.completion;
+          if (record.type === "throw") {
+            var thrown = record.arg;
+            resetTryEntry(entry);
+          }
+          return thrown;
+        }
+      }
+
+      // The context.catch method must only be called with a location
+      // argument that corresponds to a known catch block.
+      throw new Error("illegal catch attempt");
+    },
+
+    delegateYield: function(iterable, resultName, nextLoc) {
+      this.delegate = {
+        iterator: values(iterable),
+        resultName: resultName,
+        nextLoc: nextLoc
+      };
+
+      if (this.method === "next") {
+        // Deliberately forget the last sent value so that we don't
+        // accidentally pass it on to the delegate.
+        this.arg = undefined;
+      }
+
+      return ContinueSentinel;
+    }
+  };
+
+  // Regardless of whether this script is executing as a CommonJS module
+  // or not, return the runtime object so that we can declare the variable
+  // regeneratorRuntime in the outer scope, which allows this module to be
+  // injected easily by `bin/regenerator --include-runtime script.js`.
+  return exports;
+
+}(
+  // If this script is executing as a CommonJS module, use module.exports
+  // as the regeneratorRuntime namespace. Otherwise create a new empty
+  // object. Either way, the resulting object will be used to initialize
+  // the regeneratorRuntime variable at the top of this file.
+   true ? module.exports : 0
+));
+
+try {
+  regeneratorRuntime = runtime;
+} catch (accidentalStrictMode) {
+  // This module should not be running in strict mode, so the above
+  // assignment should always work unless something is misconfigured. Just
+  // in case runtime.js accidentally runs in strict mode, in modern engines
+  // we can explicitly access globalThis. In older engines we can escape
+  // strict mode using a global Function call. This could conceivably fail
+  // if a Content Security Policy forbids using Function, but in that case
+  // the proper solution is to fix the accidental strict mode problem. If
+  // you've misconfigured your bundler to force strict mode and applied a
+  // CSP to forbid Function, and you're not willing to fix either of those
+  // problems, please detail your unique predicament in a GitHub issue.
+  if (typeof globalThis === "object") {
+    globalThis.regeneratorRuntime = runtime;
+  } else {
+    Function("r", "regeneratorRuntime = r")(runtime);
+  }
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/resolve-pathname/esm/resolve-pathname.js":
 /*!***************************************************************!*\
   !*** ./node_modules/resolve-pathname/esm/resolve-pathname.js ***!
@@ -42038,6 +50099,36 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 
 /***/ }),
 
+/***/ "./resources/js/pages/form.css":
+/*!*************************************!*\
+  !*** ./resources/js/pages/form.css ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_6_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_6_oneOf_1_use_2_form_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[6].oneOf[1].use[1]!../../../node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[6].oneOf[1].use[2]!./form.css */ "./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[6].oneOf[1].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[6].oneOf[1].use[2]!./resources/js/pages/form.css");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_6_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_6_oneOf_1_use_2_form_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_ruleSet_1_rules_6_oneOf_1_use_1_node_modules_postcss_loader_dist_cjs_js_ruleSet_1_rules_6_oneOf_1_use_2_form_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ }),
+
 /***/ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
 /*!****************************************************************************!*\
   !*** ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
@@ -42530,6 +50621,17 @@ function _setPrototypeOf(o, p) {
 
   return _setPrototypeOf(o, p);
 }
+
+/***/ }),
+
+/***/ "./node_modules/axios/package.json":
+/*!*****************************************!*\
+  !*** ./node_modules/axios/package.json ***!
+  \*****************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = JSON.parse('{"name":"axios","version":"0.21.4","description":"Promise based HTTP client for the browser and node.js","main":"index.js","scripts":{"test":"grunt test","start":"node ./sandbox/server.js","build":"NODE_ENV=production grunt build","preversion":"npm test","version":"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json","postversion":"git push && git push --tags","examples":"node ./examples/server.js","coveralls":"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","fix":"eslint --fix lib/**/*.js"},"repository":{"type":"git","url":"https://github.com/axios/axios.git"},"keywords":["xhr","http","ajax","promise","node"],"author":"Matt Zabriskie","license":"MIT","bugs":{"url":"https://github.com/axios/axios/issues"},"homepage":"https://axios-http.com","devDependencies":{"coveralls":"^3.0.0","es6-promise":"^4.2.4","grunt":"^1.3.0","grunt-banner":"^0.6.0","grunt-cli":"^1.2.0","grunt-contrib-clean":"^1.1.0","grunt-contrib-watch":"^1.0.0","grunt-eslint":"^23.0.0","grunt-karma":"^4.0.0","grunt-mocha-test":"^0.13.3","grunt-ts":"^6.0.0-beta.19","grunt-webpack":"^4.0.2","istanbul-instrumenter-loader":"^1.0.0","jasmine-core":"^2.4.1","karma":"^6.3.2","karma-chrome-launcher":"^3.1.0","karma-firefox-launcher":"^2.1.0","karma-jasmine":"^1.1.1","karma-jasmine-ajax":"^0.1.13","karma-safari-launcher":"^1.0.0","karma-sauce-launcher":"^4.3.6","karma-sinon":"^1.0.5","karma-sourcemap-loader":"^0.3.8","karma-webpack":"^4.0.2","load-grunt-tasks":"^3.5.2","minimist":"^1.2.0","mocha":"^8.2.1","sinon":"^4.5.0","terser-webpack-plugin":"^4.2.3","typescript":"^4.0.5","url-search-params":"^0.10.0","webpack":"^4.44.2","webpack-dev-server":"^3.11.0"},"browser":{"./lib/adapters/http.js":"./lib/adapters/xhr.js"},"jsdelivr":"dist/axios.min.js","unpkg":"dist/axios.min.js","typings":"./index.d.ts","dependencies":{"follow-redirects":"^1.14.0"},"bundlesize":[{"path":"./dist/axios.min.js","threshold":"5kB"}]}');
 
 /***/ })
 

@@ -47,14 +47,14 @@ export default function MainPage(props) {
                 </ReactBootstrap.Row>
                 <ReactBootstrap.Row>
                     <ReactBootstrap.Col md={6} className="pl85">
-                        <svg className="mt150" xmlns="http://www.w3.org/2000/svg" width="500" height="69" viewBox="0 0 500 69">
+                        <svg className="mt234" xmlns="http://www.w3.org/2000/svg" width="500" height="69" viewBox="0 0 500 69">
                             <text id="Finance_as_low_as_2.99_TAP_conditions_apply" data-name="Finance as low as 2.99%
                         *TAP conditions apply" transform="translate(0 37)" fill="#3c3c3c" font-size="46" font-family="AbrilFatface-Regular, Abril Fatface"><tspan x="0" y="0">Finance as low as 2.99%</tspan><tspan font-size="16"><tspan x="0" y="27">*TAP conditions apply</tspan></tspan></text>
                         </svg>
                         <br />
                         <button className="bg-blue big-button-text btn mt15"><a className="text-decoration-none color-white" href='/form'>Get approval now!</a></button>
                     </ReactBootstrap.Col>
-                    <ReactBootstrap.Col md={6}>
+                    <ReactBootstrap.Col md={6} className="mt70">
                         <img src='/images/women-car.png' alt="women with car" />
                     </ReactBootstrap.Col>
                 </ReactBootstrap.Row>

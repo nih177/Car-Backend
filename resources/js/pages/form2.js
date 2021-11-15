@@ -89,7 +89,7 @@ export default function Form2(props) {
 
 
     return (
-        <ReactBootstrap.Row className="w99 h100">
+        <ReactBootstrap.Row className="w99">
             <ReactBootstrap.Row >
                 <ReactBootstrap.Col md={2}>
                     <svg className="mt15" xmlns="http://www.w3.org/2000/svg" width="208.569" height="51.026" viewBox="0 0 208.569 51.026">

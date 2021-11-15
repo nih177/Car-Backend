@@ -48,6 +48,7 @@ export default function FinalPage(props) {
             // console.log("Sent data")
             // console.log("Appended")
             // window.location.href = "http://127.0.0.1:8000/form2";
+            window.location.href = "https://carloansales.herokuapp.com";
         }
     }
     return (

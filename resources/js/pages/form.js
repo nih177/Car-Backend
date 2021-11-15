@@ -58,27 +58,27 @@ export default function Form(props) {
             // window.location.href="https://instagram.com";
             console.log(props.term)
 
-            const data = {
-                loanAmount: props.loanAmount,
-                term: props.term,
-            }
-            console.log(data)
-            const res = axios.post(`http://127.0.0.1:8000/validate`, data).then(() => {
-                console.log("Success. . . . ")
-            }).catch(error => {
-                console.log("ERRRR:: ", error.response.data);
-            });
-            if (res === "Worked") {
-                console.log(res)
-            }
-            else {
-                console.log("Shit")
-                console.log("___")
-            }
-            console.log(res)
-            console.log("Sent data")
-            console.log("Appended")
-            window.location.href = "http://127.0.0.1:8000/form2";
+            // const data = {
+            //     loanAmount: props.loanAmount,
+            //     term: props.term,
+            // }
+            // console.log(data)
+            // const res = axios.post(`http://127.0.0.1:8000/validate`, data).then(() => {
+            //     console.log("Success. . . . ")
+            // }).catch(error => {
+            //     console.log("ERRRR:: ", error.response.data);
+            // });
+            // if (res === "Worked") {
+            //     console.log(res)
+            // }
+            // else {
+            //     console.log("Shit")
+            //     console.log("___")
+            // }
+            // console.log(res)
+            // console.log("Sent data")
+            // console.log("Appended")
+            window.location.href = "https://carloansales.herokuapp.com/form2";
         }
     }
     return (

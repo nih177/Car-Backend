@@ -83,7 +83,7 @@ export default function Form2(props) {
         }
         if (validated == 1) {
             console.log("Success")
-            window.location.href = "http://127.0.0.1:8000/form3";
+            window.location.href = "https://carloansales.herokuapp.com/form3";
         }
     }
 

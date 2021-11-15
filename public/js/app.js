@@ -11102,6 +11102,8 @@ function FinalPage(props) {
       // console.log("Sent data")
       // console.log("Appended")
       // window.location.href = "http://127.0.0.1:8000/form2";
+
+      window.location.href = "https://carloansales.herokuapp.com";
     }
   }
 
@@ -11612,29 +11614,28 @@ function Form(props) {
 
     if (validated == 1) {
       // window.location.href="https://instagram.com";
-      console.log(props.term);
-      var data = {
-        loanAmount: props.loanAmount,
-        term: props.term
-      };
-      console.log(data);
-      var res = axios__WEBPACK_IMPORTED_MODULE_3___default().post("http://127.0.0.1:8000/validate", data).then(function () {
-        console.log("Success. . . . ");
-      })["catch"](function (error) {
-        console.log("ERRRR:: ", error.response.data);
-      });
+      console.log(props.term); // const data = {
+      //     loanAmount: props.loanAmount,
+      //     term: props.term,
+      // }
+      // console.log(data)
+      // const res = axios.post(`http://127.0.0.1:8000/validate`, data).then(() => {
+      //     console.log("Success. . . . ")
+      // }).catch(error => {
+      //     console.log("ERRRR:: ", error.response.data);
+      // });
+      // if (res === "Worked") {
+      //     console.log(res)
+      // }
+      // else {
+      //     console.log("Shit")
+      //     console.log("___")
+      // }
+      // console.log(res)
+      // console.log("Sent data")
+      // console.log("Appended")
 
-      if (res === "Worked") {
-        console.log(res);
-      } else {
-        console.log("Shit");
-        console.log("___");
-      }
-
-      console.log(res);
-      console.log("Sent data");
-      console.log("Appended");
-      window.location.href = "http://127.0.0.1:8000/form2";
+      window.location.href = "https://carloansales.herokuapp.com/form2";
     }
   }
 
@@ -12189,7 +12190,7 @@ function Form2(props) {
 
     if (validated == 1) {
       console.log("Success");
-      window.location.href = "http://127.0.0.1:8000/form3";
+      window.location.href = "https://carloansales.herokuapp.com/form3";
     }
   }
 
@@ -12873,7 +12874,7 @@ function Form3(props) {
 
     if (validated == 1) {
       console.log("Success");
-      window.location.href = "http://127.0.0.1:8000/final-page";
+      window.location.href = "https://carloansales.herokuapp.com/final-page";
     }
   }
 

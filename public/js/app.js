@@ -11280,10 +11280,10 @@ function FinalPage(props) {
           })]
         })
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
-        className: " ",
-        md: 6,
+        className: "d-flex justify-content-center  ",
+        md: 8,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("svg", {
-          className: "float-right mt15 mr30",
+          className: " mt15 mr30",
           xmlns: "http://www.w3.org/2000/svg",
           width: "339",
           height: "49",
@@ -11403,7 +11403,7 @@ function FinalPage(props) {
         })
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
         className: " ",
-        md: 4,
+        md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("a", {
           href: "/",
           className: "text-decoration-none float-right mt15",
@@ -11812,10 +11812,10 @@ function Form(props) {
           })]
         })
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
-        className: " ",
-        md: 6,
+        className: "d-flex justify-content-center ",
+        md: 8,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
-          className: "float-right mt15 mr30",
+          className: " mt15 mr30",
           xmlns: "http://www.w3.org/2000/svg",
           width: "339",
           height: "49",
@@ -11935,7 +11935,7 @@ function Form(props) {
         })
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
         className: " ",
-        md: 4,
+        md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
           href: "/",
           className: "text-decoration-none float-right mt15",
@@ -11943,7 +11943,7 @@ function Form(props) {
         })
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-      className: "d-flex align-items-center pl35",
+      className: "d-flex align-items-center pl32",
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("form", {
         className: "d-flex mx-auto ",
         id: "form1",
@@ -11953,25 +11953,29 @@ function Form(props) {
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           id: "page1",
           className: "mx-auto w50 form-container",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
-            md: 12,
-            className: "sub-heading-text",
-            children: ["Amount", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {})]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
-            md: 12,
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
-              className: "normal-text",
-              children: "Loan Amount"
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
-              type: "text",
-              id: "loanAmount",
-              name: "loanAmount",
-              onChange: function onChange(e) {
-                e.preventDefault();
-                props.setLoanAmount(e.target.value);
-              },
-              className: "form-control w50 mt10"
-            })]
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+              md: 12,
+              className: "sub-heading-text mt15",
+              children: ["Amount", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {})]
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+              md: 12,
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
+                className: "normal-text",
+                children: "Loan Amount"
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("input", {
+                type: "text",
+                id: "loanAmount",
+                name: "loanAmount",
+                onChange: function onChange(e) {
+                  e.preventDefault();
+                  props.setLoanAmount(e.target.value);
+                },
+                className: "form-control w50 mt10"
+              })]
+            })
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "",
@@ -12367,10 +12371,10 @@ function Form2(props) {
           })]
         })
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-        className: " ",
-        md: 6,
+        className: "d-flex justify-content-center  ",
+        md: 8,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
-          className: "float-right mt15 mr30",
+          className: " mt15 mr30",
           xmlns: "http://www.w3.org/2000/svg",
           width: "339",
           height: "49",
@@ -12490,7 +12494,7 @@ function Form2(props) {
         })
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
         className: " ",
-        md: 4,
+        md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("a", {
           href: "/",
           className: "text-decoration-none float-right mt15",
@@ -13051,10 +13055,10 @@ function Form3(props) {
           })]
         })
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-        className: " ",
-        md: 6,
+        className: "d-flex justify-content-center  ",
+        md: 8,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
-          className: "float-right mt15 mr30",
+          className: " mt15 mr30",
           xmlns: "http://www.w3.org/2000/svg",
           width: "339",
           height: "49",
@@ -13174,7 +13178,7 @@ function Form3(props) {
         })
       }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
         className: " ",
-        md: 4,
+        md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("a", {
           href: "/",
           className: "text-decoration-none float-right mt15",
@@ -13805,7 +13809,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "/* --------Global CSS------ */\r\nbody{\r\n    background: none!important;\r\n}\r\n.sub-heading-text\r\n{\r\n    font-size: 16px;\r\n    font-weight: 500;\r\n    font-family: 'Abril Fatface', cursive;\r\n}\r\n\r\n.normal-text\r\n{\r\n    font-size: 16px;\r\n    font-family: \"Playfair Dispaly\";\r\n}\r\n\r\n.small-button-text\r\n{\r\n    font-size:16px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.big-button-text\r\n{\r\n    font-size:20px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.go-back\r\n{\r\n    font-family: \"Playfair Dispaly\";\r\n    font-size: 14px;\r\n}\r\n\r\n.form-container\r\n{\r\n    background-color: #e9e9e9;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\n.form-container-no-bg\r\n{\r\n    background-color: none;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\ninput[type=\"tel\"] ,input[type=\"email\"] ,input[type=\"number\"] ,input[type=\"date\"] ,input[type=\"time\"] ,textarea ,input[type=\"password\"],input[type=\"text\"]\r\n{\r\n    /* font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size);\r\n    color: var(--black); */\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 10px 12px;\r\n    border-radius: 4px;\r\n}\r\n\r\n.select\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 10px 12px;\r\n    border-radius: 4px; \r\n}\r\n\r\n.select-middle\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 4px 12px 5px 8px;\r\n    border-radius: 4px;\r\n}\r\n\r\nbutton\r\n{\r\n    /* background-color: var(--bright-blue);\r\n    font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size); */\r\n    border-radius: 4px!important;\r\n    padding: 8px 0px;\r\n    color: #ffffff;\r\n    border: none;\r\n    outline: none;\r\n    background-color: #c3c2c8;\r\n}\r\n\r\n/* button:active\r\n{\r\n    background-color:#4D4ACF;\r\n} */\r\n\r\nbutton:focus\r\n{\r\n    background-color:#4D4ACF;\r\n}\r\n\r\n.bg-dark\r\n{\r\n    background-color: black;\r\n}\r\n\r\n.bg-blue\r\n{\r\n    background-color: #4D4ACF;\r\n}\r\n\r\n.per-text\r\n{\r\n    margin-right: 20px;\r\n}\r\n\r\n.allow-text\r\n{\r\n    text-align: justify;\r\n    vertical-align: middle;\r\n    padding:auto;\r\n    align-items: center;\r\n    /* margin-left: -10px; */\r\n}\r\n\r\ninput[type=\"checkbox\"] {\r\n\t/* -webkit-appearance: none; */\r\n\tborder: 2px solid grey;\r\n\tpadding: 7px;\r\n\tborder-radius: 6px;\r\n\tdisplay: inline-block;\r\n    position: relative;\r\n    vertical-align:middle;\r\n    margin-left: 6px;\r\n    height:18px;\r\n   \r\n}\r\n\r\n/* -------Width-------- */\r\n\r\n.w2\r\n{\r\n    width:2.3333%!important;\r\n}\r\n\r\n.w50\r\n{\r\n    width:50%!important;\r\n}\r\n\r\n.w62\r\n{\r\n    width:62%!important;\r\n}\r\n\r\n.w60\r\n{\r\n    width:60%!important;\r\n}\r\n\r\n.w75\r\n{\r\n    width:75%;\r\n}\r\n\r\n.w30\r\n{\r\n    width:30%;\r\n}\r\n\r\n.w100\r\n{\r\n    width:100%;\r\n}\r\n\r\n.w99\r\n{\r\n    width:99%;\r\n}\r\n\r\n.w19\r\n{\r\n    width:19.666667%!important;\r\n}\r\n\r\n.w25\r\n{\r\n    width:25.666667%!important;\r\n}\r\n\r\n.w10\r\n{\r\n    width:10.666667%!important;\r\n}\r\n\r\n.w34\r\n{\r\n    width:34.666667%!important;\r\n}\r\n\r\n.w48\r\n{\r\n    width:48%!important;\r\n    max-width:48%!important;\r\n}\r\n\r\n/* -------Height-------- */\r\n\r\n/* .h100\r\n{\r\n    height:100vh;\r\n} */\r\n.h52\r\n{\r\n    height:52px!important;\r\n}\r\n\r\n.h15\r\n{\r\n    height:15px;\r\n}\r\n\r\n/* -------Margin-------- */\r\n\r\n.mt15\r\n{\r\n    margin-top: 15px!important;\r\n}\r\n\r\n.mt234\r\n{\r\n    margin-top: 234px!important;\r\n}\r\n\r\n.mt70\r\n{\r\n    margin-top: 70px!important;\r\n}\r\n\r\n.-mt3\r\n{\r\n    margin-top: -3px;\r\n}\r\n\r\n.mt25\r\n{\r\n    margin-top: 25px!important;\r\n}\r\n\r\n.mt10\r\n{\r\n    margin-top: 10px!important;\r\n}\r\n\r\n.mt20\r\n{\r\n    margin-top: 20px!important;\r\n}\r\n\r\n.mt150\r\n{\r\n    margin-top: 150px;\r\n}\r\n\r\n.mt100\r\n{\r\n    margin-top: 100px;\r\n}\r\n\r\n.mt4\r\n{\r\n    margin-top: 4px;\r\n}\r\n\r\n.-ml3\r\n{\r\n    margin-left: -3px;\r\n}\r\n\r\n.-ml10\r\n{\r\n    margin-left: -10px;\r\n}\r\n\r\n.ml100\r\n{\r\n    margin-left:100px!important;\r\n}\r\n\r\n.ml62\r\n{\r\n    margin-left:62px!important;\r\n}\r\n\r\n.mb20\r\n{\r\n    margin-bottom: 20px;\r\n}\r\n\r\n.mr30\r\n{\r\n    margin-right:30px;\r\n}\r\n\r\n/* -------Padding-------- */\r\n\r\n.pt10\r\n{\r\n    padding-top: 10px;\r\n}\r\n\r\n.pl85\r\n{\r\n    padding-left: 85px;\r\n}\r\n\r\n.pl0\r\n{\r\n    padding-left: 0px!important;\r\n}\r\n\r\n.pr0\r\n{\r\n    padding-right: 0px!important;\r\n}\r\n\r\n.pl35\r\n{\r\n    padding-left: 35%!important;\r\n}\r\n\r\n.pl25\r\n{\r\n    padding-left: 25%!important;\r\n}\r\n\r\n.pl22\r\n{\r\n    padding-left: 22%!important;\r\n}\r\n\r\n.pl29p5\r\n{\r\n    padding-left: 29.5%!important;\r\n}\r\n\r\n.pl40p5\r\n{\r\n    padding-left: 40.5%!important;\r\n}\r\n\r\n.center {\r\n    display: flex;\r\n    justify-content: center;\r\n    align-items: center; \r\n}\r\n\r\n.dn\r\n{\r\n    display: none;\r\n}\r\n\r\n.o0\r\n{\r\n    opacity: 0;\r\n}\r\n\r\n.out\r\n{\r\n    outline: red;\r\n}\r\n\r\n/* -------Colors-------- */\r\n\r\n.color-white\r\n{\r\n    color: white !important;\r\n}\r\n\r\n.color-red\r\n{\r\n    color: red !important;\r\n}\r\n\r\n.color-black\r\n{\r\n    color:black !important;\r\n}\r\n\r\n.car-loan-calculator-title\r\n{\r\n    letter-spacing: 0px;\r\n}\r\n/* -----------------Changing the errors-------------------- */\r\n\r\n.row {\r\n    margin-right: 0px!important;\r\n    margin-left: 0px!important;\r\n}\r\n\r\n.mxw11\r\n{\r\n    max-width: 11.666667%!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider-horizontal {\r\n    border: 1px solid #bdcede;\r\n    height: 0;\r\n    margin: 6px 0px;\r\n}\r\n\r\n#car-loan-cal .ui-state-default {\r\n    background-image: url(/images/car-icon.png);\r\n    left: 5%;\r\n    top: -25px;\r\n    width: 33px!important;\r\n    height: 24px!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider {\r\n    position: relative;\r\n    text-align: left;\r\n    left: 0px;\r\n    top: 17px;\r\n}\r\n\r\n.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {\r\n    background-color:none!important;\r\n}\r\n\r\n.loan-calculatorbg {\r\n    background-image:none!important;\r\n    border:1px solid #C4C4C4!important;\r\n    border-radius:1px;\r\n    padding-top: 15px;\r\n}\r\n\r\n.btn:hover\r\n{\r\n    color:white!important;\r\n}\r\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "/* --------Global CSS------ */\r\nbody{\r\n    background: none!important;\r\n}\r\n.sub-heading-text\r\n{\r\n    font-size: 16px;\r\n    font-weight: 500;\r\n    font-family: 'Abril Fatface', cursive;\r\n}\r\n\r\n.normal-text\r\n{\r\n    font-size: 16px;\r\n    font-family: \"Playfair Dispaly\";\r\n}\r\n\r\n.small-button-text\r\n{\r\n    font-size:16px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.big-button-text\r\n{\r\n    font-size:20px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.go-back\r\n{\r\n    font-family: \"Playfair Dispaly\";\r\n    font-size: 14px;\r\n}\r\n\r\n.form-container\r\n{\r\n    background-color: #e9e9e9;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\n.form-container-no-bg\r\n{\r\n    background-color: none;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\ninput[type=\"tel\"] ,input[type=\"email\"] ,input[type=\"number\"] ,input[type=\"date\"] ,input[type=\"time\"] ,textarea ,input[type=\"password\"],input[type=\"text\"]\r\n{\r\n    /* font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size);\r\n    color: var(--black); */\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 10px 12px;\r\n    border-radius: 4px;\r\n}\r\n\r\n.select\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 10px 12px;\r\n    border-radius: 4px; \r\n}\r\n\r\n.select-middle\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 4px 12px 5px 8px;\r\n    border-radius: 4px;\r\n}\r\n\r\nbutton\r\n{\r\n    /* background-color: var(--bright-blue);\r\n    font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size); */\r\n    border-radius: 4px!important;\r\n    padding: 8px 0px;\r\n    color: #ffffff;\r\n    border: none;\r\n    outline: none;\r\n    background-color: #c3c2c8;\r\n}\r\n\r\n/* button:active\r\n{\r\n    background-color:#4D4ACF;\r\n} */\r\n\r\nbutton:focus\r\n{\r\n    background-color:#4D4ACF;\r\n}\r\n\r\n.bg-dark\r\n{\r\n    background-color: black;\r\n}\r\n\r\n.bg-blue\r\n{\r\n    background-color: #4D4ACF;\r\n}\r\n\r\n.per-text\r\n{\r\n    margin-right: 20px;\r\n}\r\n\r\n.allow-text\r\n{\r\n    text-align: justify;\r\n    vertical-align: middle;\r\n    padding:auto;\r\n    align-items: center;\r\n    /* margin-left: -10px; */\r\n}\r\n\r\ninput[type=\"checkbox\"] {\r\n\t/* -webkit-appearance: none; */\r\n\tborder: 2px solid grey;\r\n\tpadding: 7px;\r\n\tborder-radius: 6px;\r\n\tdisplay: inline-block;\r\n    position: relative;\r\n    vertical-align:middle;\r\n    margin-left: 6px;\r\n    height:18px;\r\n   \r\n}\r\n\r\n/* -------Width-------- */\r\n\r\n.w2\r\n{\r\n    width:2.3333%!important;\r\n}\r\n\r\n.w50\r\n{\r\n    width:50%!important;\r\n}\r\n\r\n.w62\r\n{\r\n    width:62%!important;\r\n}\r\n\r\n.w60\r\n{\r\n    width:60%!important;\r\n}\r\n\r\n.w75\r\n{\r\n    width:75%;\r\n}\r\n\r\n.w30\r\n{\r\n    width:30%;\r\n}\r\n\r\n.w100\r\n{\r\n    width:100%;\r\n}\r\n\r\n.w99\r\n{\r\n    width:99%;\r\n}\r\n\r\n.w19\r\n{\r\n    width:19.666667%!important;\r\n}\r\n\r\n.w25\r\n{\r\n    width:25.666667%!important;\r\n}\r\n\r\n.w10\r\n{\r\n    width:10.666667%!important;\r\n}\r\n\r\n.w34\r\n{\r\n    width:34.666667%!important;\r\n}\r\n\r\n.w48\r\n{\r\n    width:48%!important;\r\n    max-width:48%!important;\r\n}\r\n\r\n/* -------Height-------- */\r\n\r\n/* .h100\r\n{\r\n    height:100vh;\r\n} */\r\n.h52\r\n{\r\n    height:52px!important;\r\n}\r\n\r\n.h15\r\n{\r\n    height:15px;\r\n}\r\n\r\n/* -------Margin-------- */\r\n\r\n.mt15\r\n{\r\n    margin-top: 15px!important;\r\n}\r\n\r\n.mt234\r\n{\r\n    margin-top: 234px!important;\r\n}\r\n\r\n.mt70\r\n{\r\n    margin-top: 70px!important;\r\n}\r\n\r\n.-mt3\r\n{\r\n    margin-top: -3px;\r\n}\r\n\r\n.mt25\r\n{\r\n    margin-top: 25px!important;\r\n}\r\n\r\n.mt10\r\n{\r\n    margin-top: 10px!important;\r\n}\r\n\r\n.mt20\r\n{\r\n    margin-top: 20px!important;\r\n}\r\n\r\n.mt150\r\n{\r\n    margin-top: 150px;\r\n}\r\n\r\n.mt100\r\n{\r\n    margin-top: 100px;\r\n}\r\n\r\n.mt4\r\n{\r\n    margin-top: 4px;\r\n}\r\n\r\n.-ml3\r\n{\r\n    margin-left: -3px;\r\n}\r\n\r\n.-ml10\r\n{\r\n    margin-left: -10px;\r\n}\r\n\r\n.ml100\r\n{\r\n    margin-left:100px!important;\r\n}\r\n\r\n.ml62\r\n{\r\n    margin-left:62px!important;\r\n}\r\n\r\n.mb20\r\n{\r\n    margin-bottom: 20px;\r\n}\r\n\r\n.mr30\r\n{\r\n    margin-right:30px;\r\n}\r\n\r\n/* -------Padding-------- */\r\n\r\n.pt10\r\n{\r\n    padding-top: 10px;\r\n}\r\n\r\n.pl85\r\n{\r\n    padding-left: 85px;\r\n}\r\n\r\n.pl0\r\n{\r\n    padding-left: 0px!important;\r\n}\r\n\r\n.pr0\r\n{\r\n    padding-right: 0px!important;\r\n}\r\n\r\n.pl32\r\n{\r\n    padding-left: 32%!important;\r\n}\r\n\r\n.pl25\r\n{\r\n    padding-left: 25%!important;\r\n}\r\n\r\n.pl22\r\n{\r\n    padding-left: 22%!important;\r\n}\r\n\r\n.pl29p5\r\n{\r\n    padding-left: 29.5%!important;\r\n}\r\n\r\n.pl40p5\r\n{\r\n    padding-left: 40.5%!important;\r\n}\r\n\r\n.center {\r\n    display: flex;\r\n    justify-content: center;\r\n    align-items: center; \r\n}\r\n\r\n.dn\r\n{\r\n    display: none;\r\n}\r\n\r\n.o0\r\n{\r\n    opacity: 0;\r\n}\r\n\r\n.out\r\n{\r\n    outline: red;\r\n}\r\n\r\n/* -------Colors-------- */\r\n\r\n.color-white\r\n{\r\n    color: white !important;\r\n}\r\n\r\n.color-red\r\n{\r\n    color: red !important;\r\n}\r\n\r\n.color-black\r\n{\r\n    color:black !important;\r\n}\r\n\r\n.car-loan-calculator-title\r\n{\r\n    letter-spacing: 0px;\r\n}\r\n/* -----------------Changing the errors-------------------- */\r\n\r\n.row {\r\n    margin-right: 0px!important;\r\n    margin-left: 0px!important;\r\n}\r\n\r\n.mxw11\r\n{\r\n    max-width: 11.666667%!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider-horizontal {\r\n    border: 1px solid #bdcede;\r\n    height: 0;\r\n    margin: 6px 0px;\r\n}\r\n\r\n#car-loan-cal .ui-state-default {\r\n    background-image: url(/images/car-icon.png);\r\n    left: 5%;\r\n    top: -25px;\r\n    width: 33px!important;\r\n    height: 24px!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider {\r\n    position: relative;\r\n    text-align: left;\r\n    left: 0px;\r\n    top: 17px;\r\n}\r\n\r\n.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {\r\n    background-color:none!important;\r\n}\r\n\r\n.loan-calculatorbg {\r\n    background-image:none!important;\r\n    border:1px solid #C4C4C4!important;\r\n    border-radius:1px;\r\n    padding-top: 15px;\r\n}\r\n\r\n.btn:hover\r\n{\r\n    color:white!important;\r\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

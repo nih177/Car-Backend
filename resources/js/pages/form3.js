@@ -164,8 +164,8 @@ export default function Form3(props) {
                     </svg>
                 </ReactBootstrap.Col>
                 {/* -----------SVGS-------------- */}
-                <ReactBootstrap.Col className=" " md={6}>
-                    <svg className="float-right mt15 mr30" xmlns="http://www.w3.org/2000/svg" width="339" height="49" viewBox="0 0 339 49">
+                <ReactBootstrap.Col className="d-flex justify-content-center  " md={8}>
+                    <svg className=" mt15 mr30" xmlns="http://www.w3.org/2000/svg" width="339" height="49" viewBox="0 0 339 49">
                         <g id="Group_4" data-name="Group 4" transform="translate(-512 -23)">
                             <g id="Ellipse_5" data-name="Ellipse 5" transform="translate(512 23)" fill="none" stroke="#4d4acf" stroke-width="2">
                                 <circle cx="24.5" cy="24.5" r="24.5" stroke="none" />
@@ -187,7 +187,7 @@ export default function Form3(props) {
                         </g>
                     </svg>
                 </ReactBootstrap.Col>
-                <ReactBootstrap.Col className=" " md={4}>
+                <ReactBootstrap.Col className=" " md={2}>
                     <a href="/" className="text-decoration-none float-right mt15">Go back to home page</a>
                 </ReactBootstrap.Col>
             </ReactBootstrap.Row>

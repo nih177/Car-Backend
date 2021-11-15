@@ -133,8 +133,8 @@ export default function Form(props) {
                     </svg>
                 </ReactBootstrap.Col>
                 {/* -----------SVGS-------------- */}
-                <ReactBootstrap.Col className=" " md={6}>
-                    <svg className="float-right mt15 mr30" xmlns="http://www.w3.org/2000/svg" width="339" height="49" viewBox="0 0 339 49">
+                <ReactBootstrap.Col className="d-flex justify-content-center " md={8}>
+                    <svg className=" mt15 mr30" xmlns="http://www.w3.org/2000/svg" width="339" height="49" viewBox="0 0 339 49">
                         <g id="Group_3" data-name="Group 3" transform="translate(-514 -23)">
                             <g id="Ellipse_2" data-name="Ellipse 2" transform="translate(514 23)" fill="none" stroke="#4d4acf" stroke-width="2">
                                 <circle cx="24.5" cy="24.5" r="24.5" stroke="none" />
@@ -156,24 +156,27 @@ export default function Form(props) {
                         </g>
                     </svg>
                 </ReactBootstrap.Col>
-                <ReactBootstrap.Col className=" " md={4}>
+                <ReactBootstrap.Col className=" " md={2}>
                     <a href="/" className="text-decoration-none float-right mt15">Go back to home page</a>
                 </ReactBootstrap.Col>
             </ReactBootstrap.Row>
-            <ReactBootstrap.Row className="d-flex align-items-center pl35">
+            <ReactBootstrap.Row className="d-flex align-items-center pl32">
                 <form className="d-flex mx-auto " id="form1" onSubmit={submitForm} enctype="multipart/form-data" method="POST">
                     {/* -------------PAGE 1--------------- */}
                     <ReactBootstrap.Row id="page1" className="mx-auto w50 form-container">
-
-                        <ReactBootstrap.Col md={12} className="sub-heading-text">
-                            Amount
-                            <br />
-                            <br />
-                        </ReactBootstrap.Col>
-                        <ReactBootstrap.Col md={12}>
-                            <span className="normal-text">Loan Amount</span>
-                            <input type="text" id="loanAmount" name="loanAmount" onChange={e => { e.preventDefault(); props.setLoanAmount(e.target.value); }} className="form-control w50 mt10" />
-                        </ReactBootstrap.Col>
+                        <ReactBootstrap.Row>
+                            <ReactBootstrap.Col md={12} className="sub-heading-text mt15">
+                                Amount
+                                <br />
+                                <br />
+                            </ReactBootstrap.Col>
+                        </ReactBootstrap.Row>
+                        <ReactBootstrap.Row>
+                            <ReactBootstrap.Col md={12}>
+                                <span className="normal-text">Loan Amount</span>
+                                <input type="text" id="loanAmount" name="loanAmount" onChange={e => { e.preventDefault(); props.setLoanAmount(e.target.value); }} className="form-control w50 mt10" />
+                            </ReactBootstrap.Col>
+                        </ReactBootstrap.Row>
                         <ReactBootstrap.Row>
                             <ReactBootstrap.Col className="" md={12}>
                                 <span className="normal-text">What is the term of the loan</span>

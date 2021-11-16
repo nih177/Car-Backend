@@ -55,7 +55,7 @@ input[type="tel"] ,input[type="email"] ,input[type="number"] ,input[type="date"]
     font-size: var(--default-font-size);
     color: var(--black); */
     border: 1px solid grey;
-    outline: none;
+    /* outline: none; */
     padding: 10px 12px;
     border-radius: 4px;
 }
@@ -141,6 +141,11 @@ input[type="checkbox"] {
 .w2
 {
     width:2.3333%!important;
+}
+
+.w100p
+{
+    width:100px!important;
 }
 
 .w50
@@ -287,6 +292,16 @@ input[type="checkbox"] {
     margin-left:100px!important;
 }
 
+.ml15
+{
+    margin-left:15px!important;
+}
+
+.ml30per
+{
+    margin-left:30%!important;
+}
+
 .ml62
 {
     margin-left:62px!important;
@@ -295,6 +310,11 @@ input[type="checkbox"] {
 .mb20
 {
     margin-bottom: 20px;
+}
+
+.mb4
+{
+    margin-bottom: 4px;
 }
 
 .mr30

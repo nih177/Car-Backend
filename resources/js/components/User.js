@@ -39,7 +39,7 @@ import FinalPage from '../pages/final-page';
 function User() {
     // Always remember to keep const inside User() function
     // --------Main page--------
-    const [amount, setAmount] = useState('90');
+    const [amount, setAmount] = useState('');
     const [residual, setResidual] = useState('');
     const [repayment, setRepayment] = useState('')
     // --------Page-2--------
@@ -130,6 +130,27 @@ function User() {
                     </Route>
                     <Route exact path="/form3" >
                         <Form3
+                            // Form 3
+                            fullName={fullName}
+                            mobile={mobile}
+                            occupation={occupation}
+                            telephone={telephone}
+                            email={email}
+                            postcode={postcode}
+                            income={income}
+                            perDuration={perDuration}
+                            setFullName={setFullName}
+                            setMobile={setMobile}
+                            setOccupation={setOccupation}
+                            setTelephone={setTelephone}
+                            setEmail={setEmail}
+                            setPostcode={setPostcode}
+                            setIncome={setIncome}
+                            setPerDuration={setPerDuration}
+                        />
+                    </Route>
+                    <Route exact path="/final-page" >
+                        <FinalPage
                             // Form 1
                             loanAmount={loanAmount}
                             term={term}
@@ -163,16 +184,18 @@ function User() {
                             setPostcode={setPostcode}
                             setIncome={setIncome}
                             setPerDuration={setPerDuration}
-                        />
-                    </Route>
-                    <Route exact path="/final-page" >
-                        <FinalPage
-                            loanAmount={loanAmount}
-                            term={term}
+                            // Final Page
                             setTerm={setTerm}
                             setLoanAmount={setLoanAmount}
                             repay={repay}
                             setRepay={setRepay}
+                            // Main Page
+                            amount={amount}
+                            residual={residual}
+                            repayment={repayment}
+                            setAmount = {setAmount}
+                            setResidual = {setResidual}
+                            setRepayment = {setRepayment}
                         />
                     </Route>
                 </Switch>

@@ -1,9 +1,20 @@
 import React from 'react'
 import * as ReactBootstrap from 'react-bootstrap';
+import { useHistory } from 'react-router-dom';
+import {useState} from 'react'
 import { VALIDATE_ALPHA, VALIDATE_NUMERIC, VALIDATE_EMAIL } from '../helpers/validators';
 import './form.css';
 
 export default function Form3(props) {
+    const history = useHistory();
+
+    function updateCheck(e)
+    {
+        if(e.target.checked == true){
+            document.getElementById("checked-box-span").style.display = "none";
+        }
+    }
+    const [checked, setChecked] =useState(false);
 
     function submitForm(e) {
         e.preventDefault();
@@ -11,84 +22,85 @@ export default function Form3(props) {
         // FullName
         console.log(props.fullName)
         if (!props.fullName) {
-            document.getElementById("fullName").style.border = "2px";
+            document.getElementById("fullName").style.border = "1px solid red";
+            // document.getElementById("fullName").style.display = "none";
             validated = 0;
         }
 
         if (VALIDATE_ALPHA(props.fullName) == false) {
-            document.getElementById("fullName").style.border = "2px soild red";
+            document.getElementById("fullName").style.border = "1px solid red";
             validated = 0;
         }
 
         // Mobile
         console.log(props.mobile)
         if (!props.mobile) {
-            document.getElementById("mobile").style.border = "2px";
+            document.getElementById("mobile").style.border = "1px solid red";
             validated = 0;
         }
 
         if (VALIDATE_NUMERIC(props.mobile) == false) {
-            document.getElementById("mobile").style.border = "2px soild red";
+            document.getElementById("mobile").style.border = "1px solid red";
             validated = 0;
         }
 
         // Occupation
         console.log(props.occupation)
         if (!props.occupation) {
-            document.getElementById("occupation").style.border = "2px";
+            document.getElementById("occupation").style.border = "1px solid red";
             validated = 0;
         }
 
         if (VALIDATE_ALPHA(props.occupation) == false) {
-            document.getElementById("occupation").style.border = "2px soild red";
+            document.getElementById("occupation").style.border = "1px solid red";
             validated = 0;
         }
 
         // Telephone
         console.log(props.telephone)
         if (!props.telephone) {
-            document.getElementById("telephone").style.border = "2px";
+            document.getElementById("telephone").style.border = "1px solid red";
             validated = 0;
         }
 
         if (VALIDATE_NUMERIC(props.telephone) == false) {
-            document.getElementById("telephone").style.border = "2px soild red";
+            document.getElementById("telephone").style.border = "1px solid red";
             validated = 0;
         }
 
         // Email
         console.log(props.email)
         if (!props.email) {
-            document.getElementById("email").style.border = "2px";
+            document.getElementById("email").style.border = "1px solid red";
             validated = 0;
         }
 
         if (VALIDATE_EMAIL(props.email) == false) {
-            document.getElementById("email").style.border = "2px soild red";
+            document.getElementById("email").style.border = "1px solid red";
             validated = 0;
         }
 
         // postcode
         console.log(props.postcode)
         if (!props.postcode) {
-            document.getElementById("postcode").style.border = "2px";
+            document.getElementById("postcode").style.border = "1px solid red";
             validated = 0;
         }
 
         if (VALIDATE_NUMERIC(props.postcode) == false) {
-            document.getElementById("postcode").style.border = "2px soild red";
+            document.getElementById("postcode").style.border = "1px solid red";
             validated = 0;
         }
 
         // Income
         console.log(props.income)
         if (!props.income) {
-            document.getElementById("income").style.border = "2px";
+            document.getElementById("income").style.border = "1px solid red";
             validated = 0;
         }
 
         if (VALIDATE_NUMERIC(props.income) == false) {
-            document.getElementById("income").style.border = "2px soild red";
+            document.getElementById("income").style.border = "1px solid red";
             validated = 0;
         }
         // PerDuration
@@ -96,18 +108,19 @@ export default function Form3(props) {
         // We don't have to write if clauses for select
 
         // Check Box
-    
-        // var checkboxs = false;
-        // var checkboxs = document.getElementById('check-box');
-        // console.log(checkboxs.checked)
-        // if (checkboxs.checked === null)
-        // {
-        //     alert("Please agree to our terms and policies");
-        //     validated = 0;
-        // }
+
+        if(checked == false){
+            document.getElementById("checked-box-span").style.display = "block";
+            validated = 0
+        }
+        else
+        {
+            document.getElementById("checked-box-span").style.display = "none";
+        }
         if (validated == 1) {
             console.log("Success")
-            window.location.href = "https://carloansales.herokuapp.com/final-page";
+            // window.location.href = "/final-page";
+            history.push("/final-page");
         }
     }
 
@@ -200,29 +213,35 @@ export default function Form3(props) {
                         </ReactBootstrap.Col>
                         <ReactBootstrap.Col md={12} className="mt20">
                             <span className="normal-text">Fullname</span>
+                            <div className="mt4"></div>
                             <input id="fullName" onChange={e => { e.preventDefault(); props.setFullName(e.target.value); }} className="w50" type="text" ></input>
                         </ReactBootstrap.Col>
                         <ReactBootstrap.Col md={12}>
                             <span className="normal-text mt15">Mobile</span>
+                            <div className="mt4"></div>
                             <input id="mobile" onChange={e => { e.preventDefault(); props.setMobile(e.target.value); }} className="w50" type="tel" ></input>
                         </ReactBootstrap.Col>
                         <ReactBootstrap.Col md={12}>
                             <span className="normal-text mt15">Occupation</span>
+                            <div className="mt4"></div>
                             <input id="occupation" onChange={e => { e.preventDefault(); props.setOccupation(e.target.value); }} className="w50" type="text" ></input>
                         </ReactBootstrap.Col>
                         <ReactBootstrap.Col md={12}>
                             <span className="normal-text mt15">Work Telephone</span>
+                            <div className="mt4"></div>
                             <input id="telephone" onChange={e => { e.preventDefault(); props.setTelephone(e.target.value); }} className="w50" type="tel" ></input>
                         </ReactBootstrap.Col>
                         <ReactBootstrap.Col md={12}>
                             <span className="normal-text mt15">Email</span>
+                            <div className="mt4"></div>
                             <input id="email" onChange={e => { e.preventDefault(); props.setEmail(e.target.value); }} className="w50" type="email" ></input>
                         </ReactBootstrap.Col>
                         <ReactBootstrap.Col md={12}>
                             <span className="normal-text mt15">Postcode</span>
+                            <div className="mt4"></div>
                             <input id="postcode" onChange={e => { e.preventDefault(); props.setPostcode(e.target.value); }} className="w50" type="text" ></input>
                         </ReactBootstrap.Col>
-                        <ReactBootstrap.Col md={12}>
+                        <ReactBootstrap.Col md={12} className="mb4">
                             <span className="normal-text mt15">What is your income (after tax)</span>
                         </ReactBootstrap.Col>
                         <ReactBootstrap.Col md={4}>
@@ -238,11 +257,12 @@ export default function Form3(props) {
                         </ReactBootstrap.Col>
                         <ReactBootstrap.Row className="mt15 -ml3">
                             <ReactBootstrap.Col md={1} className="pl0 pr0 w2">
-                                <input id="check-box" className="w50 -mt3" type="checkbox" id="allow" name="allow" />
+                                <input id="check-box" className="w50 -mt3" type="checkbox" id="allow" name="allow" onChange={e => { setChecked(e.target.checked); }} onClick={e=>{updateCheck(e)}} />
                             </ReactBootstrap.Col>
                             <ReactBootstrap.Col className="pl0 pr0" md={11}>
                                 <span className="allow-text mt-auto mb-auto">I accept the Privacy Disclouser & Consent statement</span>
                             </ReactBootstrap.Col>
+                            <span id="checked-box-span" className=" dn ml-2 p-2"><span className="color-red">* </span>Please accept the Privacy Disclouser & Consent statement</span>
                         </ReactBootstrap.Row>
                         <ReactBootstrap.Col className="mt20 mb20">
                             <button type="submit" className="w19 big-button-text bg-blue">Finish</button>

@@ -8885,6 +8885,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _pages_form3__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ../pages/form3 */ "./resources/js/pages/form3.js");
 /* harmony import */ var _pages_final_page__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ../pages/final-page */ "./resources/js/pages/final-page.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -8936,9 +8938,11 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 
 function User() {
+  var _jsx2;
+
   // Always remember to keep const inside User() function
   // --------Main page--------
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('90'),
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
       _useState2 = _slicedToArray(_useState, 2),
       amount = _useState2[0],
       setAmount = _useState2[1];
@@ -9179,8 +9183,30 @@ function User() {
         }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
           exact: true,
           path: "/form3",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(_pages_form3__WEBPACK_IMPORTED_MODULE_31__["default"] // Form 1
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(_pages_form3__WEBPACK_IMPORTED_MODULE_31__["default"] // Form 3
           , {
+            fullName: fullName,
+            mobile: mobile,
+            occupation: occupation,
+            telephone: telephone,
+            email: email,
+            postcode: postcode,
+            income: income,
+            perDuration: perDuration,
+            setFullName: setFullName,
+            setMobile: setMobile,
+            setOccupation: setOccupation,
+            setTelephone: setTelephone,
+            setEmail: setEmail,
+            setPostcode: setPostcode,
+            setIncome: setIncome,
+            setPerDuration: setPerDuration
+          })
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
+          exact: true,
+          path: "/final-page",
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(_pages_final_page__WEBPACK_IMPORTED_MODULE_32__["default"] // Form 1
+          , (_jsx2 = {
             loanAmount: loanAmount,
             term: term,
             setTerm: setTerm,
@@ -9212,19 +9238,9 @@ function User() {
             setEmail: setEmail,
             setPostcode: setPostcode,
             setIncome: setIncome,
-            setPerDuration: setPerDuration
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(react_router_dom__WEBPACK_IMPORTED_MODULE_35__.Route, {
-          exact: true,
-          path: "/final-page",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_33__.jsx)(_pages_final_page__WEBPACK_IMPORTED_MODULE_32__["default"], {
-            loanAmount: loanAmount,
-            term: term,
-            setTerm: setTerm,
-            setLoanAmount: setLoanAmount,
-            repay: repay,
-            setRepay: setRepay
-          })
+            setPerDuration: setPerDuration // Final Page
+
+          }, _defineProperty(_jsx2, "setTerm", setTerm), _defineProperty(_jsx2, "setLoanAmount", setLoanAmount), _defineProperty(_jsx2, "repay", repay), _defineProperty(_jsx2, "setRepay", setRepay), _defineProperty(_jsx2, "amount", amount), _defineProperty(_jsx2, "residual", residual), _defineProperty(_jsx2, "repayment", repayment), _defineProperty(_jsx2, "setAmount", setAmount), _defineProperty(_jsx2, "setResidual", setResidual), _defineProperty(_jsx2, "setRepayment", setRepayment), _jsx2))
         })]
       })
     })
@@ -11048,8 +11064,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ FinalPage)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
-/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/esm/react-router.js");
 /* harmony import */ var _helpers_validators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/validators */ "./resources/js/helpers/validators.js");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 
@@ -11057,7 +11074,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 function FinalPage(props) {
+  var history = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_3__.useHistory)();
+
   function updateRepay() {
     document.getElementById('repay').innerHTML = props.repay;
     console.log(props.repay);
@@ -11102,15 +11122,16 @@ function FinalPage(props) {
       // console.log("Sent data")
       // console.log("Appended")
       // window.location.href = "http://127.0.0.1:8000/form2";
+      // window.location.href = "/";
 
-      window.location.href = "https://carloansales.herokuapp.com";
+      history.push("/main-page");
     }
   }
 
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["default"], {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
     className: "w99",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["default"], {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
         md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("svg", {
           className: "mt15",
@@ -11279,7 +11300,7 @@ function FinalPage(props) {
             })
           })]
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
         className: "d-flex justify-content-center  ",
         md: 8,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("svg", {
@@ -11401,7 +11422,7 @@ function FinalPage(props) {
             })]
           })
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
         className: " ",
         md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("a", {
@@ -11410,44 +11431,44 @@ function FinalPage(props) {
           children: "Go back to home page"
         })
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["default"], {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
       className: "d-flex align-items-center pl40p5",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["default"], {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
         id: "page4",
         className: "mx-auto w62 form-container-no-bg",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           md: 12,
           className: "sub-heading-text mt15",
           children: ["Here are your quote details", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("br", {})]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           md: 12,
           className: "normal-text mt15",
           children: ["Amount financed", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
             className: "mt4"
           }), "$10,000"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           md: 12,
           className: "normal-text mt15",
           children: ["Loan terms", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
             className: "mt4"
           }), "60 months"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           md: 12,
           className: "normal-text mt15",
           children: ["Residual", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
             className: "mt4"
           }), "30%"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           md: 12,
           className: "normal-text mt15",
           children: ["Repayment", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
             className: "mt4"
           }), "$158.96", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("br", {})]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           md: 12,
           className: "mt15 normal-text",
           children: ["How would you like to do the repayment?", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("br", {})]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           className: "w19 mt4",
           md: 3,
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
@@ -11459,7 +11480,7 @@ function FinalPage(props) {
             className: "w100 small-button-text",
             children: "Week"
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("br", {})]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           className: "w19 mt4",
           md: 3,
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
@@ -11471,7 +11492,7 @@ function FinalPage(props) {
             className: "w100 small-button-text",
             children: "Fortnight"
           }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("br", {})]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           className: "w19 mt4",
           md: 3,
           children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
@@ -11496,7 +11517,7 @@ function FinalPage(props) {
             className: "color-red",
             children: "* "
           }), "Please select the type of repayment"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           md: 12,
           className: "mt15 mb20",
           children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
@@ -11524,8 +11545,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ Form)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
-/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/esm/react-router.js");
 /* harmony import */ var _form_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./form.css */ "./resources/js/pages/form.css");
 /* harmony import */ var _helpers_validators__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../helpers/validators */ "./resources/js/helpers/validators.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
@@ -11557,10 +11579,12 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 
 
+
 function Form(props) {
-  // const [loanAmount, setLoanAmount] = useState(0);
+  var history = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_5__.useHistory)(); // const [loanAmount, setLoanAmount] = useState(0);
   // const [term, setTerm] = useState(0);
   // const [image, setImage] = useState('');
+
   function updateTerm() {
     console.log("Youuu");
     document.getElementById('term').innerHTML = props.term;
@@ -11593,12 +11617,12 @@ function Form(props) {
     console.log(props.loanAmount);
 
     if (!props.loanAmount) {
-      document.getElementById("loanAmount").style.border = "2px";
+      document.getElementById("loanAmount").style.border = "1px solid red";
       validated = 0;
     }
 
     if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_2__.VALIDATE_NUMERIC)(props.loanAmount) == false) {
-      document.getElementById("loanAmount").style.border = "2px soild red";
+      document.getElementById("loanAmount").style.border = "1px solid red";
       validated = 0;
     }
 
@@ -11635,14 +11659,14 @@ function Form(props) {
       // console.log("Sent data")
       // console.log("Appended")
 
-      window.location.href = "https://carloansales.herokuapp.com/form2";
+      history.push("/form2");
     }
   }
 
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
     className: "w99",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
         md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("svg", {
           className: "mt15",
@@ -11811,7 +11835,7 @@ function Form(props) {
             })
           })]
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
         className: "d-flex justify-content-center ",
         md: 8,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
@@ -11933,7 +11957,7 @@ function Form(props) {
             })]
           })
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
         className: " ",
         md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
@@ -11942,7 +11966,7 @@ function Form(props) {
           children: "Go back to home page"
         })
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
       className: "d-flex align-items-center pl32",
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("form", {
         className: "d-flex mx-auto ",
@@ -11950,17 +11974,17 @@ function Form(props) {
         onSubmit: submitForm,
         enctype: "multipart/form-data",
         method: "POST",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
           id: "page1",
           className: "mx-auto w50 form-container",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
               md: 12,
               className: "sub-heading-text mt15",
               children: ["Amount", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {})]
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
               md: 12,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "normal-text",
@@ -11976,16 +12000,16 @@ function Form(props) {
                 className: "form-control w50 mt10"
               })]
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
               className: "",
               md: 12,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("span", {
                 className: "normal-text",
                 children: "What is the term of the loan"
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {})]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
                 className: "",
                 children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
                   onClick: function onClick(e) {
@@ -11997,8 +12021,8 @@ function Form(props) {
                   children: "5 years"
                 })
               })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
                 className: "mt15",
                 children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
                   onClick: function onClick(e) {
@@ -12010,8 +12034,8 @@ function Form(props) {
                   children: "4 years"
                 })
               })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
                 className: "mt15",
                 children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
                   onClick: function onClick(e) {
@@ -12023,8 +12047,8 @@ function Form(props) {
                   children: "3 years"
                 })
               })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
                 className: "mt15",
                 children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
                   onClick: function onClick(e) {
@@ -12036,8 +12060,8 @@ function Form(props) {
                   children: "2 years"
                 })
               })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
                 className: "mt15",
                 children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
                   onClick: function onClick(e) {
@@ -12064,8 +12088,8 @@ function Form(props) {
                 className: "color-red",
                 children: "* "
               }), "Please click on the term you want"]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_7__["default"], {
                 md: 12,
                 className: " mb20",
                 children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
@@ -12096,8 +12120,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ Form2)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
-/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/esm/react-router.js");
 /* harmony import */ var _helpers_validators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/validators */ "./resources/js/helpers/validators.js");
 /* harmony import */ var _form_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./form.css */ "./resources/js/pages/form.css");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
@@ -12107,7 +12132,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 function Form2(props) {
+  var history = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_4__.useHistory)();
+
   function updateIsVehicle() {
     document.getElementById('isVehicle').innerHTML = props.isVehicle;
     console.log(props.isVehicle); // document.getElementById("isVehicle-span").style.opacity = "0";
@@ -12125,16 +12153,18 @@ function Form2(props) {
     e.preventDefault();
     var validated = 1; // Vehicle Make
 
+    console.log("Loan Amount");
+    console.log(props.loanAmount);
     console.log("vehicleMake");
     console.log(props.vehicleMake);
 
     if (!props.vehicleMake) {
-      document.getElementById("vehicleMake").style.border = "2px";
+      document.getElementById("vehicleMake").style.border = "1px solid red";
       validated = 0;
     }
 
     if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_ALPHA)(props.vehicleMake) == false) {
-      document.getElementById("vehicleMake").style.border = "2px soild red";
+      document.getElementById("vehicleMake").style.border = "1px solid red";
       validated = 0;
     } // Vehicle Model
 
@@ -12143,12 +12173,12 @@ function Form2(props) {
     console.log(props.vehicleModel);
 
     if (!props.vehicleModel) {
-      document.getElementById("vehicleModel").style.border = "2px";
+      document.getElementById("vehicleModel").style.border = "1px solid red";
       validated = 0;
     }
 
     if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_ALPHA)(props.vehicleModel) == false) {
-      document.getElementById("vehicleModel").style.border = "2px soild red";
+      document.getElementById("vehicleModel").style.border = "1px solid red";
       validated = 0;
     } // Build Year
 
@@ -12156,12 +12186,12 @@ function Form2(props) {
     console.log(props.buildYear);
 
     if (!props.buildYear) {
-      document.getElementById("buildYear").style.border = "2px";
+      document.getElementById("buildYear").style.border = "1px solid red";
       validated = 0;
     }
 
     if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_NUMERIC)(props.buildYear) == false) {
-      document.getElementById("buildYear").style.border = "2px soild red";
+      document.getElementById("buildYear").style.border = "1px solid red";
       validated = 0;
     } // Is Vehicle
 
@@ -12193,15 +12223,16 @@ function Form2(props) {
     }
 
     if (validated == 1) {
-      console.log("Success");
-      window.location.href = "https://carloansales.herokuapp.com/form3";
+      console.log("Success"); // window.location.href = "/form3";
+
+      history.push("/form3");
     }
   }
 
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
     className: "w99",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
         md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
           className: "mt15",
@@ -12370,7 +12401,7 @@ function Form2(props) {
             })
           })]
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
         className: "d-flex justify-content-center  ",
         md: 8,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
@@ -12492,7 +12523,7 @@ function Form2(props) {
             })]
           })
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
         className: " ",
         md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("a", {
@@ -12501,21 +12532,21 @@ function Form2(props) {
           children: "Go back to home page"
         })
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
       className: "d-flex align-items-center pl22",
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("form", {
         onSubmit: submitForm,
         enctype: "multipart/form-data",
         method: "post",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           id: "page2",
           className: "mx-auto w75 form-container ",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               md: 12,
               className: "sub-heading-text mt15",
               children: ["Your Vehicle Details", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               md: 12,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
                 className: "normal-text mt15",
@@ -12537,7 +12568,7 @@ function Form2(props) {
                   children: "Vehicle Make 4"
                 })]
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               md: 12,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
                 className: "normal-text mt15",
@@ -12559,7 +12590,7 @@ function Form2(props) {
                   children: "Vehicle Model 4"
                 })]
               })]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               md: 12,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
                 className: "normal-text mt15",
@@ -12574,14 +12605,14 @@ function Form2(props) {
                 type: "text"
               })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               md: 12,
               children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
                 className: "normal-text ",
                 children: "Is the vehicle.."
               })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "w19 mt10",
               md: 2,
               children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
@@ -12593,7 +12624,7 @@ function Form2(props) {
                 className: "w100 small-button-text",
                 children: "New"
               })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "w19 mt10",
               md: 2,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
@@ -12605,7 +12636,7 @@ function Form2(props) {
                 className: "w100 small-button-text",
                 children: "Used"
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "w19 mt10",
               md: 2,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
@@ -12617,7 +12648,7 @@ function Form2(props) {
                 className: "w100 small-button-text",
                 children: "Demo"
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "w19 mt10",
               md: 2,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
@@ -12643,14 +12674,14 @@ function Form2(props) {
                 children: "* "
               }), "Please select the vehicle type"]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               md: 12,
               children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("label", {
                 className: "normal-text mt10",
                 children: "Who is the supplier?"
               })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "w19",
               md: 2,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
@@ -12662,7 +12693,7 @@ function Form2(props) {
                 className: "w100 mt10 small-button-text",
                 children: "Dealer"
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "w19",
               md: 2,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
@@ -12674,7 +12705,7 @@ function Form2(props) {
                 className: "w100 mt10 small-button-text",
                 children: "Refinance"
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "w19",
               md: 2,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
@@ -12686,7 +12717,7 @@ function Form2(props) {
                 className: "w100 mt10 small-button-text",
                 children: "Private Sale"
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "w19",
               md: 2,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
@@ -12698,7 +12729,7 @@ function Form2(props) {
                 className: "w100 mt10 small-button-text",
                 children: "Auction"
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("br", {})]
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "w19",
               md: 2,
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
@@ -12724,8 +12755,8 @@ function Form2(props) {
                 children: "* "
               }), "Please select the supplier"]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "mt15 mb20",
               children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
                 type: "submit",
@@ -12754,12 +12785,27 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ Form3)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
-/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Row.js");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/esm/Col.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/esm/react-router.js");
 /* harmony import */ var _helpers_validators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../helpers/validators */ "./resources/js/helpers/validators.js");
 /* harmony import */ var _form_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./form.css */ "./resources/js/pages/form.css");
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+
 
 
 
@@ -12770,6 +12816,19 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 function Form3(props) {
   var _jsx2;
 
+  var history = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_4__.useHistory)();
+
+  function updateCheck(e) {
+    if (e.target.checked == true) {
+      document.getElementById("checked-box-span").style.display = "none";
+    }
+  }
+
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
+      _useState2 = _slicedToArray(_useState, 2),
+      checked = _useState2[0],
+      setChecked = _useState2[1];
+
   function submitForm(e) {
     e.preventDefault();
     var validated = 1; // FullName
@@ -12777,12 +12836,13 @@ function Form3(props) {
     console.log(props.fullName);
 
     if (!props.fullName) {
-      document.getElementById("fullName").style.border = "2px";
+      document.getElementById("fullName").style.border = "1px solid red"; // document.getElementById("fullName").style.display = "none";
+
       validated = 0;
     }
 
     if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_ALPHA)(props.fullName) == false) {
-      document.getElementById("fullName").style.border = "2px soild red";
+      document.getElementById("fullName").style.border = "1px solid red";
       validated = 0;
     } // Mobile
 
@@ -12790,12 +12850,12 @@ function Form3(props) {
     console.log(props.mobile);
 
     if (!props.mobile) {
-      document.getElementById("mobile").style.border = "2px";
+      document.getElementById("mobile").style.border = "1px solid red";
       validated = 0;
     }
 
     if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_NUMERIC)(props.mobile) == false) {
-      document.getElementById("mobile").style.border = "2px soild red";
+      document.getElementById("mobile").style.border = "1px solid red";
       validated = 0;
     } // Occupation
 
@@ -12803,12 +12863,12 @@ function Form3(props) {
     console.log(props.occupation);
 
     if (!props.occupation) {
-      document.getElementById("occupation").style.border = "2px";
+      document.getElementById("occupation").style.border = "1px solid red";
       validated = 0;
     }
 
     if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_ALPHA)(props.occupation) == false) {
-      document.getElementById("occupation").style.border = "2px soild red";
+      document.getElementById("occupation").style.border = "1px solid red";
       validated = 0;
     } // Telephone
 
@@ -12816,12 +12876,12 @@ function Form3(props) {
     console.log(props.telephone);
 
     if (!props.telephone) {
-      document.getElementById("telephone").style.border = "2px";
+      document.getElementById("telephone").style.border = "1px solid red";
       validated = 0;
     }
 
     if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_NUMERIC)(props.telephone) == false) {
-      document.getElementById("telephone").style.border = "2px soild red";
+      document.getElementById("telephone").style.border = "1px solid red";
       validated = 0;
     } // Email
 
@@ -12829,12 +12889,12 @@ function Form3(props) {
     console.log(props.email);
 
     if (!props.email) {
-      document.getElementById("email").style.border = "2px";
+      document.getElementById("email").style.border = "1px solid red";
       validated = 0;
     }
 
     if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_EMAIL)(props.email) == false) {
-      document.getElementById("email").style.border = "2px soild red";
+      document.getElementById("email").style.border = "1px solid red";
       validated = 0;
     } // postcode
 
@@ -12842,12 +12902,12 @@ function Form3(props) {
     console.log(props.postcode);
 
     if (!props.postcode) {
-      document.getElementById("postcode").style.border = "2px";
+      document.getElementById("postcode").style.border = "1px solid red";
       validated = 0;
     }
 
     if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_NUMERIC)(props.postcode) == false) {
-      document.getElementById("postcode").style.border = "2px soild red";
+      document.getElementById("postcode").style.border = "1px solid red";
       validated = 0;
     } // Income
 
@@ -12855,37 +12915,37 @@ function Form3(props) {
     console.log(props.income);
 
     if (!props.income) {
-      document.getElementById("income").style.border = "2px";
+      document.getElementById("income").style.border = "1px solid red";
       validated = 0;
     }
 
     if ((0,_helpers_validators__WEBPACK_IMPORTED_MODULE_1__.VALIDATE_NUMERIC)(props.income) == false) {
-      document.getElementById("income").style.border = "2px soild red";
+      document.getElementById("income").style.border = "1px solid red";
       validated = 0;
     } // PerDuration
 
 
     console.log(props.perDuration); // We don't have to write if clauses for select
     // Check Box
-    // var checkboxs = false;
-    // var checkboxs = document.getElementById('check-box');
-    // console.log(checkboxs.checked)
-    // if (checkboxs.checked === null)
-    // {
-    //     alert("Please agree to our terms and policies");
-    //     validated = 0;
-    // }
+
+    if (checked == false) {
+      document.getElementById("checked-box-span").style.display = "block";
+      validated = 0;
+    } else {
+      document.getElementById("checked-box-span").style.display = "none";
+    }
 
     if (validated == 1) {
-      console.log("Success");
-      window.location.href = "https://carloansales.herokuapp.com/final-page";
+      console.log("Success"); // window.location.href = "/final-page";
+
+      history.push("/final-page");
     }
   }
 
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
     className: "w99",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
         md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("svg", {
           className: "mt15",
@@ -13054,7 +13114,7 @@ function Form3(props) {
             })
           })]
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
         className: "d-flex justify-content-center  ",
         md: 8,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("svg", {
@@ -13176,7 +13236,7 @@ function Form3(props) {
             })]
           })
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
         className: " ",
         md: 2,
         children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("a", {
@@ -13185,25 +13245,27 @@ function Form3(props) {
           children: "Go back to home page"
         })
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
       className: "d-flex align-items-center pl29p5",
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("form", {
         onSubmit: submitForm,
         enctype: "multipart/form-data",
         method: "post",
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
           id: "page3",
           className: "mx-auto w60 form-container",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
             md: 12,
             className: "sub-heading-text mt15",
             children: "Your Personal Details"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
             md: 12,
             className: "mt20",
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
               className: "normal-text",
               children: "Fullname"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+              className: "mt4"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
               id: "fullName",
               onChange: function onChange(e) {
@@ -13213,11 +13275,13 @@ function Form3(props) {
               className: "w50",
               type: "text"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
             md: 12,
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
               className: "normal-text mt15",
               children: "Mobile"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+              className: "mt4"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
               id: "mobile",
               onChange: function onChange(e) {
@@ -13227,11 +13291,13 @@ function Form3(props) {
               className: "w50",
               type: "tel"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
             md: 12,
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
               className: "normal-text mt15",
               children: "Occupation"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+              className: "mt4"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
               id: "occupation",
               onChange: function onChange(e) {
@@ -13241,11 +13307,13 @@ function Form3(props) {
               className: "w50",
               type: "text"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
             md: 12,
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
               className: "normal-text mt15",
               children: "Work Telephone"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+              className: "mt4"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
               id: "telephone",
               onChange: function onChange(e) {
@@ -13255,11 +13323,13 @@ function Form3(props) {
               className: "w50",
               type: "tel"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
             md: 12,
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
               className: "normal-text mt15",
               children: "Email"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+              className: "mt4"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
               id: "email",
               onChange: function onChange(e) {
@@ -13269,11 +13339,13 @@ function Form3(props) {
               className: "w50",
               type: "email"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
             md: 12,
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
               className: "normal-text mt15",
               children: "Postcode"
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("div", {
+              className: "mt4"
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
               id: "postcode",
               onChange: function onChange(e) {
@@ -13283,13 +13355,14 @@ function Form3(props) {
               className: "w50",
               type: "text"
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
             md: 12,
+            className: "mb4",
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
               className: "normal-text mt15",
               children: "What is your income (after tax)"
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
             md: 4,
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
               id: "income",
@@ -13300,7 +13373,7 @@ function Form3(props) {
               className: "",
               type: "text"
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
             md: 8,
             children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
               className: "per-text",
@@ -13320,25 +13393,36 @@ function Form3(props) {
                 children: "year"
               })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_4__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
             className: "mt15 -ml3",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               md: 1,
               className: "pl0 pr0 w2",
               children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", (_jsx2 = {
                 id: "check-box",
                 className: "w50 -mt3",
                 type: "checkbox"
-              }, _defineProperty(_jsx2, "id", "allow"), _defineProperty(_jsx2, "name", "allow"), _jsx2))
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+              }, _defineProperty(_jsx2, "id", "allow"), _defineProperty(_jsx2, "name", "allow"), _defineProperty(_jsx2, "onChange", function onChange(e) {
+                setChecked(e.target.checked);
+              }), _defineProperty(_jsx2, "onClick", function onClick(e) {
+                updateCheck(e);
+              }), _jsx2))
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
               className: "pl0 pr0",
               md: 11,
               children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
                 className: "allow-text mt-auto mb-auto",
                 children: "I accept the Privacy Disclouser & Consent statement"
               })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("span", {
+              id: "checked-box-span",
+              className: " dn ml-2 p-2",
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("span", {
+                className: "color-red",
+                children: "* "
+              }), "Please accept the Privacy Disclouser & Consent statement"]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_5__["default"], {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
             className: "mt20 mb20",
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
               type: "submit",
@@ -13809,7 +13893,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "/* --------Global CSS------ */\r\nbody{\r\n    background: none!important;\r\n}\r\n.sub-heading-text\r\n{\r\n    font-size: 16px;\r\n    font-weight: 500;\r\n    font-family: 'Abril Fatface', cursive;\r\n}\r\n\r\n.normal-text\r\n{\r\n    font-size: 16px;\r\n    font-family: \"Playfair Dispaly\";\r\n}\r\n\r\n.small-button-text\r\n{\r\n    font-size:16px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.big-button-text\r\n{\r\n    font-size:20px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.go-back\r\n{\r\n    font-family: \"Playfair Dispaly\";\r\n    font-size: 14px;\r\n}\r\n\r\n.form-container\r\n{\r\n    background-color: #e9e9e9;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\n.form-container-no-bg\r\n{\r\n    background-color: none;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\ninput[type=\"tel\"] ,input[type=\"email\"] ,input[type=\"number\"] ,input[type=\"date\"] ,input[type=\"time\"] ,textarea ,input[type=\"password\"],input[type=\"text\"]\r\n{\r\n    /* font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size);\r\n    color: var(--black); */\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 10px 12px;\r\n    border-radius: 4px;\r\n}\r\n\r\n.select\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 10px 12px;\r\n    border-radius: 4px; \r\n}\r\n\r\n.select-middle\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 4px 12px 5px 8px;\r\n    border-radius: 4px;\r\n}\r\n\r\nbutton\r\n{\r\n    /* background-color: var(--bright-blue);\r\n    font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size); */\r\n    border-radius: 4px!important;\r\n    padding: 8px 0px;\r\n    color: #ffffff;\r\n    border: none;\r\n    outline: none;\r\n    background-color: #c3c2c8;\r\n}\r\n\r\n/* button:active\r\n{\r\n    background-color:#4D4ACF;\r\n} */\r\n\r\nbutton:focus\r\n{\r\n    background-color:#4D4ACF;\r\n}\r\n\r\n.bg-dark\r\n{\r\n    background-color: black;\r\n}\r\n\r\n.bg-blue\r\n{\r\n    background-color: #4D4ACF;\r\n}\r\n\r\n.per-text\r\n{\r\n    margin-right: 20px;\r\n}\r\n\r\n.allow-text\r\n{\r\n    text-align: justify;\r\n    vertical-align: middle;\r\n    padding:auto;\r\n    align-items: center;\r\n    /* margin-left: -10px; */\r\n}\r\n\r\ninput[type=\"checkbox\"] {\r\n\t/* -webkit-appearance: none; */\r\n\tborder: 2px solid grey;\r\n\tpadding: 7px;\r\n\tborder-radius: 6px;\r\n\tdisplay: inline-block;\r\n    position: relative;\r\n    vertical-align:middle;\r\n    margin-left: 6px;\r\n    height:18px;\r\n   \r\n}\r\n\r\n/* -------Width-------- */\r\n\r\n.w2\r\n{\r\n    width:2.3333%!important;\r\n}\r\n\r\n.w50\r\n{\r\n    width:50%!important;\r\n}\r\n\r\n.w62\r\n{\r\n    width:62%!important;\r\n}\r\n\r\n.w60\r\n{\r\n    width:60%!important;\r\n}\r\n\r\n.w75\r\n{\r\n    width:75%;\r\n}\r\n\r\n.w30\r\n{\r\n    width:30%;\r\n}\r\n\r\n.w100\r\n{\r\n    width:100%;\r\n}\r\n\r\n.w99\r\n{\r\n    width:99%;\r\n}\r\n\r\n.w19\r\n{\r\n    width:19.666667%!important;\r\n}\r\n\r\n.w25\r\n{\r\n    width:25.666667%!important;\r\n}\r\n\r\n.w10\r\n{\r\n    width:10.666667%!important;\r\n}\r\n\r\n.w34\r\n{\r\n    width:34.666667%!important;\r\n}\r\n\r\n.w48\r\n{\r\n    width:48%!important;\r\n    max-width:48%!important;\r\n}\r\n\r\n/* -------Height-------- */\r\n\r\n/* .h100\r\n{\r\n    height:100vh;\r\n} */\r\n.h52\r\n{\r\n    height:52px!important;\r\n}\r\n\r\n.h15\r\n{\r\n    height:15px;\r\n}\r\n\r\n/* -------Margin-------- */\r\n\r\n.mt15\r\n{\r\n    margin-top: 15px!important;\r\n}\r\n\r\n.mt234\r\n{\r\n    margin-top: 234px!important;\r\n}\r\n\r\n.mt70\r\n{\r\n    margin-top: 70px!important;\r\n}\r\n\r\n.-mt3\r\n{\r\n    margin-top: -3px;\r\n}\r\n\r\n.mt25\r\n{\r\n    margin-top: 25px!important;\r\n}\r\n\r\n.mt10\r\n{\r\n    margin-top: 10px!important;\r\n}\r\n\r\n.mt20\r\n{\r\n    margin-top: 20px!important;\r\n}\r\n\r\n.mt150\r\n{\r\n    margin-top: 150px;\r\n}\r\n\r\n.mt100\r\n{\r\n    margin-top: 100px;\r\n}\r\n\r\n.mt4\r\n{\r\n    margin-top: 4px;\r\n}\r\n\r\n.-ml3\r\n{\r\n    margin-left: -3px;\r\n}\r\n\r\n.-ml10\r\n{\r\n    margin-left: -10px;\r\n}\r\n\r\n.ml100\r\n{\r\n    margin-left:100px!important;\r\n}\r\n\r\n.ml62\r\n{\r\n    margin-left:62px!important;\r\n}\r\n\r\n.mb20\r\n{\r\n    margin-bottom: 20px;\r\n}\r\n\r\n.mr30\r\n{\r\n    margin-right:30px;\r\n}\r\n\r\n/* -------Padding-------- */\r\n\r\n.pt10\r\n{\r\n    padding-top: 10px;\r\n}\r\n\r\n.pl85\r\n{\r\n    padding-left: 85px;\r\n}\r\n\r\n.pl0\r\n{\r\n    padding-left: 0px!important;\r\n}\r\n\r\n.pr0\r\n{\r\n    padding-right: 0px!important;\r\n}\r\n\r\n.pl32\r\n{\r\n    padding-left: 32%!important;\r\n}\r\n\r\n.pl25\r\n{\r\n    padding-left: 25%!important;\r\n}\r\n\r\n.pl22\r\n{\r\n    padding-left: 22%!important;\r\n}\r\n\r\n.pl29p5\r\n{\r\n    padding-left: 29.5%!important;\r\n}\r\n\r\n.pl40p5\r\n{\r\n    padding-left: 40.5%!important;\r\n}\r\n\r\n.center {\r\n    display: flex;\r\n    justify-content: center;\r\n    align-items: center; \r\n}\r\n\r\n.dn\r\n{\r\n    display: none;\r\n}\r\n\r\n.o0\r\n{\r\n    opacity: 0;\r\n}\r\n\r\n.out\r\n{\r\n    outline: red;\r\n}\r\n\r\n/* -------Colors-------- */\r\n\r\n.color-white\r\n{\r\n    color: white !important;\r\n}\r\n\r\n.color-red\r\n{\r\n    color: red !important;\r\n}\r\n\r\n.color-black\r\n{\r\n    color:black !important;\r\n}\r\n\r\n.car-loan-calculator-title\r\n{\r\n    letter-spacing: 0px;\r\n}\r\n/* -----------------Changing the errors-------------------- */\r\n\r\n.row {\r\n    margin-right: 0px!important;\r\n    margin-left: 0px!important;\r\n}\r\n\r\n.mxw11\r\n{\r\n    max-width: 11.666667%!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider-horizontal {\r\n    border: 1px solid #bdcede;\r\n    height: 0;\r\n    margin: 6px 0px;\r\n}\r\n\r\n#car-loan-cal .ui-state-default {\r\n    background-image: url(/images/car-icon.png);\r\n    left: 5%;\r\n    top: -25px;\r\n    width: 33px!important;\r\n    height: 24px!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider {\r\n    position: relative;\r\n    text-align: left;\r\n    left: 0px;\r\n    top: 17px;\r\n}\r\n\r\n.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {\r\n    background-color:none!important;\r\n}\r\n\r\n.loan-calculatorbg {\r\n    background-image:none!important;\r\n    border:1px solid #C4C4C4!important;\r\n    border-radius:1px;\r\n    padding-top: 15px;\r\n}\r\n\r\n.btn:hover\r\n{\r\n    color:white!important;\r\n}\r\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "/* --------Global CSS------ */\r\nbody{\r\n    background: none!important;\r\n}\r\n.sub-heading-text\r\n{\r\n    font-size: 16px;\r\n    font-weight: 500;\r\n    font-family: 'Abril Fatface', cursive;\r\n}\r\n\r\n.normal-text\r\n{\r\n    font-size: 16px;\r\n    font-family: \"Playfair Dispaly\";\r\n}\r\n\r\n.small-button-text\r\n{\r\n    font-size:16px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.big-button-text\r\n{\r\n    font-size:20px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.go-back\r\n{\r\n    font-family: \"Playfair Dispaly\";\r\n    font-size: 14px;\r\n}\r\n\r\n.form-container\r\n{\r\n    background-color: #e9e9e9;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\n.form-container-no-bg\r\n{\r\n    background-color: none;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\ninput[type=\"tel\"] ,input[type=\"email\"] ,input[type=\"number\"] ,input[type=\"date\"] ,input[type=\"time\"] ,textarea ,input[type=\"password\"],input[type=\"text\"]\r\n{\r\n    /* font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size);\r\n    color: var(--black); */\r\n    border: 1px solid grey;\r\n    /* outline: none; */\r\n    padding: 10px 12px;\r\n    border-radius: 4px;\r\n}\r\n\r\n.select\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 10px 12px;\r\n    border-radius: 4px; \r\n}\r\n\r\n.select-middle\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 4px 12px 5px 8px;\r\n    border-radius: 4px;\r\n}\r\n\r\nbutton\r\n{\r\n    /* background-color: var(--bright-blue);\r\n    font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size); */\r\n    border-radius: 4px!important;\r\n    padding: 8px 0px;\r\n    color: #ffffff;\r\n    border: none;\r\n    outline: none;\r\n    background-color: #c3c2c8;\r\n}\r\n\r\n/* button:active\r\n{\r\n    background-color:#4D4ACF;\r\n} */\r\n\r\nbutton:focus\r\n{\r\n    background-color:#4D4ACF;\r\n}\r\n\r\n.bg-dark\r\n{\r\n    background-color: black;\r\n}\r\n\r\n.bg-blue\r\n{\r\n    background-color: #4D4ACF;\r\n}\r\n\r\n.per-text\r\n{\r\n    margin-right: 20px;\r\n}\r\n\r\n.allow-text\r\n{\r\n    text-align: justify;\r\n    vertical-align: middle;\r\n    padding:auto;\r\n    align-items: center;\r\n    /* margin-left: -10px; */\r\n}\r\n\r\ninput[type=\"checkbox\"] {\r\n\t/* -webkit-appearance: none; */\r\n\tborder: 2px solid grey;\r\n\tpadding: 7px;\r\n\tborder-radius: 6px;\r\n\tdisplay: inline-block;\r\n    position: relative;\r\n    vertical-align:middle;\r\n    margin-left: 6px;\r\n    height:18px;\r\n   \r\n}\r\n\r\n/* -------Width-------- */\r\n\r\n.w2\r\n{\r\n    width:2.3333%!important;\r\n}\r\n\r\n.w100p\r\n{\r\n    width:100px!important;\r\n}\r\n\r\n.w50\r\n{\r\n    width:50%!important;\r\n}\r\n\r\n.w62\r\n{\r\n    width:62%!important;\r\n}\r\n\r\n.w60\r\n{\r\n    width:60%!important;\r\n}\r\n\r\n.w75\r\n{\r\n    width:75%;\r\n}\r\n\r\n.w30\r\n{\r\n    width:30%;\r\n}\r\n\r\n.w100\r\n{\r\n    width:100%;\r\n}\r\n\r\n.w99\r\n{\r\n    width:99%;\r\n}\r\n\r\n.w19\r\n{\r\n    width:19.666667%!important;\r\n}\r\n\r\n.w25\r\n{\r\n    width:25.666667%!important;\r\n}\r\n\r\n.w10\r\n{\r\n    width:10.666667%!important;\r\n}\r\n\r\n.w34\r\n{\r\n    width:34.666667%!important;\r\n}\r\n\r\n.w48\r\n{\r\n    width:48%!important;\r\n    max-width:48%!important;\r\n}\r\n\r\n/* -------Height-------- */\r\n\r\n/* .h100\r\n{\r\n    height:100vh;\r\n} */\r\n.h52\r\n{\r\n    height:52px!important;\r\n}\r\n\r\n.h15\r\n{\r\n    height:15px;\r\n}\r\n\r\n/* -------Margin-------- */\r\n\r\n.mt15\r\n{\r\n    margin-top: 15px!important;\r\n}\r\n\r\n.mt234\r\n{\r\n    margin-top: 234px!important;\r\n}\r\n\r\n.mt70\r\n{\r\n    margin-top: 70px!important;\r\n}\r\n\r\n.-mt3\r\n{\r\n    margin-top: -3px;\r\n}\r\n\r\n.mt25\r\n{\r\n    margin-top: 25px!important;\r\n}\r\n\r\n.mt10\r\n{\r\n    margin-top: 10px!important;\r\n}\r\n\r\n.mt20\r\n{\r\n    margin-top: 20px!important;\r\n}\r\n\r\n.mt150\r\n{\r\n    margin-top: 150px;\r\n}\r\n\r\n.mt100\r\n{\r\n    margin-top: 100px;\r\n}\r\n\r\n.mt4\r\n{\r\n    margin-top: 4px;\r\n}\r\n\r\n.-ml3\r\n{\r\n    margin-left: -3px;\r\n}\r\n\r\n.-ml10\r\n{\r\n    margin-left: -10px;\r\n}\r\n\r\n.ml100\r\n{\r\n    margin-left:100px!important;\r\n}\r\n\r\n.ml15\r\n{\r\n    margin-left:15px!important;\r\n}\r\n\r\n.ml30per\r\n{\r\n    margin-left:30%!important;\r\n}\r\n\r\n.ml62\r\n{\r\n    margin-left:62px!important;\r\n}\r\n\r\n.mb20\r\n{\r\n    margin-bottom: 20px;\r\n}\r\n\r\n.mb4\r\n{\r\n    margin-bottom: 4px;\r\n}\r\n\r\n.mr30\r\n{\r\n    margin-right:30px;\r\n}\r\n\r\n/* -------Padding-------- */\r\n\r\n.pt10\r\n{\r\n    padding-top: 10px;\r\n}\r\n\r\n.pl85\r\n{\r\n    padding-left: 85px;\r\n}\r\n\r\n.pl0\r\n{\r\n    padding-left: 0px!important;\r\n}\r\n\r\n.pr0\r\n{\r\n    padding-right: 0px!important;\r\n}\r\n\r\n.pl32\r\n{\r\n    padding-left: 32%!important;\r\n}\r\n\r\n.pl25\r\n{\r\n    padding-left: 25%!important;\r\n}\r\n\r\n.pl22\r\n{\r\n    padding-left: 22%!important;\r\n}\r\n\r\n.pl29p5\r\n{\r\n    padding-left: 29.5%!important;\r\n}\r\n\r\n.pl40p5\r\n{\r\n    padding-left: 40.5%!important;\r\n}\r\n\r\n.center {\r\n    display: flex;\r\n    justify-content: center;\r\n    align-items: center; \r\n}\r\n\r\n.dn\r\n{\r\n    display: none;\r\n}\r\n\r\n.o0\r\n{\r\n    opacity: 0;\r\n}\r\n\r\n.out\r\n{\r\n    outline: red;\r\n}\r\n\r\n/* -------Colors-------- */\r\n\r\n.color-white\r\n{\r\n    color: white !important;\r\n}\r\n\r\n.color-red\r\n{\r\n    color: red !important;\r\n}\r\n\r\n.color-black\r\n{\r\n    color:black !important;\r\n}\r\n\r\n.car-loan-calculator-title\r\n{\r\n    letter-spacing: 0px;\r\n}\r\n/* -----------------Changing the errors-------------------- */\r\n\r\n.row {\r\n    margin-right: 0px!important;\r\n    margin-left: 0px!important;\r\n}\r\n\r\n.mxw11\r\n{\r\n    max-width: 11.666667%!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider-horizontal {\r\n    border: 1px solid #bdcede;\r\n    height: 0;\r\n    margin: 6px 0px;\r\n}\r\n\r\n#car-loan-cal .ui-state-default {\r\n    background-image: url(/images/car-icon.png);\r\n    left: 5%;\r\n    top: -25px;\r\n    width: 33px!important;\r\n    height: 24px!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider {\r\n    position: relative;\r\n    text-align: left;\r\n    left: 0px;\r\n    top: 17px;\r\n}\r\n\r\n.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {\r\n    background-color:none!important;\r\n}\r\n\r\n.loan-calculatorbg {\r\n    background-image:none!important;\r\n    border:1px solid #C4C4C4!important;\r\n    border-radius:1px;\r\n    padding-top: 15px;\r\n}\r\n\r\n.btn:hover\r\n{\r\n    color:white!important;\r\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

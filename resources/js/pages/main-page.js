@@ -72,6 +72,7 @@ export default function MainPage(props) {
                                 <li>
                                     <span className="slider-label">Amount</span>
                                     <span id='amount' className="slider-value"> $  0</span>
+                                    {/* <input type="range" onChange={e=>{console.log(e.target)}}></input> */}
                                     <div id="amount-slider" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"><a className="ui-slider-handle ui-state-default ui-corner-all" href="#"></a></div>
                                 </li>
                                 <li>

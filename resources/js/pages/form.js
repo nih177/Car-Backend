@@ -1,10 +1,16 @@
 import React from 'react';
 import { useState } from 'react';
 import * as ReactBootstrap from 'react-bootstrap';
+import { useHistory } from 'react-router-dom';
 import './form.css'
 import { VALIDATE_ALPHA, VALIDATE_NUMERIC } from '../helpers/validators';
 import axios from 'axios';
 export default function Form(props) {
+
+
+    const history = useHistory();
+
+
     // const [loanAmount, setLoanAmount] = useState(0);
     // const [term, setTerm] = useState(0);
     // const [image, setImage] = useState('');
@@ -36,12 +42,12 @@ export default function Form(props) {
         console.log(studentInput.loanAmount)
         console.log(props.loanAmount)
         if (!props.loanAmount) {
-            document.getElementById("loanAmount").style.border = "2px";
+            document.getElementById("loanAmount").style.border = "1px solid red";
             validated = 0;
         }
 
         if (VALIDATE_NUMERIC(props.loanAmount) == false) {
-            document.getElementById("loanAmount").style.border = "2px soild red";
+            document.getElementById("loanAmount").style.border = "1px solid red";
             validated = 0;
         }
         if (!props.term) {
@@ -78,7 +84,7 @@ export default function Form(props) {
             // console.log(res)
             // console.log("Sent data")
             // console.log("Appended")
-            window.location.href = "https://carloansales.herokuapp.com/form2";
+            history.push("/form2");
         }
     }
     return (

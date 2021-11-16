@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import * as ReactBootstrap from 'react-bootstrap';
+import { useHistory } from 'react-router-dom';
 import { VALIDATE_ALPHA } from '../helpers/validators';
 
 export default function FinalPage(props) {
-    
+    const history = useHistory();
     function updateRepay() {
         document.getElementById('repay').innerHTML = props.repay
         console.log(props.repay)
@@ -48,7 +49,8 @@ export default function FinalPage(props) {
             // console.log("Sent data")
             // console.log("Appended")
             // window.location.href = "http://127.0.0.1:8000/form2";
-            window.location.href = "https://carloansales.herokuapp.com";
+            // window.location.href = "/";
+            history.push("/main-page");
         }
     }
     return (

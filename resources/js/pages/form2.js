@@ -1,9 +1,10 @@
 import React from 'react';
 import * as ReactBootstrap from 'react-bootstrap';
+import { useHistory } from 'react-router-dom';
 import { VALIDATE_ALPHA, VALIDATE_NUMERIC } from '../helpers/validators';
 import './form.css'
 export default function Form2(props) {
-
+    const history = useHistory();
     function updateIsVehicle() {
         document.getElementById('isVehicle').innerHTML = props.isVehicle
         console.log(props.isVehicle)
@@ -20,15 +21,17 @@ export default function Form2(props) {
         e.preventDefault();
         var validated = 1;
         // Vehicle Make
+        console.log("Loan Amount")
+        console.log(props.loanAmount)
         console.log("vehicleMake")
         console.log(props.vehicleMake)
         if (!props.vehicleMake) {
-            document.getElementById("vehicleMake").style.border = "2px";
+            document.getElementById("vehicleMake").style.border = "1px solid red";
             validated = 0;
         }
 
         if (VALIDATE_ALPHA(props.vehicleMake) == false) {
-            document.getElementById("vehicleMake").style.border = "2px soild red";
+            document.getElementById("vehicleMake").style.border = "1px solid red";
             validated = 0;
         }
 
@@ -36,24 +39,24 @@ export default function Form2(props) {
         console.log("vehicleModel")
         console.log(props.vehicleModel)
         if (!props.vehicleModel) {
-            document.getElementById("vehicleModel").style.border = "2px";
+            document.getElementById("vehicleModel").style.border = "1px solid red";
             validated = 0;
         }
 
         if (VALIDATE_ALPHA(props.vehicleModel) == false) {
-            document.getElementById("vehicleModel").style.border = "2px soild red";
+            document.getElementById("vehicleModel").style.border = "1px solid red";
             validated = 0;
         }
 
         // Build Year
         console.log(props.buildYear)
         if (!props.buildYear) {
-            document.getElementById("buildYear").style.border = "2px";
+            document.getElementById("buildYear").style.border = "1px solid red";
             validated = 0;
         }
 
         if (VALIDATE_NUMERIC(props.buildYear) == false) {
-            document.getElementById("buildYear").style.border = "2px soild red";
+            document.getElementById("buildYear").style.border = "1px solid red";
             validated = 0;
         }
 
@@ -83,7 +86,8 @@ export default function Form2(props) {
         }
         if (validated == 1) {
             console.log("Success")
-            window.location.href = "https://carloansales.herokuapp.com/form3";
+            // window.location.href = "/form3";
+            history.push("/form3");
         }
     }
 

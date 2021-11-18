@@ -128,9 +128,9 @@ export default function MainPage(props) {
                     <text id="Our_staff_are_there_to_help_you_every_step_of_the_way." data-name="Our staff are there to help you every step of the way." transform="translate(283 19)" font-size="24" font-family="AbrilFatface-Regular, Abril Fatface"><tspan x="-282.228" y="0">Our staff are there to help you every step of the way.</tspan></text>
                 </svg>
                 <br />
-                <button className="mx-auto bg-blue big-button-text btn w19 text-center mt15">Speak to an expert</button>
+                <a className="mx-auto  w19 text-center" href="/contact-us"><button className=" bg-blue big-button-text btn mt15">Speak to an expert</button></a>
             </ReactBootstrap.Row>
-            <ReactBootstrap.Row className="mt100 pl0 pr0">
+            <ReactBootstrap.Row className="mt100 bg-grey pl0 pr0">
                 {/* <img className="pl0 pr0" src="/images/footersvg.png" alt="Footer" /> */}
                 <svg xmlns="http://www.w3.org/2000/svg" width="1366" height="484" viewBox="0 0 1366 484">
                     <g id="Group_1" data-name="Group 1" transform="translate(0 -2503)">

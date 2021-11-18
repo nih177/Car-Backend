@@ -23,7 +23,7 @@ export var VALIDATE_YEAR = async function (value) {
 }
 
 export var VALIDATE_NUMERIC = async function (value) {
-    return /^[1-9]*$/.test(value)
+    return /^[0-9]*$/.test(value)
 }
 
 export var VALIDATE_PASSWORD = async function (value) {

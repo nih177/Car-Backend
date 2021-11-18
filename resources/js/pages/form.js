@@ -7,10 +7,7 @@ import { VALIDATE_ALPHA, VALIDATE_NUMERIC } from '../helpers/validators';
 import axios from 'axios';
 export default function Form(props) {
 
-
     const history = useHistory();
-
-
     // const [loanAmount, setLoanAmount] = useState(0);
     // const [term, setTerm] = useState(0);
     // const [image, setImage] = useState('');
@@ -32,24 +29,22 @@ export default function Form(props) {
         setLoanAmount(e.target.value)
         console.log(props.loanAmount)
     }
-
-    const saveStudent = (e) => {
-
-    }
-    function submitForm(e) {
+    const submitForm = async (e) => {
         e.preventDefault();
         var validated = 1;
-        console.log(studentInput.loanAmount)
-        console.log(props.loanAmount)
         if (!props.loanAmount) {
             document.getElementById("loanAmount").style.border = "1px solid red";
             validated = 0;
         }
-
-        if (VALIDATE_NUMERIC(props.loanAmount) == false) {
+        else {
+            document.getElementById("loanAmount").style.border = "1px solid grey";
+        }
+        if (!Number(props.loanAmount) == true) {
             document.getElementById("loanAmount").style.border = "1px solid red";
             validated = 0;
         }
+        // props.setLoanAmount(Number(props.loanAmount))
+        // Term
         if (!props.term) {
             document.getElementById("term-span").style.opacity = "1";
             validated = 0;
@@ -61,30 +56,25 @@ export default function Form(props) {
         }
 
         if (validated == 1) {
+            // history.push('/form2')
             // window.location.href="https://instagram.com";
-            console.log(props.term)
+            // console.log(props.term)
 
             // const data = {
             //     loanAmount: props.loanAmount,
             //     term: props.term,
             // }
-            // console.log(data)
-            // const res = axios.post(`http://127.0.0.1:8000/validate`, data).then(() => {
-            //     console.log("Success. . . . ")
-            // }).catch(error => {
-            //     console.log("ERRRR:: ", error.response.data);
-            // });
-            // if (res === "Worked") {
-            //     console.log(res)
+            // console.log(typeof props.loanAmount)
+            // // // const rest = 0;
+            // const res = await axios.post(`/validate`, data);
+            // console.log(res);
+            // // if (res.data == 1) {
+            //     document.getElementById('error').style.display = "none";
+                history.push('/form2')
             // }
             // else {
-            //     console.log("Shit")
-            //     console.log("___")
+            //     document.getElementById('error').style.display = "block";
             // }
-            // console.log(res)
-            // console.log("Sent data")
-            // console.log("Appended")
-            history.push("/form2");
         }
     }
     return (
@@ -217,9 +207,11 @@ export default function Form(props) {
                             <span id="term-span" className=" o0 ml-2 p-2 d-block"><span className="color-red">* </span>Please click on the term you want</span>
                             <br />
                             <ReactBootstrap.Row>
-                                <ReactBootstrap.Col md={12} className=" mb20">
+                                <ReactBootstrap.Col md={12} className="mb20 ">
                                     <button type="submit" className=" bg-dark big-button-text btn d-flex">Continue</button>
                                 </ReactBootstrap.Col>
+                            </ReactBootstrap.Row>
+                            <ReactBootstrap.Row>
                             </ReactBootstrap.Row>
                         </ReactBootstrap.Row>
                     </ReactBootstrap.Row>

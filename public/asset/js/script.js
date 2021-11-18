@@ -153,7 +153,7 @@ $(document).ready(function () {
 
                 slide: function (event, ui) {
 
-                    $(this).siblings('.slider-label').text('Residual: ' + ui.value + '%');
+                    $(this).siblings('.slider-label').text( ui.value + '%');
 
                     calculateLoan();
 
@@ -161,7 +161,7 @@ $(document).ready(function () {
 
                 stop: function (event, ui) {
 
-                    $(this).siblings('.slider-label').text('Residual: ' + ui.value + '%');
+                    $(this).siblings('.slider-label').text( ui.value + '%');
 
                     calculateLoan();
 

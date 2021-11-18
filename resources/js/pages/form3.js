@@ -1,22 +1,22 @@
 import React from 'react'
 import * as ReactBootstrap from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
-import {useState} from 'react'
+import { useState } from 'react'
+import axios from 'axios';
 import { VALIDATE_ALPHA, VALIDATE_NUMERIC, VALIDATE_EMAIL } from '../helpers/validators';
 import './form.css';
 
 export default function Form3(props) {
     const history = useHistory();
 
-    function updateCheck(e)
-    {
-        if(e.target.checked == true){
+    function updateCheck(e) {
+        if (e.target.checked == true) {
             document.getElementById("checked-box-span").style.display = "none";
         }
     }
-    const [checked, setChecked] =useState(false);
+    const [checked, setChecked] = useState(false);
 
-    function submitForm(e) {
+    const submitForm = async (e) => {
         e.preventDefault();
         var validated = 1;
         // FullName
@@ -39,7 +39,7 @@ export default function Form3(props) {
             validated = 0;
         }
 
-        if (VALIDATE_NUMERIC(props.mobile) == false) {
+        if (!Number(props.mobile) == true) {
             document.getElementById("mobile").style.border = "1px solid red";
             validated = 0;
         }
@@ -63,7 +63,7 @@ export default function Form3(props) {
             validated = 0;
         }
 
-        if (VALIDATE_NUMERIC(props.telephone) == false) {
+        if (!Number(props.telephone) == true) {
             document.getElementById("telephone").style.border = "1px solid red";
             validated = 0;
         }
@@ -87,7 +87,7 @@ export default function Form3(props) {
             validated = 0;
         }
 
-        if (VALIDATE_NUMERIC(props.postcode) == false) {
+        if (!Number(props.postcode) == true) {
             document.getElementById("postcode").style.border = "1px solid red";
             validated = 0;
         }
@@ -99,7 +99,7 @@ export default function Form3(props) {
             validated = 0;
         }
 
-        if (VALIDATE_NUMERIC(props.income) == false) {
+        if (!Number(props.income) == true) {
             document.getElementById("income").style.border = "1px solid red";
             validated = 0;
         }
@@ -109,17 +109,38 @@ export default function Form3(props) {
 
         // Check Box
 
-        if(checked == false){
+        if (checked == false) {
             document.getElementById("checked-box-span").style.display = "block";
             validated = 0
         }
-        else
-        {
+        else {
             document.getElementById("checked-box-span").style.display = "none";
         }
         if (validated == 1) {
-            console.log("Success")
-            // window.location.href = "/final-page";
+            // console.log(typeof Number(props.mobile))
+            // props.setMobile(Number(props.mobile))
+            // props.setTelephone(Number(props.telephone))
+            // props.setPostcode(Number(props.postcode))
+            // props.setIncome(Number(props.income))
+            // console.log(typeof props.mobile)
+            // console.log(props.mobile)
+            // console.log(Number(props.mobile))
+            // console.log(typeof props.income)
+            // // window.location.href = "/final-page";
+            // const data = {
+            //     fullName: props.fullName,
+            //     mobile: props.mobile,
+            //     occupation: props.occupation,
+            //     telephone: props.telephone,
+            //     email: props.email,
+            //     postcode: props.postcode,
+            //     income: props.income,
+            //     perDuration: props.perDuration,
+            // }
+            // console.log(data)
+            // // const rest = 0;
+            // const res = await axios.post(`/validate`, data);
+            // console.log(typeof res)
             history.push("/final-page");
         }
     }
@@ -219,7 +240,7 @@ export default function Form3(props) {
                         <ReactBootstrap.Col md={12}>
                             <span className="normal-text mt15">Mobile</span>
                             <div className="mt4"></div>
-                            <input id="mobile" onChange={e => { e.preventDefault(); props.setMobile(e.target.value); }} className="w50" type="tel" ></input>
+                            <input id="mobile" onChange={e => { e.preventDefault(); props.setMobile(e.target.value); }} className="w50" type="text" ></input>
                         </ReactBootstrap.Col>
                         <ReactBootstrap.Col md={12}>
                             <span className="normal-text mt15">Occupation</span>
@@ -229,7 +250,7 @@ export default function Form3(props) {
                         <ReactBootstrap.Col md={12}>
                             <span className="normal-text mt15">Work Telephone</span>
                             <div className="mt4"></div>
-                            <input id="telephone" onChange={e => { e.preventDefault(); props.setTelephone(e.target.value); }} className="w50" type="tel" ></input>
+                            <input id="telephone" onChange={e => { e.preventDefault(); props.setTelephone(e.target.value); }} className="w50" type="text" ></input>
                         </ReactBootstrap.Col>
                         <ReactBootstrap.Col md={12}>
                             <span className="normal-text mt15">Email</span>
@@ -257,7 +278,7 @@ export default function Form3(props) {
                         </ReactBootstrap.Col>
                         <ReactBootstrap.Row className="mt15 -ml3">
                             <ReactBootstrap.Col md={1} className="pl0 pr0 w2">
-                                <input id="check-box" className="w50 -mt3" type="checkbox" id="allow" name="allow" onChange={e => { setChecked(e.target.checked); }} onClick={e=>{updateCheck(e)}} />
+                                <input id="check-box" className="w50 -mt3" type="checkbox" id="allow" name="allow" onChange={e => { setChecked(e.target.checked); }} onClick={e => { updateCheck(e) }} />
                             </ReactBootstrap.Col>
                             <ReactBootstrap.Col className="pl0 pr0" md={11}>
                                 <span className="allow-text mt-auto mb-auto">I accept the Privacy Disclouser & Consent statement</span>

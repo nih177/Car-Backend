@@ -2,6 +2,8 @@ import React from 'react';
 import * as ReactBootstrap from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
 import { VALIDATE_ALPHA, VALIDATE_NUMERIC } from '../helpers/validators';
+import axios from 'axios';
+
 import './form.css'
 export default function Form2(props) {
     const history = useHistory();
@@ -17,7 +19,7 @@ export default function Form2(props) {
         document.getElementById("supplier-span").style.display = "none";
     }
 
-    function submitForm(e) {
+    const submitForm = async (e) => {
         e.preventDefault();
         var validated = 1;
         // Vehicle Make
@@ -55,7 +57,7 @@ export default function Form2(props) {
             validated = 0;
         }
 
-        if (VALIDATE_NUMERIC(props.buildYear) == false) {
+        if (!Number(props.buildYear) == true) {
             document.getElementById("buildYear").style.border = "1px solid red";
             validated = 0;
         }
@@ -85,9 +87,18 @@ export default function Form2(props) {
             validated = 0;
         }
         if (validated == 1) {
-            console.log("Success")
+            // props.setBuildYear(Number(props.buildYear))
             // window.location.href = "/form3";
             history.push("/form3");
+            // const data = {
+            //     vehicleMake: props.vehicleMake,
+            //     vehicleModel: props.vehicleModel,
+            // }
+            // console.log(data)
+            // // const rest = 0;
+            // const res = await axios.post(`/validate`, data);
+            // console.log(typeof res)
+            // console.log(res)
         }
     }
 

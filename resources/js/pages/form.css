@@ -46,7 +46,7 @@ body{
 {
     background-color: none;
     margin-top: 50px!important;
-    margin-bottom: 50px!important;
+    /* margin-bottom: 50px!important; */
 }
 
 input[type="tel"] ,input[type="email"] ,input[type="number"] ,input[type="date"] ,input[type="time"] ,textarea ,input[type="password"],input[type="text"]

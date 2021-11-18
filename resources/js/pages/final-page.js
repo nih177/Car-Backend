@@ -2,18 +2,22 @@ import React, { useState } from 'react'
 import * as ReactBootstrap from 'react-bootstrap';
 import { useHistory } from 'react-router-dom';
 import { VALIDATE_ALPHA } from '../helpers/validators';
-
+import axios from 'axios';
 export default function FinalPage(props) {
+
+    var termMul = props.term * 12;
     const history = useHistory();
     function updateRepay() {
         document.getElementById('repay').innerHTML = props.repay
         console.log(props.repay)
         document.getElementById("repay-span").style.display = "none";
     }
-    function submitForm(e) {
+    const submitForm = async (e) => {
         e.preventDefault();
         var validated = 1;
+        console.log("Repay")
         console.log(props.repay)
+        console.log("------")
         if (!props.repay) {
             document.getElementById("repay-span").style.display = "block";
             validated = 0;
@@ -26,31 +30,77 @@ export default function FinalPage(props) {
 
         if (validated == 1) {
             // window.location.href="https://instagram.com";
-            console.log("Success")
+            // console.log(props.loanAmount);
+            // console.log(props.term);
 
-            // const data = {
-            //     loanAmount: props.loanAmount,
-            //     term: props.term,
-            // }
+            // console.log(props.vehicleMake);
+            // console.log(props.vehicleModel);
+            // console.log(props.buildYear);
+            // console.log(props.isVehicle);
+            // console.log(props.supplier);
+
+            // console.log(props.fullName);
+            // console.log(props.mobile);
+            // console.log(props.occupation);
+            // console.log(props.telephone);
+            // console.log(props.email);
+            // console.log(props.postcode);
+            // console.log(props.income);
+            // console.log(props.perDuration);
+
+            // console.log(props.repay)
+            // console.log("Success")
+            // var int_loan = Number(props.loanAmount)
+            // console.log("=================")
+            // console.log(int_loan)
+            // console.log(typeof int_loan)
+            // console.log("=================")
+            const data = {
+                // Form 1
+                loanAmount: props.loanAmount,
+                term: props.term,
+                // Form 2
+                vehicleMake: props.vehicleMake,
+                vehicleModel: props.vehicleModel,
+                buildYear: props.buildYear,
+                isVehicle: props.isVehicle,
+                supplier: props.supplier,
+                // Form 3
+                fullName: props.fullName,
+                mobile: props.mobile,
+                occupation: props.occupation,
+                telephone: props.telephone,
+                email: props.email,
+                postcode: props.postcode,
+                income: props.income,
+                perDuration: props.perDuration,
+                // Final Page
+                repay: props.repay,
+                // Main Page
+                amount: props.amount,
+                residual: props.residual,
+                repayment: props.repayment
+            }
+            // console.log("=========Data========")
             // console.log(data)
-            // const res = axios.post(`http://127.0.0.1:8000/validate`, data).then(() => {
-            //     console.log("Success. . . . ")
-            // }).catch(error => {
-            //     console.log("ERRRR:: ", error.response.data);
-            // });
-            // if (res === "Worked") {
-            //     console.log(res)
-            // }
-            // else {
-            //     console.log("Shit")
-            //     console.log("___")
-            // }
-            // console.log(res)
-            // console.log("Sent data")
-            // console.log("Appended")
-            // window.location.href = "http://127.0.0.1:8000/form2";
-            // window.location.href = "/";
-            history.push("/main-page");
+            // console.log("=========Data========")
+            // console.log(typeof props.mobile)
+            // console.log(typeof props.telephone)
+            // console.log(typeof props.postcode)
+            // console.log(typeof props.income)
+            // console.log(typeof props.loanAmount)
+            // console.log("==========")
+            const res = await axios.post(`/validate`, data);
+            console.log(res)
+            if (res.data == 1) {
+                document.getElementById('error').style.display = "none";
+                document.getElementById('thanks-page').style.display = "flex";
+                document.getElementById('page4').style = "margin-top:0px!important";
+                // history.push("/main-page");
+            }
+            else {
+                document.getElementById('error').style.display = "block";
+            }
         }
     }
     return (
@@ -129,8 +179,11 @@ export default function FinalPage(props) {
                     </svg>
                 </ReactBootstrap.Col>
                 <ReactBootstrap.Col className=" " md={2}>
-                    <a href="/" className="text-decoration-none float-right mt15">Go back to home page</a>
+                    <a href="/main-page" className="text-decoration-none float-right mt15">Go back to home page</a>
                 </ReactBootstrap.Col>
+            </ReactBootstrap.Row>
+            <ReactBootstrap.Row id="thanks-page" className="mx-auto mt25 dn text-center">
+                <h1>Thanking for filling the form.We will get back to you shortly</h1>
             </ReactBootstrap.Row>
             <ReactBootstrap.Row className="d-flex align-items-center pl40p5">
                 <ReactBootstrap.Row id="page4" className="mx-auto w62 form-container-no-bg">
@@ -140,19 +193,19 @@ export default function FinalPage(props) {
                     </ReactBootstrap.Col>
                     <ReactBootstrap.Col md={12} className="normal-text mt15">
                         Amount financed<div className="mt4"></div>
-                        $10,000
+                        {props.amount}
                     </ReactBootstrap.Col>
                     <ReactBootstrap.Col md={12} className="normal-text mt15">
                         Loan terms<div className="mt4"></div>
-                        60 months
+                        {termMul}
                     </ReactBootstrap.Col>
                     <ReactBootstrap.Col md={12} className="normal-text mt15">
                         Residual<div className="mt4"></div>
-                        30%
+                        {props.residual}
                     </ReactBootstrap.Col>
                     <ReactBootstrap.Col md={12} className="normal-text mt15">
                         Repayment<div className="mt4"></div>
-                        $158.96
+                        $ {props.repayment}
                         <br />
                     </ReactBootstrap.Col>
                     <ReactBootstrap.Col md={12} className="mt15 normal-text">
@@ -160,7 +213,7 @@ export default function FinalPage(props) {
                         <br />
                     </ReactBootstrap.Col>
                     <ReactBootstrap.Col className="w19 mt4" md={3}>
-                        <button  onClick={e => { e.preventDefault(); props.setRepay("Week"); updateRepay() }} className="w100 small-button-text">Week</button>
+                        <button onClick={e => { e.preventDefault(); props.setRepay("Week"); updateRepay() }} className="w100 small-button-text">Week</button>
                         <br />
                     </ReactBootstrap.Col>
                     <ReactBootstrap.Col className="w19 mt4" md={3}>
@@ -173,10 +226,11 @@ export default function FinalPage(props) {
                     </ReactBootstrap.Col>
                     <input type="text" id="repay" name="repay" className="form-control" hidden />
                     <span id="repay-span" className=" dn ml-2 p-2"><span className="color-red">* </span>Please select the type of repayment</span>
-                    <ReactBootstrap.Col md={12} className="mt15 mb20">
+                    <ReactBootstrap.Col md={12} className="mt15 mb4">
                         <button onClick={submitForm} className="w19 big-button-text bg-blue">Confirm</button>
                     </ReactBootstrap.Col>
                 </ReactBootstrap.Row>
+                <span id="error" className="dn mt4 mb4"><span className="color-red">* </span>Please enter valid data</span>
             </ReactBootstrap.Row>
         </ReactBootstrap.Row >
     );

@@ -1,11 +1,12 @@
 import React from 'react';
 import * as ReactBootstrap from 'react-bootstrap';
+import { useHistory } from 'react-router-dom';
 import NewDesign from '../components/new';
 import AllVehicles from '../components/all-vehicles';
 import TestimonialSvg from '../components/testimonial-svg';
 
 export default function MainPage(props) {
-
+    const history = useHistory();
     function submitForm(e) {
         e.preventDefault();
         var validated = 1;
@@ -21,6 +22,7 @@ export default function MainPage(props) {
         console.log(props.amount)
         console.log(props.residual)
         console.log(props.repayment)
+        history.push("/form");
     }
     return (
         <ReactBootstrap.Row className="">
@@ -76,7 +78,7 @@ export default function MainPage(props) {
                                     <div id="amount-slider" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"><a className="ui-slider-handle ui-state-default ui-corner-all" href="#"></a></div>
                                 </li>
                                 <li>
-                                    <span id="residual" className="slider-label">Residual: 0 %</span>
+                                    Residual:<span id="residual" className="slider-label"> 0 %</span>
                                     <span id="residual-slider-amount" className="slider-value">($ 0)</span>
                                     <div id="residual-slider" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"><a className="ui-slider-handle ui-state-default ui-corner-all" href="#"></a></div>
                                 </li>

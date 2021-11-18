@@ -39,12 +39,12 @@ import FinalPage from '../pages/final-page';
 function User() {
     // Always remember to keep const inside User() function
     // --------Main page--------
-    const [amount, setAmount] = useState('');
-    const [residual, setResidual] = useState('');
-    const [repayment, setRepayment] = useState('')
-    // --------Page-2--------
-    const [loanAmount, setLoanAmount] = useState();
-    const [term, setTerm] = useState();
+    const [amount, setAmount] = useState('0');
+    const [residual, setResidual] = useState('0');
+    const [repayment, setRepayment] = useState('0')
+    // --------Page-1--------
+    const [loanAmount, setLoanAmount] = useState('');
+    const [term, setTerm] = useState(0);
     // --------Page-2--------
     const [vehicleMake, setVehicleMake] = useState('Vehicle Make 1');
     const [vehicleModel, setVehicleModel] = useState('Vehicle Model 1');
@@ -54,6 +54,8 @@ function User() {
     // --------Page-3--------
     const [fullName, setFullName] = useState('');
     const [mobile, setMobile] = useState('');
+    console.log("=App")
+    console.log(typeof mobile)
     const [occupation, setOccupation] = useState('');
     const [telephone, setTelephone] = useState('');
     const [email, setEmail] = useState('');
@@ -196,6 +198,9 @@ function User() {
                             setAmount = {setAmount}
                             setResidual = {setResidual}
                             setRepayment = {setRepayment}
+                            // Final Page
+                            repay = {repay}
+                            setRepay = {setRepay}
                         />
                     </Route>
                 </Switch>

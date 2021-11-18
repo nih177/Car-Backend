@@ -23,6 +23,7 @@ Route::get('/p/create', [App\Http\Controllers\PostController::class, 'create']);
 // // Image storing
 Route::post('/p', [App\Http\Controllers\PostController::class, 'store']);
 Route::post('/validate', [App\Http\Controllers\Navigation::class, 'valid']);
+Route::post('/thanks', [App\Http\Controllers\Navigation::class, 'thanks']);
 
 Route::view('/{path?}','welcome');
 // Route::get('/{path?}', [

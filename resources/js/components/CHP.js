@@ -7,7 +7,7 @@ function CHP() {
         <div id="content">
             <Menu />
             
-            <form method="post" action="carfinance_first.php">
+            <form  action="">
                 <input type="hidden" id="submitted-form" name="submitted-form" />
                 <div id="chp-body" className="body-content">
                     <div className="row body-text">

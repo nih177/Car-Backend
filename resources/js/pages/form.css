@@ -390,6 +390,11 @@ input[type="checkbox"] {
     outline: red;
 }
 
+.cursor
+{
+    cursor: pointer;
+}
+
 /* -------Colors-------- */
 
 .color-white
@@ -429,12 +434,24 @@ input[type="checkbox"] {
     margin: 6px 0px;
 }
 
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+    background-color:white!important;
+    border :0px
+}
 #car-loan-cal .ui-state-default {
-    background-image: url(/images/car-icon.png);
-    left: 5%;
+    /* background-image: url(/images/car.svg); */
+    background-image:none!important;
+    background-repeat: no-repeat;
+    /* left: 3%!important; */
     top: -25px;
     width: 33px!important;
     height: 24px!important;
+}
+
+.ts
+{
+    /* background-image: url(/images/testimonials.svg);
+    background-color: white; */
 }
 
 #car-loan-cal .ui-slider {
@@ -442,10 +459,6 @@ input[type="checkbox"] {
     text-align: left;
     left: 0px;
     top: 17px;
-}
-
-.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
-    background-color:none!important;
 }
 
 .loan-calculatorbg {

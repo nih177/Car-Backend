@@ -3172,8 +3172,7 @@ function CHP() {
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("div", {
     id: "content",
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_Menu__WEBPACK_IMPORTED_MODULE_1__["default"], {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)("form", {
-      method: "post",
-      action: "carfinance_first.php",
+      action: "",
       children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("input", {
         type: "hidden",
         id: "submitted-form",
@@ -10818,7 +10817,7 @@ __webpack_require__.r(__webpack_exports__);
 function TestimonialSvg() {
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.Fragment, {
     children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("img", {
-      src: "/images/testimonials.png",
+      src: "/images/testimonials.svg",
       alt: "Testimonials"
     })
   });
@@ -13694,6 +13693,10 @@ function MainPage(props) {
     history.push("/form");
   }
 
+  function pcl() {
+    window.location.href = '/personal-car-lease';
+  }
+
   return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
     className: "",
     children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
@@ -13871,7 +13874,10 @@ function MainPage(props) {
                   className: "ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all",
                   children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
                     className: "ui-slider-handle ui-state-default ui-corner-all",
-                    href: "#"
+                    href: "#",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("img", {
+                      src: "/images/car.svg"
+                    })
                   })
                 })]
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
@@ -13888,7 +13894,10 @@ function MainPage(props) {
                   className: "ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all",
                   children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
                     className: "ui-slider-handle ui-state-default ui-corner-all",
-                    href: "#"
+                    href: "#",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("img", {
+                      src: "/images/car.svg"
+                    })
                   })
                 })]
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
@@ -13903,7 +13912,10 @@ function MainPage(props) {
                   className: "ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all",
                   children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
                     className: "ui-slider-handle ui-state-default ui-corner-all",
-                    href: "#"
+                    href: "#",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("img", {
+                      src: "/images/car.svg"
+                    })
                   })
                 })]
               }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("li", {
@@ -13918,7 +13930,10 @@ function MainPage(props) {
                   className: "ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all",
                   children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
                     className: "ui-slider-handle ui-state-default ui-corner-all",
-                    href: "#"
+                    href: "#",
+                    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("img", {
+                      src: "/images/car.svg"
+                    })
                   })
                 })]
               })]
@@ -13960,7 +13975,7 @@ function MainPage(props) {
       className: "mt100",
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_all_vehicles__WEBPACK_IMPORTED_MODULE_2__["default"], {})
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
-      className: "mt100",
+      className: "mt100 ts",
       children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_components_testimonial_svg__WEBPACK_IMPORTED_MODULE_3__["default"], {})
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
       className: "mt100",
@@ -13987,10 +14002,235 @@ function MainPage(props) {
       })]
     }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(react_bootstrap__WEBPACK_IMPORTED_MODULE_6__["default"], {
       className: "mt100 pl0 pr0",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("img", {
-        className: "pl0 pr0",
-        src: "/images/footersvg.png",
-        alt: "Footer"
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        width: "1366",
+        height: "484",
+        viewBox: "0 0 1366 484",
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("g", {
+          id: "Group_1",
+          "data-name": "Group 1",
+          transform: "translate(0 -2503)",
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("rect", {
+            id: "Rectangle_54",
+            "data-name": "Rectangle 54",
+            width: "1366",
+            height: "484",
+            transform: "translate(0 2503)",
+            fill: "#565656"
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("g", {
+            id: "Component_2_1",
+            "data-name": "Component 2 \u2013 1",
+            transform: "translate(139 2603)",
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              id: "Car_Loan_Sales",
+              "data-name": "Car Loan Sales",
+              transform: "translate(0 13)",
+              fill: "#fff",
+              "font-size": "16",
+              "font-family": "AbrilFatface-Regular, Abril Fatface",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "Car Loan Sales"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              id: "ABN:_99_033_791_789",
+              "data-name": "ABN: 99 033 791 789",
+              transform: "translate(0 45)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "ABN: 99 033 791 789"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              id: "AFS_License:_336343",
+              "data-name": "AFS License: 336343",
+              transform: "translate(0 76)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "AFS License: 336343"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              id: "Australian_Credit_License:_393424",
+              "data-name": "Australian Credit License: 393424",
+              transform: "translate(0 107)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "Australian Credit License: 393424"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              id: "COSL_MN:_M0005987",
+              "data-name": "COSL MN: M0005987",
+              transform: "translate(0 138)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "COSL MN: M0005987"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              id: "FBAA_MN:_M-324989",
+              "data-name": "FBAA MN: M-324989",
+              transform: "translate(0 169)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "FBAA MN: M-324989"
+              })
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              id: "Credit_Guide",
+              "data-name": "Credit Guide",
+              transform: "translate(0 200)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "Credit Guide"
+              })
+            })]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+            id: "Products",
+            transform: "translate(469 2616)",
+            fill: "#fff",
+            "font-size": "16",
+            "font-family": "AbrilFatface-Regular, Abril Fatface",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+              x: "0",
+              y: "0",
+              children: "Products"
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+            className: "",
+            href: "/personal-car-lease",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              className: "cursor",
+              id: "Personal_Car_Loan",
+              "data-name": "Personal Car Loan",
+              transform: "translate(469 2650)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "Personal Car Loan"
+              })
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+            className: "",
+            href: "/car-lease",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              className: "cursor",
+              id: "Car_Lease",
+              "data-name": "Car Lease",
+              transform: "translate(469 2681)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "Car Lease"
+              })
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+            className: "",
+            href: "/low-doc-finance",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              className: "cursor",
+              id: "Low_Doc_Finance",
+              "data-name": "Low Doc Finance",
+              transform: "translate(469 2712)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "Low Doc Finance"
+              })
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+            className: "",
+            href: "/chattel-mortgage",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              className: "cursor",
+              id: "Chattel_Mortgage",
+              "data-name": "Chattel Mortgage",
+              transform: "translate(469 2743)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "Chattel Mortgage"
+              })
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+            className: "",
+            href: "/commercial-hire-purchase",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              className: "cursor",
+              id: "Commercial_Hire_Purchase",
+              "data-name": "Commercial Hire Purchase",
+              transform: "translate(469 2774)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "Commercial Hire Purchase"
+              })
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("a", {
+            className: "",
+            href: "/novated-lease",
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("text", {
+              className: "cursor",
+              id: "Novated_Lease",
+              "data-name": "Novated Lease",
+              transform: "translate(469 2805)",
+              fill: "#b6b6b6",
+              "font-size": "14",
+              "font-family": "SegoeUI, Segoe UI",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("tspan", {
+                x: "0",
+                y: "0",
+                children: "Novated Lease"
+              })
+            })
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("line", {
+            className: "cursor",
+            id: "Line_5",
+            "data-name": "Line 5",
+            x2: "92",
+            transform: "translate(139 2809)",
+            fill: "none",
+            stroke: "#707070",
+            "stroke-width": "1"
+          })]
+        })
       })
     })]
   });
@@ -14106,7 +14346,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "/* --------Global CSS------ */\r\nbody{\r\n    background: none!important;\r\n}\r\n.sub-heading-text\r\n{\r\n    font-size: 16px;\r\n    font-weight: 500;\r\n    font-family: 'Abril Fatface', cursive;\r\n}\r\n\r\n.normal-text\r\n{\r\n    font-size: 16px;\r\n    font-family: \"Playfair Dispaly\";\r\n}\r\n\r\n.small-button-text\r\n{\r\n    font-size:16px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.big-button-text\r\n{\r\n    font-size:20px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.go-back\r\n{\r\n    font-family: \"Playfair Dispaly\";\r\n    font-size: 14px;\r\n}\r\n\r\n.form-container\r\n{\r\n    background-color: #e9e9e9;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\n.form-container-no-bg\r\n{\r\n    background-color: none;\r\n    margin-top: 50px!important;\r\n    /* margin-bottom: 50px!important; */\r\n}\r\n\r\ninput[type=\"tel\"] ,input[type=\"email\"] ,input[type=\"number\"] ,input[type=\"date\"] ,input[type=\"time\"] ,textarea ,input[type=\"password\"],input[type=\"text\"]\r\n{\r\n    /* font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size);\r\n    color: var(--black); */\r\n    border: 1px solid grey;\r\n    /* outline: none; */\r\n    padding: 10px 12px;\r\n    border-radius: 4px;\r\n}\r\n\r\n.select\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 10px 12px;\r\n    border-radius: 4px; \r\n}\r\n\r\n.select-middle\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 4px 12px 5px 8px;\r\n    border-radius: 4px;\r\n}\r\n\r\nbutton\r\n{\r\n    /* background-color: var(--bright-blue);\r\n    font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size); */\r\n    border-radius: 4px!important;\r\n    padding: 8px 0px;\r\n    color: #ffffff;\r\n    border: none;\r\n    outline: none;\r\n    background-color: #c3c2c8;\r\n}\r\n\r\n/* button:active\r\n{\r\n    background-color:#4D4ACF;\r\n} */\r\n\r\nbutton:focus\r\n{\r\n    background-color:#4D4ACF;\r\n}\r\n\r\n.bg-dark\r\n{\r\n    background-color: black;\r\n}\r\n\r\n.bg-blue\r\n{\r\n    background-color: #4D4ACF;\r\n}\r\n\r\n.per-text\r\n{\r\n    margin-right: 20px;\r\n}\r\n\r\n.allow-text\r\n{\r\n    text-align: justify;\r\n    vertical-align: middle;\r\n    padding:auto;\r\n    align-items: center;\r\n    /* margin-left: -10px; */\r\n}\r\n\r\ninput[type=\"checkbox\"] {\r\n\t/* -webkit-appearance: none; */\r\n\tborder: 2px solid grey;\r\n\tpadding: 7px;\r\n\tborder-radius: 6px;\r\n\tdisplay: inline-block;\r\n    position: relative;\r\n    vertical-align:middle;\r\n    margin-left: 6px;\r\n    height:18px;\r\n   \r\n}\r\n\r\n/* -------Width-------- */\r\n\r\n.w2\r\n{\r\n    width:2.3333%!important;\r\n}\r\n\r\n.w100p\r\n{\r\n    width:100px!important;\r\n}\r\n\r\n.w50\r\n{\r\n    width:50%!important;\r\n}\r\n\r\n.w62\r\n{\r\n    width:62%!important;\r\n}\r\n\r\n.w60\r\n{\r\n    width:60%!important;\r\n}\r\n\r\n.w75\r\n{\r\n    width:75%;\r\n}\r\n\r\n.w30\r\n{\r\n    width:30%;\r\n}\r\n\r\n.w100\r\n{\r\n    width:100%;\r\n}\r\n\r\n.w99\r\n{\r\n    width:99%;\r\n}\r\n\r\n.w19\r\n{\r\n    width:19.666667%!important;\r\n}\r\n\r\n.w25\r\n{\r\n    width:25.666667%!important;\r\n}\r\n\r\n.w10\r\n{\r\n    width:10.666667%!important;\r\n}\r\n\r\n.w34\r\n{\r\n    width:34.666667%!important;\r\n}\r\n\r\n.w48\r\n{\r\n    width:48%!important;\r\n    max-width:48%!important;\r\n}\r\n\r\n/* -------Height-------- */\r\n\r\n/* .h100\r\n{\r\n    height:100vh;\r\n} */\r\n.h52\r\n{\r\n    height:52px!important;\r\n}\r\n\r\n.h15\r\n{\r\n    height:15px;\r\n}\r\n\r\n/* -------Margin-------- */\r\n\r\n.mt15\r\n{\r\n    margin-top: 15px!important;\r\n}\r\n\r\n.mt234\r\n{\r\n    margin-top: 234px!important;\r\n}\r\n\r\n.mt70\r\n{\r\n    margin-top: 70px!important;\r\n}\r\n\r\n.-mt3\r\n{\r\n    margin-top: -3px;\r\n}\r\n\r\n.mt25\r\n{\r\n    margin-top: 25px!important;\r\n}\r\n\r\n.mt10\r\n{\r\n    margin-top: 10px!important;\r\n}\r\n\r\n.mt20\r\n{\r\n    margin-top: 20px!important;\r\n}\r\n\r\n.mt150\r\n{\r\n    margin-top: 150px;\r\n}\r\n\r\n.mt100\r\n{\r\n    margin-top: 100px;\r\n}\r\n\r\n.mt4\r\n{\r\n    margin-top: 4px;\r\n}\r\n\r\n.-ml3\r\n{\r\n    margin-left: -3px;\r\n}\r\n\r\n.-ml10\r\n{\r\n    margin-left: -10px;\r\n}\r\n\r\n.ml100\r\n{\r\n    margin-left:100px!important;\r\n}\r\n\r\n.ml15\r\n{\r\n    margin-left:15px!important;\r\n}\r\n\r\n.ml30per\r\n{\r\n    margin-left:30%!important;\r\n}\r\n\r\n.ml62\r\n{\r\n    margin-left:62px!important;\r\n}\r\n\r\n.mb20\r\n{\r\n    margin-bottom: 20px;\r\n}\r\n\r\n.mb4\r\n{\r\n    margin-bottom: 4px;\r\n}\r\n\r\n.mr30\r\n{\r\n    margin-right:30px;\r\n}\r\n\r\n/* -------Padding-------- */\r\n\r\n.pt10\r\n{\r\n    padding-top: 10px;\r\n}\r\n\r\n.pl85\r\n{\r\n    padding-left: 85px;\r\n}\r\n\r\n.pl0\r\n{\r\n    padding-left: 0px!important;\r\n}\r\n\r\n.pr0\r\n{\r\n    padding-right: 0px!important;\r\n}\r\n\r\n.pl32\r\n{\r\n    padding-left: 32%!important;\r\n}\r\n\r\n.pl25\r\n{\r\n    padding-left: 25%!important;\r\n}\r\n\r\n.pl22\r\n{\r\n    padding-left: 22%!important;\r\n}\r\n\r\n.pl29p5\r\n{\r\n    padding-left: 29.5%!important;\r\n}\r\n\r\n.pl40p5\r\n{\r\n    padding-left: 40.5%!important;\r\n}\r\n\r\n.center {\r\n    display: flex;\r\n    justify-content: center;\r\n    align-items: center; \r\n}\r\n\r\n.dn\r\n{\r\n    display: none;\r\n}\r\n\r\n.o0\r\n{\r\n    opacity: 0;\r\n}\r\n\r\n.out\r\n{\r\n    outline: red;\r\n}\r\n\r\n/* -------Colors-------- */\r\n\r\n.color-white\r\n{\r\n    color: white !important;\r\n}\r\n\r\n.color-red\r\n{\r\n    color: red !important;\r\n}\r\n\r\n.color-black\r\n{\r\n    color:black !important;\r\n}\r\n\r\n.car-loan-calculator-title\r\n{\r\n    letter-spacing: 0px;\r\n}\r\n/* -----------------Changing the errors-------------------- */\r\n\r\n.row {\r\n    margin-right: 0px!important;\r\n    margin-left: 0px!important;\r\n}\r\n\r\n.mxw11\r\n{\r\n    max-width: 11.666667%!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider-horizontal {\r\n    border: 1px solid #bdcede;\r\n    height: 0;\r\n    margin: 6px 0px;\r\n}\r\n\r\n#car-loan-cal .ui-state-default {\r\n    background-image: url(/images/car-icon.png);\r\n    left: 5%;\r\n    top: -25px;\r\n    width: 33px!important;\r\n    height: 24px!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider {\r\n    position: relative;\r\n    text-align: left;\r\n    left: 0px;\r\n    top: 17px;\r\n}\r\n\r\n.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {\r\n    background-color:none!important;\r\n}\r\n\r\n.loan-calculatorbg {\r\n    background-image:none!important;\r\n    border:1px solid #C4C4C4!important;\r\n    border-radius:1px;\r\n    padding-top: 15px;\r\n}\r\n\r\n.btn:hover\r\n{\r\n    color:white!important;\r\n}\r\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "/* --------Global CSS------ */\r\nbody{\r\n    background: none!important;\r\n}\r\n.sub-heading-text\r\n{\r\n    font-size: 16px;\r\n    font-weight: 500;\r\n    font-family: 'Abril Fatface', cursive;\r\n}\r\n\r\n.normal-text\r\n{\r\n    font-size: 16px;\r\n    font-family: \"Playfair Dispaly\";\r\n}\r\n\r\n.small-button-text\r\n{\r\n    font-size:16px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.big-button-text\r\n{\r\n    font-size:20px;\r\n    font-family: 'Abril Fatface', cursive;\r\n    color:white;\r\n}\r\n\r\n.go-back\r\n{\r\n    font-family: \"Playfair Dispaly\";\r\n    font-size: 14px;\r\n}\r\n\r\n.form-container\r\n{\r\n    background-color: #e9e9e9;\r\n    margin-top: 50px!important;\r\n    margin-bottom: 50px!important;\r\n}\r\n\r\n.form-container-no-bg\r\n{\r\n    background-color: none;\r\n    margin-top: 50px!important;\r\n    /* margin-bottom: 50px!important; */\r\n}\r\n\r\ninput[type=\"tel\"] ,input[type=\"email\"] ,input[type=\"number\"] ,input[type=\"date\"] ,input[type=\"time\"] ,textarea ,input[type=\"password\"],input[type=\"text\"]\r\n{\r\n    /* font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size);\r\n    color: var(--black); */\r\n    border: 1px solid grey;\r\n    /* outline: none; */\r\n    padding: 10px 12px;\r\n    border-radius: 4px;\r\n}\r\n\r\n.select\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 10px 12px;\r\n    border-radius: 4px; \r\n}\r\n\r\n.select-middle\r\n{\r\n    border: 1px solid grey;\r\n    outline: none;\r\n    padding: 4px 12px 5px 8px;\r\n    border-radius: 4px;\r\n}\r\n\r\nbutton\r\n{\r\n    /* background-color: var(--bright-blue);\r\n    font-family: var(--primary-font-family);\r\n    font-size: var(--default-font-size); */\r\n    border-radius: 4px!important;\r\n    padding: 8px 0px;\r\n    color: #ffffff;\r\n    border: none;\r\n    outline: none;\r\n    background-color: #c3c2c8;\r\n}\r\n\r\n/* button:active\r\n{\r\n    background-color:#4D4ACF;\r\n} */\r\n\r\nbutton:focus\r\n{\r\n    background-color:#4D4ACF;\r\n}\r\n\r\n.bg-dark\r\n{\r\n    background-color: black;\r\n}\r\n\r\n.bg-blue\r\n{\r\n    background-color: #4D4ACF;\r\n}\r\n\r\n.per-text\r\n{\r\n    margin-right: 20px;\r\n}\r\n\r\n.allow-text\r\n{\r\n    text-align: justify;\r\n    vertical-align: middle;\r\n    padding:auto;\r\n    align-items: center;\r\n    /* margin-left: -10px; */\r\n}\r\n\r\ninput[type=\"checkbox\"] {\r\n\t/* -webkit-appearance: none; */\r\n\tborder: 2px solid grey;\r\n\tpadding: 7px;\r\n\tborder-radius: 6px;\r\n\tdisplay: inline-block;\r\n    position: relative;\r\n    vertical-align:middle;\r\n    margin-left: 6px;\r\n    height:18px;\r\n   \r\n}\r\n\r\n/* -------Width-------- */\r\n\r\n.w2\r\n{\r\n    width:2.3333%!important;\r\n}\r\n\r\n.w100p\r\n{\r\n    width:100px!important;\r\n}\r\n\r\n.w50\r\n{\r\n    width:50%!important;\r\n}\r\n\r\n.w62\r\n{\r\n    width:62%!important;\r\n}\r\n\r\n.w60\r\n{\r\n    width:60%!important;\r\n}\r\n\r\n.w75\r\n{\r\n    width:75%;\r\n}\r\n\r\n.w30\r\n{\r\n    width:30%;\r\n}\r\n\r\n.w100\r\n{\r\n    width:100%;\r\n}\r\n\r\n.w99\r\n{\r\n    width:99%;\r\n}\r\n\r\n.w19\r\n{\r\n    width:19.666667%!important;\r\n}\r\n\r\n.w25\r\n{\r\n    width:25.666667%!important;\r\n}\r\n\r\n.w10\r\n{\r\n    width:10.666667%!important;\r\n}\r\n\r\n.w34\r\n{\r\n    width:34.666667%!important;\r\n}\r\n\r\n.w48\r\n{\r\n    width:48%!important;\r\n    max-width:48%!important;\r\n}\r\n\r\n/* -------Height-------- */\r\n\r\n/* .h100\r\n{\r\n    height:100vh;\r\n} */\r\n.h52\r\n{\r\n    height:52px!important;\r\n}\r\n\r\n.h15\r\n{\r\n    height:15px;\r\n}\r\n\r\n/* -------Margin-------- */\r\n\r\n.mt15\r\n{\r\n    margin-top: 15px!important;\r\n}\r\n\r\n.mt234\r\n{\r\n    margin-top: 234px!important;\r\n}\r\n\r\n.mt70\r\n{\r\n    margin-top: 70px!important;\r\n}\r\n\r\n.-mt3\r\n{\r\n    margin-top: -3px;\r\n}\r\n\r\n.mt25\r\n{\r\n    margin-top: 25px!important;\r\n}\r\n\r\n.mt10\r\n{\r\n    margin-top: 10px!important;\r\n}\r\n\r\n.mt20\r\n{\r\n    margin-top: 20px!important;\r\n}\r\n\r\n.mt150\r\n{\r\n    margin-top: 150px;\r\n}\r\n\r\n.mt100\r\n{\r\n    margin-top: 100px;\r\n}\r\n\r\n.mt4\r\n{\r\n    margin-top: 4px;\r\n}\r\n\r\n.-ml3\r\n{\r\n    margin-left: -3px;\r\n}\r\n\r\n.-ml10\r\n{\r\n    margin-left: -10px;\r\n}\r\n\r\n.ml100\r\n{\r\n    margin-left:100px!important;\r\n}\r\n\r\n.ml15\r\n{\r\n    margin-left:15px!important;\r\n}\r\n\r\n.ml30per\r\n{\r\n    margin-left:30%!important;\r\n}\r\n\r\n.ml62\r\n{\r\n    margin-left:62px!important;\r\n}\r\n\r\n.mb20\r\n{\r\n    margin-bottom: 20px;\r\n}\r\n\r\n.mb4\r\n{\r\n    margin-bottom: 4px;\r\n}\r\n\r\n.mr30\r\n{\r\n    margin-right:30px;\r\n}\r\n\r\n/* -------Padding-------- */\r\n\r\n.pt10\r\n{\r\n    padding-top: 10px;\r\n}\r\n\r\n.pl85\r\n{\r\n    padding-left: 85px;\r\n}\r\n\r\n.pl0\r\n{\r\n    padding-left: 0px!important;\r\n}\r\n\r\n.pr0\r\n{\r\n    padding-right: 0px!important;\r\n}\r\n\r\n.pl32\r\n{\r\n    padding-left: 32%!important;\r\n}\r\n\r\n.pl25\r\n{\r\n    padding-left: 25%!important;\r\n}\r\n\r\n.pl22\r\n{\r\n    padding-left: 22%!important;\r\n}\r\n\r\n.pl29p5\r\n{\r\n    padding-left: 29.5%!important;\r\n}\r\n\r\n.pl40p5\r\n{\r\n    padding-left: 40.5%!important;\r\n}\r\n\r\n.center {\r\n    display: flex;\r\n    justify-content: center;\r\n    align-items: center; \r\n}\r\n\r\n.dn\r\n{\r\n    display: none;\r\n}\r\n\r\n.o0\r\n{\r\n    opacity: 0;\r\n}\r\n\r\n.out\r\n{\r\n    outline: red;\r\n}\r\n\r\n.cursor\r\n{\r\n    cursor: pointer;\r\n}\r\n\r\n/* -------Colors-------- */\r\n\r\n.color-white\r\n{\r\n    color: white !important;\r\n}\r\n\r\n.color-red\r\n{\r\n    color: red !important;\r\n}\r\n\r\n.color-black\r\n{\r\n    color:black !important;\r\n}\r\n\r\n.car-loan-calculator-title\r\n{\r\n    letter-spacing: 0px;\r\n}\r\n/* -----------------Changing the errors-------------------- */\r\n\r\n.row {\r\n    margin-right: 0px!important;\r\n    margin-left: 0px!important;\r\n}\r\n\r\n.mxw11\r\n{\r\n    max-width: 11.666667%!important;\r\n}\r\n\r\n#car-loan-cal .ui-slider-horizontal {\r\n    border: 1px solid #bdcede;\r\n    height: 0;\r\n    margin: 6px 0px;\r\n}\r\n\r\n.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {\r\n    background-color:white!important;\r\n    border :0px\r\n}\r\n#car-loan-cal .ui-state-default {\r\n    /* background-image: url(/images/car.svg); */\r\n    background-image:none!important;\r\n    background-repeat: no-repeat;\r\n    /* left: 3%!important; */\r\n    top: -25px;\r\n    width: 33px!important;\r\n    height: 24px!important;\r\n}\r\n\r\n.ts\r\n{\r\n    /* background-image: url(/images/testimonials.svg);\r\n    background-color: white; */\r\n}\r\n\r\n#car-loan-cal .ui-slider {\r\n    position: relative;\r\n    text-align: left;\r\n    left: 0px;\r\n    top: 17px;\r\n}\r\n\r\n.loan-calculatorbg {\r\n    background-image:none!important;\r\n    border:1px solid #C4C4C4!important;\r\n    border-radius:1px;\r\n    padding-top: 15px;\r\n}\r\n\r\n.btn:hover\r\n{\r\n    color:white!important;\r\n}\r\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

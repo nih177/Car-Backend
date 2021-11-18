@@ -24,6 +24,9 @@ export default function MainPage(props) {
         console.log(props.repayment)
         history.push("/form");
     }
+    function pcl() {
+        window.location.href = '/personal-car-lease';
+    }
     return (
         <ReactBootstrap.Row className="">
             <ReactBootstrap.Row className="h100">
@@ -75,22 +78,30 @@ export default function MainPage(props) {
                                     <span className="slider-label">Amount</span>
                                     <span id='amount' className="slider-value"> $  0</span>
                                     {/* <input type="range" onChange={e=>{console.log(e.target)}}></input> */}
-                                    <div id="amount-slider" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"><a className="ui-slider-handle ui-state-default ui-corner-all" href="#"></a></div>
+                                    <div id="amount-slider" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
+                                        <a className="ui-slider-handle ui-state-default ui-corner-all" href="#"><img src="/images/car.svg" /></a>
+                                    </div>
                                 </li>
                                 <li>
                                     Residual:<span id="residual" className="slider-label"> 0 %</span>
                                     <span id="residual-slider-amount" className="slider-value">($ 0)</span>
-                                    <div id="residual-slider" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"><a className="ui-slider-handle ui-state-default ui-corner-all" href="#"></a></div>
+                                    <div id="residual-slider" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
+                                        <a className="ui-slider-handle ui-state-default ui-corner-all" href="#"><img src="/images/car.svg" /></a>
+                                    </div>
                                 </li>
                                 <li>
                                     <span className="slider-label">Interest</span>
                                     <span className="slider-value">0 %</span>
-                                    <div id="interest-slider" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"><a className="ui-slider-handle ui-state-default ui-corner-all" href="#"></a></div>
+                                    <div id="interest-slider" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
+                                        <a className="ui-slider-handle ui-state-default ui-corner-all" href="#"><img src="/images/car.svg" /></a>
+                                    </div>
                                 </li>
                                 <li>
                                     <span className="slider-label">Term of lease</span>
                                     <span className="slider-value">1 Year(s)</span>
-                                    <div id="term-of-lease-slider" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"><a className="ui-slider-handle ui-state-default ui-corner-all" href="#"></a></div>
+                                    <div id="term-of-lease-slider" className="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">
+                                        <a className="ui-slider-handle ui-state-default ui-corner-all" href="#"><img src="/images/car.svg" /></a>
+                                    </div>
                                 </li>
                             </ul>
                             <div className="box2-repayment">Monthly Repayment: $<span id="monthly-repayment">0.00</span></div>
@@ -109,7 +120,7 @@ export default function MainPage(props) {
             <ReactBootstrap.Row className="mt100">
                 <AllVehicles />
             </ReactBootstrap.Row>
-            <ReactBootstrap.Row className="mt100">
+            <ReactBootstrap.Row className="mt100 ts">
                 <TestimonialSvg />
             </ReactBootstrap.Row>
             <ReactBootstrap.Row className="mt100">
@@ -120,7 +131,29 @@ export default function MainPage(props) {
                 <button className="mx-auto bg-blue big-button-text btn w19 text-center mt15">Speak to an expert</button>
             </ReactBootstrap.Row>
             <ReactBootstrap.Row className="mt100 pl0 pr0">
-                <img className="pl0 pr0" src="/images/footersvg.png" alt="Footer" />
+                {/* <img className="pl0 pr0" src="/images/footersvg.png" alt="Footer" /> */}
+                <svg xmlns="http://www.w3.org/2000/svg" width="1366" height="484" viewBox="0 0 1366 484">
+                    <g id="Group_1" data-name="Group 1" transform="translate(0 -2503)">
+                        <rect id="Rectangle_54" data-name="Rectangle 54" width="1366" height="484" transform="translate(0 2503)" fill="#565656" />
+                        <g id="Component_2_1" data-name="Component 2 – 1" transform="translate(139 2603)">
+                            <text id="Car_Loan_Sales" data-name="Car Loan Sales" transform="translate(0 13)" fill="#fff" font-size="16" font-family="AbrilFatface-Regular, Abril Fatface"><tspan x="0" y="0">Car Loan Sales</tspan></text>
+                            <text id="ABN:_99_033_791_789" data-name="ABN: 99 033 791 789" transform="translate(0 45)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">ABN: 99 033 791 789</tspan></text>
+                            <text id="AFS_License:_336343" data-name="AFS License: 336343" transform="translate(0 76)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">AFS License: 336343</tspan></text>
+                            <text id="Australian_Credit_License:_393424" data-name="Australian Credit License: 393424" transform="translate(0 107)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">Australian Credit License: 393424</tspan></text>
+                            <text id="COSL_MN:_M0005987" data-name="COSL MN: M0005987" transform="translate(0 138)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">COSL MN: M0005987</tspan></text>
+                            <text id="FBAA_MN:_M-324989" data-name="FBAA MN: M-324989" transform="translate(0 169)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">FBAA MN: M-324989</tspan></text>
+                            <text id="Credit_Guide" data-name="Credit Guide" transform="translate(0 200)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">Credit Guide</tspan></text>
+                        </g>
+                        <text id="Products" transform="translate(469 2616)" fill="#fff" font-size="16" font-family="AbrilFatface-Regular, Abril Fatface"><tspan x="0" y="0">Products</tspan></text>
+                        <a className="" href="/personal-car-lease"><text className="cursor" id="Personal_Car_Loan" data-name="Personal Car Loan" transform="translate(469 2650)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">Personal Car Loan</tspan></text></a>
+                        <a className="" href="/car-lease"><text className="cursor" id="Car_Lease" data-name="Car Lease" transform="translate(469 2681)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">Car Lease</tspan></text></a>
+                        <a className="" href="/low-doc-finance"><text className="cursor" id="Low_Doc_Finance" data-name="Low Doc Finance" transform="translate(469 2712)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">Low Doc Finance</tspan></text></a>
+                        <a className="" href="/chattel-mortgage"><text className="cursor" id="Chattel_Mortgage" data-name="Chattel Mortgage" transform="translate(469 2743)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">Chattel Mortgage</tspan></text></a>
+                        <a className="" href="/commercial-hire-purchase"><text className="cursor" id="Commercial_Hire_Purchase" data-name="Commercial Hire Purchase" transform="translate(469 2774)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">Commercial Hire Purchase</tspan></text></a>
+                        <a className="" href="/novated-lease"><text className="cursor" id="Novated_Lease" data-name="Novated Lease" transform="translate(469 2805)" fill="#b6b6b6" font-size="14" font-family="SegoeUI, Segoe UI"><tspan x="0" y="0">Novated Lease</tspan></text></a>
+                        <line className="cursor" id="Line_5" data-name="Line 5" x2="92" transform="translate(139 2809)" fill="none" stroke="#707070" stroke-width="1" />
+                    </g>
+                </svg>
             </ReactBootstrap.Row>
         </ReactBootstrap.Row>
 
